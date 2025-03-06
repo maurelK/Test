@@ -18,16 +18,18 @@ void nts::OutputComponent::setLink(std::size_t pin, nts::IComponent &other, std:
               << " on pin " << otherPin << std::endl;
 }
 
+nts::Tristate nts::OutputComponent::compute(std::size_t pin) {
+    if (pin != 1) {
+        throw std::runtime_error("[ERROR] OutputComponent: Invalid pin number.");
+    }
 
-//nts::Tristate nts::OutputComponent::compute(std::size_t pin) {
-//    if (pin != 1) {
-//        throw std::runtime_error("OutputComponent only has pin 1.");
-//    }
-//
-//    if (!linkedComponent) {
-//        return nts::Undefined;
-//    }
-/////c'est ici le probleme je pense je pense que la bail ne prend pas le retour de AndComponent
-//    return linkedComponent->compute(linkedPin);
-//}
-//
+    if (!linkedComponent) {
+        std::cout << "[ERROR] OutputComponent: Not linked!" << std::endl;
+        return nts::Undefined;
+    }
+
+    // Retrieve the value from the linked component
+    nts::Tristate value = linkedComponent->compute(linkedPin);
+    std::cout << "[DEBUG] OutputComponent: Received value=" << value << std::endl;
+    return value;
+}

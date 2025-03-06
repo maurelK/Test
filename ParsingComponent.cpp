@@ -35,6 +35,8 @@ int ParsingComponent::readfile(const std::string &filename)
     //std::cout << "Chipsets Section:\n" << ChipsetSection.str() << std::endl;
     return 0;
 }
+
+
 int ParsingComponent::elemExtractChipset(Circuit &circuit) {
     std::string line, type, name;
     while (std::getline(ChipsetSection, line)) {
@@ -45,20 +47,21 @@ int ParsingComponent::elemExtractChipset(Circuit &circuit) {
             std::cerr << "Error: Invalid chipset format in line: " << line << std::endl;
             return 84;
         }
+
+        // Check for duplicate components
+        if (circuit.findComponent(name)) {
+            std::cerr << "[ERROR] Component " << name << " is already defined!" << std::endl;
+            continue; // Skip duplicate components
+        }
+
         auto component = Factory::createComponent(type);
         if (!component) {
             std::cerr << "Error: Unknown component type '" << type << "'." << std::endl;
             return 84;
         }
 
-        std::cout << "[DEBUG] Adding Component: \""<< name <<"\" (" << type << ") at " << component.get() << std::endl;
+        std::cout << "[DEBUG] Adding Component: \"" << name << "\" (" << type << ") at " << component.get() << std::endl;
         circuit.addComponent(name, std::move(component));
-
-//don't mind i will commot this 
-        if (!circuit.findComponent(name)) {
-            std::cerr << "[ERROR] Component '" << name << "' was not stored correctly!" << std::endl;
-            return 84;
-        }
     }
     return 0;
 }

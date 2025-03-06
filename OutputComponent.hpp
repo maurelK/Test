@@ -15,7 +15,7 @@ public:
     ~OutputComponent() override = default;
     
     void simulate(std::size_t tick) override;
-    //nts::Tristate compute(std::size_t pin) override;
+    nts::Tristate compute(std::size_t pin) override;
     void setLink(std::size_t pin, IComponent &other, std::size_t otherPin) override;
     std::string getType() const override { return "output"; }
 };
