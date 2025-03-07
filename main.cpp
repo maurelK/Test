@@ -1,63 +1,64 @@
+/*
+** EPITECH PROJECT, 2025
+** erre
+** File description:
+** erre
+*/
+
 #include "Circuit.hpp"
-#include "Factory.hpp"
+#include "Input.hpp" 
 #include <iostream>
-#include <sstream>
-#include <map>
-#include "ParsingComponent.hpp"
+#include <string>
 
-
-void runShell(Circuit &circuit) {
-    std::string command;
-    std::map<std::string, nts::InputComponent*> inputs;
-
-    for (const auto &[name, comp] : circuit.getComponents()) {
-        if (auto *input = dynamic_cast<nts::InputComponent *>(comp.get())) {
-            inputs[name] = input;
-        }
-    }
-    while (true) {
-        std::cout << "> ";
-        std::getline(std::cin, command);
-        std::stringstream ss(command);
-        std::string token;
-        ss >> token;
-
-        if (token == "exit") {
-            break;
-        } else if (token == "simulate") {
-            circuit.simulate(1);
-        } else if (token == "display") {
-            circuit.display();
-        } else if (token.find("=") != std::string::npos) {
-            std::string inputName = token.substr(0, token.find("="));
-            std::string valueStr = token.substr(token.find("=") + 1);
-
-            if (inputs.find(inputName) != inputs.end()) {
-                nts::Tristate newValue = (valueStr == "1") ? nts::True :
-                                         (valueStr == "0") ? nts::False :
-                                                              nts::Undefined;
-                inputs[inputName]->setValue(newValue);
-            } else {
-                std::cerr << "[ERROR] Unknown input: " << inputName << std::endl;
-            }
-        } else {
-            std::cerr << "[ERROR] Unknown command: " << token << std::endl;
-        }
-    }
+nts::Tristate strToTristate(const std::string &value) {
+    if (value == "1")
+        return nts::True;
+    if (value == "0")
+        return nts::False;
+        
+    return nts::Undefined;
 }
 
 int main(int argc, char **argv) {
     if (argc != 2) {
+        std::cerr << "Usage: ./nanotekspice file.nts" << std::endl;
         return 84;
     }
 
     Circuit circuit;
-    ParsingComponent parser;
+    circuit.loadFromFile(argv[1]);
 
-    if (parser.readfile(argv[1]) == 84 || parser.elemExtractChipset(circuit) == 84 || parser.elemExtractLinks(circuit) == 84) {
-        return 84;
+    std::string command;
+    std::cout << "> ";
+    size_t tick = 0;
+    while (std::getline(std::cin, command)) {
+        if (command == "exit")
+            break;
+         if (command == "simulate") {
+            circuit.simulate();
+            tick++;
+        } else if (command == "display") {
+            circuit.display(tick);
+        } else if (command.find('=') != std::string::npos) {
+            size_t pos = command.find('=');
+            std::string inputName = command.substr(0, pos);
+            std::string value = command.substr(pos + 1);
+
+            nts::IComponent *comp = circuit.getComponent(inputName);
+            if (comp) {
+                Input *input = dynamic_cast<Input *>(comp);
+                if (input)
+                    input->setValue(strToTristate(value));
+                else
+                    std::cerr << "Error: '" << inputName << "' is not an input component" << std::endl;
+            } else {
+                std::cerr << "Error: Unknown component '" << inputName << "'" << std::endl;
+            }
+        } else {
+            std::cerr << "Error: Unknown command '" << command << "'" << std::endl;
+        }
+        std::cout << "> ";
     }
 
-    runShell(circuit);
     return 0;
 }

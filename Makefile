@@ -1,26 +1,24 @@
 ##
-## EPITECH PROJECT, 2023
-## my_Makefile
+## EPITECH PROJECT, 2025
+## tyetyyt
 ## File description:
-## compilation
+## rttytuyytr
 ##
 
-NAME	= nanotekspice
+NAME	=	nanotekspice
 
-SRCS	= $(wildcard *.cpp)
+SRCS	= 	$(wildcard *.cpp)
 
-OBJS	= $(SRCS:.c=.o)
+OBJS	= 	$(SRCS:.c=.o)
 
-all: $(NAME)
+all: 		$(NAME)
 
-$(NAME): $(OBJS)
+$(NAME):	$(OBJS)
 
 	g++ $(SRCS) -o $(NAME)
-
 clean:
-	rm -rf *.o
 
 fclean: clean
-	rm -f $(NAME)
+	rm -rf *.a
 
 re: fclean all

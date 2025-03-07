@@ -4,7 +4,6 @@ input b
 output s
 4081 and
 
-
 .links:
 a:1 and:1
 b:1 and:2

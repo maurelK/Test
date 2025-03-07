@@ -1,24 +1,32 @@
-#ifndef CIRCUIT_HPP_
-#define CIRCUIT_HPP_
-
+#pragma once
 #include "IComponent.hpp"
 #include <unordered_map>
 #include <memory>
-#include <iostream>
+#include <string>
+#include <vector>
+
 
 class Circuit {
-private:
-    std::unordered_map<std::string, std::unique_ptr<nts::IComponent>> _components;
-    std::size_t currentTick = 0;
-
 public:
-    void addComponent(const std::string &name, std::unique_ptr<nts::IComponent> component);
-    nts::IComponent *findComponent(const std::string &name);
-    void simulate(std::size_t tick);
-    void display();
-    const std::unordered_map<std::string, std::unique_ptr<nts::IComponent>>& getComponents() const {
-        return _components;
-    }
+    Circuit();
+
+    void loadFromFile(const std::string &filename);
+
+    void simulate();
+
+    void display(size_t tick) const;
+
+    void addComponent(const std::string &name, const std::string &type);
+
+    nts::IComponent* getComponent(const std::string &name);
+
+    // Méthodes pour démarrer la simulation
+    void startSimulation();
+    bool isSimulationStarted() const;
+
+private:
+    std::vector<std::string> inputOrder;
+    std::unordered_map<std::string, std::unique_ptr<nts::IComponent>> components;
+    bool simulationStarted = false;  // Variable pour savoir si la simulation a commencé
 };
 
-#endif
