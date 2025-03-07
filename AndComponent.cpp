@@ -12,12 +12,25 @@ nts::Tristate nts::AndComponent::compute(std::size_t pin) {
 
     std::cout << "[DEBUG] AndComponent: Input1=" << input1 << ", Input2=" << input2 << std::endl;
 
-    // Compute the AND logic
+    if (input1 == nts::False || input2 == nts::False) {
+        return nts::False;
+    }
     if (input1 == nts::Undefined || input2 == nts::Undefined) {
         return nts::Undefined;
     }
-    return (input1 == nts::True && input2 == nts::True) ? nts::True : nts::False;
+    return nts::True;    
 }
+
 void nts::AndComponent::simulate(std::size_t tick) {
     (void)tick;
+}
+
+void nts::AndComponent::setLink(std::size_t pin, nts::IComponent &other, std::size_t otherPin) {
+    if (pin != 3) {
+        _links[pin] = { &other, otherPin };
+    }
+
+    std::cout << "[DEBUG] AndComponent linking pin " << pin << " to " 
+              << other.getType() << " at pin " << otherPin 
+              << " (Memory: " << &other << ")" << std::endl;
 }
