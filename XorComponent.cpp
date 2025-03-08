@@ -1,15 +1,9 @@
-/*
-** EPITECH PROJECT, 2025
-** eez
-** File description:
-** rzzr
-*/
+#include "XorComponent.hpp"
 
-#include "AndGate.hpp"
+nts::XorComponent::XorComponent() {}
 
-AndGate::AndGate() {}
 
-nts::Tristate AndGate::compute(std::size_t pin) {
+nts::Tristate nts::XorComponent::compute(std::size_t pin) {
     if (pin != 3) return nts::Undefined;
 
     nts::Tristate a = (links.find(1) != links.end()) ? links[1].first->compute(links[1].second) : nts::Undefined;
@@ -17,10 +11,14 @@ nts::Tristate AndGate::compute(std::size_t pin) {
 
     if (a == nts::Undefined || b == nts::Undefined)
         return nts::Undefined;
-    return (a == nts::True && b == nts::True) ? nts::True : nts::False;
+    else if (a == b)
+        return nts::False;
+    else
+        return nts::True;
 }
 
 
-void AndGate::simulate(std::size_t tick) {
+void nts::XorComponent::simulate(std::size_t tick) {
     (void)tick;
 }
+
