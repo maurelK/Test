@@ -22,13 +22,18 @@ void runShell(Circuit &circuit) {
             inputs[name] = input;
         }
     }
+
     while (true) {
         std::cout << "> ";
-        std::getline(std::cin, command);
-        command = cleanstr(command, ' ');
+        if (!std::getline(std::cin, command)) {  // 🔹 Détecte CTRL+D (EOF)
+            break;
+        }
+
+        //command = cleanstr(command, ' ');
         std::stringstream ss(command);
         std::string token;
         ss >> token;
+
         if (token == "exit") {
             break;
         } else if (token == "simulate") {
@@ -44,14 +49,11 @@ void runShell(Circuit &circuit) {
                                          (valueStr == "0") ? nts::False :
                                                               nts::Undefined;
                 inputs[inputName]->setValue(newValue);
-            } else {
-                continue;
             }
-        } else {
-            continue;
         }
     }
 }
+
 
 int main(int argc, char **argv)
 {

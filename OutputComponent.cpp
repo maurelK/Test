@@ -41,11 +41,12 @@ void nts::OutputComponent::setLink(std::size_t pin, nts::IComponent &other, std:
 
 
 
-nts::Tristate nts::OutputComponent::compute(std::size_t pin) {
+nts::Tristate nts::OutputComponent::compute(std::size_t pin)
+{
     if (links.find(1) == links.end()) {
         return nts::Undefined;
     }
-    nts::Tristate result = links[1].first->compute(links[1].second);
-    state = result;
-    return result;
+    nts::Tristate value = links[1].first->compute(links[1].second);
+    state = value;
+    return value;
 }

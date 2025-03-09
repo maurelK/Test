@@ -1,14 +1,15 @@
 #include "ParsingComponent.hpp"
 static inline std::string trim(const std::string &s) {
-    auto start = s.begin();
-    while (start != s.end() && std::isspace(*start)) {
+    std::string clean = s.substr(0, s.find('#')); // 🔹 Supprime tout après '#'
+    auto start = clean.begin();
+    while (start != clean.end() && std::isspace(*start)) {
         ++start;
     }
-    auto end = s.end();
+    auto end = clean.end();
     do {
         --end;
     } while (std::distance(start, end) > 0 && std::isspace(*end));
-    return std::string(start, end + 1);
+    return (start <= end) ? std::string(start, end + 1) : "";
 }
 
 
@@ -16,7 +17,7 @@ int ParsingComponent::readfile(const std::string &filename)
 {
     std::ifstream myfile(filename);
     std::string line;
-
+    bool Content = false;
     bool inChipsets = false;
     bool inLinks = false;
 
@@ -26,6 +27,9 @@ int ParsingComponent::readfile(const std::string &filename)
 
     while (std::getline(myfile, line)) {
         line = trim(line);
+        if (line.empty()) {  // 🔹 Ignore les lignes vides
+            continue;
+        }
         if (line.find(".chipsets:") != std::string::npos) {
             inChipsets = true;
             inLinks = false;
@@ -41,11 +45,11 @@ int ParsingComponent::readfile(const std::string &filename)
         } else if (inLinks) {
             LinksSection << line << '\n';
         }
+        Content = true;
     }
 
     myfile.close();
-    //std::cout << "Chipsets Section:\n" << ChipsetSection.str() << std::endl;
-    return 0;
+    return Content ? 0 : 84;  // 🔹 Retourne 84 si le fichier est vide
 }
 
 

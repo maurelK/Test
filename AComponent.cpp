@@ -20,3 +20,4 @@ nts::Tristate nts::AComponent::getLink(std::size_t pin) const {
 
     return it->second.first->compute(it->second.second);
 }
+

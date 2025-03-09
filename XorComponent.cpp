@@ -3,7 +3,8 @@
 nts::XorComponent::XorComponent() {}
 
 
-nts::Tristate nts::XorComponent::compute(std::size_t pin) {
+nts::Tristate nts::XorComponent::compute(std::size_t pin)
+{
     if (pin != 3) return nts::Undefined;
 
     nts::Tristate a = (links.find(1) != links.end()) ? links[1].first->compute(links[1].second) : nts::Undefined;

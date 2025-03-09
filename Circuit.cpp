@@ -6,12 +6,14 @@ void Circuit::addComponent(const std::string &name, std::unique_ptr<nts::ICompon
 
 }
 
-nts::IComponent *Circuit::findComponent(const std::string &name) {
+nts::IComponent *Circuit::findComponent(const std::string &name)
+{
     auto it = _components.find(name);
     return (it != _components.end()) ? it->second.get() : nullptr;
 }
 
-void Circuit::simulate(std::size_t tick = 1) {
+void Circuit::simulate(std::size_t tick = 1)
+{
     currentTick += tick;
     for (auto &[name, component] : _components) {
         component->simulate(currentTick);
