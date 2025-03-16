@@ -1,26 +1,25 @@
 ##
 ## EPITECH PROJECT, 2023
-## my_Makefile
+## Makefile settingup
 ## File description:
-## compilation
+## Essai de find du biggest square
 ##
 
-NAME	= nanotekspice
+SRC	=	$(wildcard *.c)
 
-SRCS	= $(wildcard *.cpp)
+OBJ	=	$(SRC:.c=.o)
 
-OBJS	= $(SRCS:.c=.o)
+NAME	=	myftp
 
-all: $(NAME)
+all:	$(NAME)
 
-$(NAME): $(OBJS)
-
-	g++ $(SRCS) -o $(NAME)
+$(NAME):	$(OBJ)
+	gcc -o $(NAME) $(SRC)
 
 clean:
-	rm -rf *.o
+	rm -f   $(OBJ)
 
-fclean: clean
-	rm -f $(NAME)
+fclean:	clean
+	rm -f   $(NAME)
 
-re: fclean all
+re:	fclean  all
