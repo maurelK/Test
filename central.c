@@ -22,18 +22,41 @@ void my_server(int port, char *path, info_t *info)
     handle_poll(ufds, server, info);
 }
 
+int condition(char **av, char *path, int port, info_t *info)
+{
+    port = atoi(av[1]);
+    if (port <= 0 || port > 65535) {
+        free(info);
+        return 84;
+    }
+    path = av[2];
+    if (access(path, F_OK) == -1) {
+        free(info);
+        return 84;
+    }
+    my_server(port, path, info);
+}
+
 int main(int ac, char **av)
 {
     int port = 0;
     char *path = NULL;
-    info_t *info = malloc(sizeof(info_t));
-    //info->users = {0};
+    info_t *info = NULL;
+    int c = 0;
 
-    if (ac == 2 && strcmp(av[1], "-help") == 0)
+    if (ac == 2 && strcmp(av[1], "-help") == 0) {
         print_help();
+        return 0;
+    }
     if (ac != 3)
         return 84;
-    port = atoi(av[1]);
-    path = av[2];
-    my_server(port, path, info);
+    info = malloc(sizeof(info_t));
+    if (info == NULL)
+        return 84;
+    memset(info, 0, sizeof(info_t));
+    c = condition(av, path, port, info);
+    if (c == 84)
+        return 84;
+    free(info);
+    return 0;
 }

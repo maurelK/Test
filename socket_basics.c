@@ -5,7 +5,6 @@
 ** socket
 */
 
-
 #include "include/my.h"
 
 int create_socket(void)
@@ -36,7 +35,6 @@ void binder(int server, int port)
         perror("Erreur listen");
         exit(-1);
     }
-    printf("Serveur en écoute sur le port %d...\n", port);
 }
 
 int new_connexion(int server)
@@ -44,26 +42,32 @@ int new_connexion(int server)
     struct sockaddr_in client_addr;
     int new_client = 0;
     socklen_t addr_len = sizeof(client_addr);
+    const char *welcome_msg = "220 Welcome to myFTP!\r\n";
 
     new_client = accept(server, (struct sockaddr *)&client_addr, &addr_len);
     if (new_client < 0) {
         perror("accept");
-        exit(-1);
+        return -1;
     }
-    printf("New connexion succeed\n");
+    if (write(new_client, welcome_msg, strlen(welcome_msg)) < 0) {
+        perror("write");
+        close(new_client);
+        return -1;
+    }
     return new_client;
 }
 
 void handle_poll(struct pollfd *ufds, int server, info_t *info)
 {
+    int react = 0;
+
     ufds[0].fd = server;
     ufds[0].events = POLLIN;
-
     while (1) {
-        int react = poll(ufds, CLIENTS, -1);
+        react = poll(ufds, CLIENTS, -1);
         if (react < 0) {
             perror("poll failed");
-            exit(EXIT_FAILURE);
+            continue;
         }
         poll_event(ufds, server, info);
     }

@@ -8,20 +8,6 @@
 #include "include/my.h"
 
 
-void add_new_client(int new_client, struct pollfd *ufds)
-{
-    int j = 1;
-
-    for (; j < CLIENTS; j++) {
-        if (ufds[j].fd == -1) {
-            ufds[j].fd = new_client;
-            ufds[j].events = POLLIN;
-            printf("Le Client a été ajouté avec succès\n");
-            return;
-        }
-    }
-    close(new_client);
-}
 
 int read_message(int client_fd, char *buffer, int size)
 {
@@ -50,45 +36,23 @@ int writing(int client_fd, const char *message)
 void poll_event1(struct pollfd *ufds, int i, info_t *info)
 {
     char buffer[2000];
-
     int bytes_read = read_message(ufds[i].fd, buffer, sizeof(buffer));
+    char *cmd = NULL;
+    command_t commands[] = {{"QUIT", handle_quit}, {"USER", handle_user},
+    {"PASS", handle_pass}, {"PORT", handle_port}, {NULL, NULL}
+    };
+
     if (bytes_read > 0) {
         printf("Message received: %s\n", buffer);
-
-        if (strncmp(buffer, "QUIT", 4) == 0) {
-            handle_quit(ufds[i].fd, ufds, i);
-            info->to_close[i] = 1;
-        } else if (strncmp(buffer, "USER", 4) == 0) {
-            handle_user(ufds[i].fd, ufds, i, buffer, info);
-        } else if (strncmp(buffer, "PASS", 4) == 0) {
-            handle_pass(ufds[i].fd, ufds, i, buffer, info);
-        } else {
-            info->to_close[i] = 1;
-        }
-    }
-}
-
-void poll_event(struct pollfd *ufds, int server, info_t *info)
-{
-    for (int i = 0; i < CLIENTS; i++) {
-        if (ufds[i].revents == 0)
-            continue;
-
-        if (ufds[i].revents & POLLIN) {
-            if (ufds[i].fd == server) {
-                int new_client = new_connexion(server);
-                printf("New connection accepted!\n");
-                add_new_client(new_client, ufds);
-            } else {
-                poll_event1(ufds, i, info);
+        cmd = strtok(buffer, " \r\n");
+        if (cmd == NULL)
+            return;
+        for (int j = 0; commands[j].command != NULL; j++) {
+            if (strcmp(cmd, commands[j].command) == 0) {
+                commands[j].function(ufds[i].fd, i, buffer, info);
+                return;
             }
         }
-    }
-
-    for (int i = 0; i < CLIENTS; i++) {
-        if (info->to_close[i]) {
-            close(ufds[i].fd);
-            ufds[i].fd = -1;
-        }
+        writing(ufds[i].fd, "500 Unknown command.\r\n");
     }
 }
