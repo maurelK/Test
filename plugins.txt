@@ -1,0 +1,10 @@
+cloudbees-folder
+configuration-as-code
+credentials
+github
+instance-identity
+jobdsl
+script-security
+structs
+role-strategy
+ws-cleanup
