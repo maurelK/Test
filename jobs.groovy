@@ -1,3 +1,4 @@
+import javaposse.jobdsl.dsl.*
 import javaposse.jobdsl.dsl.DslFactory
 
 // Create the Tools folder
@@ -30,37 +31,14 @@ job('Tools/SEED') {
     }
     steps {
         dsl {
-            text('''
-                job("$DISPLAY_NAME") {
-                    description('Job created by the SEED job.')
-                    properties {
-                        githubProjectUrl("https://github.com/$GITHUB_NAME")
-                    }
-                    scm {
-                        git {
-                            remote {
-                                url("https://github.com/$GITHUB_NAME.git")
-                            }
-                            branches('*/main')
-                        }
-                    }
-                    triggers {
-                        scm('H/1 * * * *')
-                    }
-                    steps {
-                        shell('make fclean')
-                        shell('make')
-                        shell('make tests_run')
-                        shell('make clean')
-                    }
-                    wrappers {
-                        preBuildCleanup()
-                    }
-                }
-            ''')
+            external('jobs.groovy')
         }
     }
+
     triggers {
-        manual()
     }
+    folder('Tools') {
+        description('Folder for miscellaneous tools.')
+    }
+
 }

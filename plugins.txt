@@ -3,7 +3,7 @@ configuration-as-code
 credentials
 github
 instance-identity
-jobdsl
+job-dsl
 script-security
 structs
 role-strategy

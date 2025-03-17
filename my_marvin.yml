@@ -56,9 +56,3 @@ jenkins:
     scriptApproval:
       approvedSignatures:
         - "method groovy.lang.GroovyShell evaluate java.lang.String"
-  folders:
-    - name: "Tools"
-      displayName: "Tools"
-      description: "Folder for miscellaneous tools."
-  remotingSecurity:
-    enabled: true

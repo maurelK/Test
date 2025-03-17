@@ -14,6 +14,9 @@ services:
       - ./plugins.txt:/var/jenkins_home/plugins.txt
     env_file:
       - .env
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/my_marvin.yml
+
     networks:
       - jenkins_network
 volumes:
