@@ -1,11 +1,11 @@
 import javaposse.jobdsl.dsl.*
-import javaposse.jobdsl.dsl.DslFactory
 
 // Create the Tools folder
 folder('Tools') {
     description('Folder for miscellaneous tools.')
 }
 
+// Create the clone-repository job
 job('Tools/clone-repository') {
     description('Clones a Git repository.')
     parameters {
@@ -31,15 +31,34 @@ job('Tools/SEED') {
     }
     steps {
         dsl {
-            removeAction('IGNORE')  // Ignore les erreurs si un job existe déjà
-            external('jobs.groovy')
+            text('''
+                job("${DISPLAY_NAME}") {
+                    description("Job for ${GITHUB_NAME}")
+                    properties {
+                        githubProjectUrl("https://github.com/${GITHUB_NAME}")
+                    }
+                    scm {
+                        git {
+                            remote {
+                                url("https://github.com/${GITHUB_NAME}.git")
+                            }
+                            branches('*/main')
+                        }
+                    }
+                    triggers {
+                        scm('H/1 * * * *')  // Poll SCM every minute
+                    }
+                    wrappers {
+                        preBuildCleanup()
+                    }
+                    steps {
+                        shell('make fclean')
+                        shell('make')
+                        shell('make tests_run')
+                        shell('make clean')
+                    }
+                }
+            ''')
         }
     }
-
-    triggers {
-    }
-    folder('Tools') {
-        description('Folder for miscellaneous tools.')
-    }
-
 }

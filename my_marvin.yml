@@ -17,7 +17,7 @@ jenkins:
           password: "${USER_NASSO_PASSWORD}"
           name: "Nassim"
   authorizationStrategy:
-    roleStrategy:
+    roleBased:
       roles:
         global:
           - name: "admin"
