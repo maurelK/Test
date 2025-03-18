@@ -1,0 +1,40 @@
+#version: '3.8'
+#
+#services:
+#  jenkins:
+#    image: jenkins/jenkins:lts
+#    container_name: my_marvin_jenkins_new
+#    ports:
+#      - "8080:8080"
+#      - "50000:50000"
+#    volumes:
+#      - jenkins_home:/var/jenkins_hom
+#      - ./my_marvin.yaml:/var/jenkins_home/my_marvin.yaml
+#      - ./jobs.groovy:/var/jenkins_home/jobs.groovy
+#      - ./plugins.txt:/usr/share/jenkins/ref/plugins.txt
+#      - CASC_JENKINS_CONFIG=/var/jenkins_home/my_marvin.yaml
+#
+#volumes:
+#  jenkins_home:
+#
+#
+
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: my_marvin_jenkins_new
+    ports:
+      - "8080:8080"  # Port for Jenkins web interface
+      - "50000:50000"  # Port for Jenkins agents
+    volumes:
+      - jenkins_home:/var/jenkins_home  # Volume for Jenkins data
+      - ./my_marvin.yaml:/var/jenkins_home/my_marvin.yaml  # Mount your YAML file
+      - ./jobs.groovy:/var/jenkins_home/jobs.groovy  # Mount your Groovy script
+      - ./plugins.txt:/usr/share/jenkins/ref/plugins.txt  # Mount plugins list
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/my_marvin.yaml  # Correct path to YAML file
+
+volumes:
+  jenkins_home:  # Volume for Jenkins data persistence

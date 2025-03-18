@@ -17,7 +17,7 @@ jenkins:
           password: "${USER_NASSO_PASSWORD}"
           name: "Nassim"
   authorizationStrategy:
-    roleBased:
+    roleStrategy:
       roles:
         global:
           - name: "admin"
@@ -52,7 +52,3 @@ jenkins:
               - "Job/Workspace"
             assignments:
               - "nasso"
-  security:
-    scriptApproval:
-      approvedSignatures:
-        - "method groovy.lang.GroovyShell evaluate java.lang.String"

@@ -1,11 +1,11 @@
 import javaposse.jobdsl.dsl.*
 
-// Create the Tools folder
+// Créer le dossier "Tools"
 folder('Tools') {
     description('Folder for miscellaneous tools.')
 }
 
-// Create the clone-repository job
+// Créer le job "clone-repository"
 job('Tools/clone-repository') {
     description('Clones a Git repository.')
     parameters {
@@ -22,7 +22,7 @@ job('Tools/clone-repository') {
     }
 }
 
-// Create the SEED job
+// Créer le job "SEED"
 job('Tools/SEED') {
     description('Creates a new job based on the provided GitHub repository and display name.')
     parameters {
