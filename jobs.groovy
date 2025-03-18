@@ -31,6 +31,7 @@ job('Tools/SEED') {
     }
     steps {
         dsl {
+            removeAction('IGNORE')  // Ignore les erreurs si un job existe déjà
             external('jobs.groovy')
         }
     }
