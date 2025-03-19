@@ -17,9 +17,6 @@ job('Tools/clone-repository') {
     wrappers {
         preBuildCleanup()
     }
-    triggers {
-        manual()
-    }
 }
 
 // Créer le job "SEED"
@@ -32,15 +29,15 @@ job('Tools/SEED') {
     steps {
         dsl {
             text('''
-                job("${DISPLAY_NAME}") {
-                    description("Job for ${GITHUB_NAME}")
+                job("$DISPLAY_NAME") {
+                    description("Job for $GITHUB_NAME")
                     properties {
-                        githubProjectUrl("https://github.com/${GITHUB_NAME}")
+                        githubProjectUrl("https://github.com/$GITHUB_NAME")
                     }
                     scm {
                         git {
                             remote {
-                                url("https://github.com/${GITHUB_NAME}.git")
+                                url("https://github.com/$GITHUB_NAME.git")
                             }
                             branches('*/main')
                         }

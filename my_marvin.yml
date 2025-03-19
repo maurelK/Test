@@ -1,0 +1,67 @@
+jenkins:
+  systemMessage: "Welcome to the Chocolatine-Powered Marvin Jenkins Instance."
+
+  securityRealm:
+    local:
+      users:
+        - id: chocolateen
+          name: Hugo
+          password: ${USER_CHOCOLATEEN_PASSWORD}
+        - id: vaugie_g
+          name: Garance
+          password: ${USER_VAUGIE_G_PASSWORD}
+        - id: i_dont_know
+          name: Jeremy
+          password: ${USER_I_DONT_KNOW_PASSWORD}
+        - id: nasso
+          name: Nassim
+          password: ${USER_NASSO_PASSWORD}
+
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "hudson.model.Hudson.Administer:chocolateen"
+        - "hudson.model.Computer.Build:chocolateen, i_dont_know, vaugie_g, nasso"
+        - "hudson.model.Hudson.Read:chocolateen, i_dont_know, vaugie_g, nasso"
+        - "hudson.model.Item.Build:chocolateen, i_dont_know, vaugie_g"
+        - "hudson.model.Item.Configure:chocolateen, i_dont_know, vaugie_g"
+        - "hudson.model.Item.Create:chocolateen, i_dont_know, vaugie_g"
+        - "hudson.model.Item.Delete:chocolateen, i_dont_know, vaugie_g"
+        - "hudson.model.Item.Workspace:chocolateen, i_dont_know, vaugie_g, nasso"
+        - "hudson.model.Item.Move:chocolateen, i_dont_know, vaugie_g"
+        - "hudson.model.Item.Cancel:chocolateen, i_dont_know, vaugie_g"
+        - "hudson.model.Item.Read:chocolateen, i_dont_know, vaugie_g, nasso"
+
+  jobs:
+    - script: |
+        job('clone-repository') {
+          description('Clone a Git repository')
+          parameters {
+            stringParam('GIT_REPOSITORY_URL', '', 'Git URL of the repository to clone')
+          }
+          scm {
+            git {
+              remote {
+                url('${GIT_REPOSITORY_URL}')
+              }
+            }
+          }
+          steps {
+            shell('git clone ${GIT_REPOSITORY_URL}')
+          }
+          wrappers {
+            preBuildCleanup()
+          }
+        }
+
+        job('SEED') {
+          description('Create a new job using DSL')
+          parameters {
+            stringParam('GITHUB_NAME', '', 'GitHub repository owner/repo_name (e.g.: "EpitechIT31000/chocolatine")')
+            stringParam('DISPLAY_NAME', '', 'Display name for the job')
+          }
+          steps {
+            dsl {
+              text('''
+                job('${DISPLAY_NAME}') {
+                  description("G

@@ -6,6 +6,5 @@ instance-identity
 job-dsl
 script-security
 structs
-role-strategy:latest
+role-strategy
 ws-cleanup
-
