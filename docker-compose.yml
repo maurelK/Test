@@ -5,16 +5,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: my_marvin_jenkins_new
+    container_name: my_marvin_jenkins
     ports:
       - "8080:8080"
       - "50000:50000"
-    environment:
-      - CASC_JENKINS_CONFIG=/var/jenkins_home/my_marvin.yml
     env_file:
       - .env
     volumes:
-      - jenkins_home:/var/jenkins_home
-
-volumes:
-  jenkins_home:
+      - ./my_marvin.yml:/var/jenkins_home/casc_configs/my_marvin.yml:ro
+      - ./job_dsl.groovy:/var/jenkins_home/casc_configs/job_dsl.groovy:ro

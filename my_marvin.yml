@@ -1,8 +1,10 @@
 jenkins:
   systemMessage: "Welcome to the Chocolatine-Powered Marvin Jenkins Instance."
-
+  remotingSecurity:
+    enabled: true
   securityRealm:
     local:
+      allowsSignup: false
       users:
         - id: chocolateen
           name: Hugo
@@ -18,50 +20,94 @@ jenkins:
           password: ${USER_NASSO_PASSWORD}
 
   authorizationStrategy:
-    globalMatrix:
-      permissions:
-        - "hudson.model.Hudson.Administer:chocolateen"
-        - "hudson.model.Computer.Build:chocolateen, i_dont_know, vaugie_g, nasso"
-        - "hudson.model.Hudson.Read:chocolateen, i_dont_know, vaugie_g, nasso"
-        - "hudson.model.Item.Build:chocolateen, i_dont_know, vaugie_g"
-        - "hudson.model.Item.Configure:chocolateen, i_dont_know, vaugie_g"
-        - "hudson.model.Item.Create:chocolateen, i_dont_know, vaugie_g"
-        - "hudson.model.Item.Delete:chocolateen, i_dont_know, vaugie_g"
-        - "hudson.model.Item.Workspace:chocolateen, i_dont_know, vaugie_g, nasso"
-        - "hudson.model.Item.Move:chocolateen, i_dont_know, vaugie_g"
-        - "hudson.model.Item.Cancel:chocolateen, i_dont_know, vaugie_g"
-        - "hudson.model.Item.Read:chocolateen, i_dont_know, vaugie_g, nasso"
+    roleBased:
+      roles:
+        global:
+          - name: "admin"
+            description: "Marvin master"
+            permissions:
+              - "Overall/Administer"
+            assignments:
+              - "chocolateen"
+          - name: "ape"
+            description: "Pedagogical team member"
+            permissions:
+              - "Overall/Read"
+              - "Job/Build"
+              - "Job/Workspace"
+              - "Job/Read"
+            assignments:
+              - "i_dont_know"
+          - name: "gorilla"
+            description: "Group Obsessively Researching Innovation Linked to Learning and Accomplishment"
+            permissions:
+              - "Overall/Read"
+              - "Job/Build"
+              - "Job/Create"
+              - "Job/Configure"
+              - "Job/Delete"
+              - "Job/Move"
+              - "Job/Cancel"
+              - "Job/Workspace"
+              - "Job/Read"
+            assignments:
+              - "vaugie_g"
+          - name: "assist"
+            description: "Assistant"
+            permissions:
+              - "Overall/Read"
+              - "Job/Workspace"
+              - "Job/Read"
+            assignments:
+              - "nasso"
 
-  jobs:
-    - script: |
-        job('clone-repository') {
-          description('Clone a Git repository')
-          parameters {
-            stringParam('GIT_REPOSITORY_URL', '', 'Git URL of the repository to clone')
-          }
-          scm {
-            git {
-              remote {
-                url('${GIT_REPOSITORY_URL}')
-              }
-            }
-          }
-          steps {
-            shell('git clone ${GIT_REPOSITORY_URL}')
-          }
-          wrappers {
+jobs:
+  - script: >
+      folder('/Tools') {
+        description('Folder for miscellaneous tools.')
+        displayName('Tools')
+      }
+
+      freeStyleJob('/Tools/clone-repository') {
+        wrappers {
+          preBuildCleanup {
             preBuildCleanup()
           }
         }
+        parameters {
+          stringParam("GIT_REPOSITORY_URL", "", "Git URL of the repository to clone")
+        }
+        steps {
+          shell("git clone \$GIT_REPOSITORY_URL")
+        }
+      }
 
-        job('SEED') {
-          description('Create a new job using DSL')
-          parameters {
-            stringParam('GITHUB_NAME', '', 'GitHub repository owner/repo_name (e.g.: "EpitechIT31000/chocolatine")')
-            stringParam('DISPLAY_NAME', '', 'Display name for the job')
+      freeStyleJob('/Tools/SEED') {
+        parameters {
+          stringParam("GITHUB_NAME", "", "GitHub repository owner/repo_name (e.g.: \"EpitechIT31000/chocolatine\")")
+          stringParam("DISPLAY_NAME", "", "Display name for the job")
+        }
+        scm {
+          github('\$GITHUB_NAME')
+          triggers {
+            cron("* * * * *")
           }
-          steps {
+        }
+        steps {
             dsl {
-              text('''
-                job('${DISPLAY_NAME}') {
-                  description("G
+              text('''job ("\$DISPLAY_NAME") {
+                wrappers {
+                  preBuildCleanup {
+                    preBuildCleanup()
+                  }
+                }
+                steps {
+                  shell("make fclean")
+                  shell("make")
+                  shell("make test")
+                  shell("make clean")
+                }
+              }'''.stripIndent())
+            }
+          }
+      }

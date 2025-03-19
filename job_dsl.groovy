@@ -1,11 +1,7 @@
-import javaposse.jobdsl.dsl.*
-
-// Créer le dossier "Tools"
 folder('Tools') {
     description('Folder for miscellaneous tools.')
 }
 
-// Créer le job "clone-repository"
 job('Tools/clone-repository') {
     description('Clones a Git repository.')
     parameters {
@@ -17,9 +13,9 @@ job('Tools/clone-repository') {
     wrappers {
         preBuildCleanup()
     }
+    triggers {}
 }
 
-// Créer le job "SEED"
 job('Tools/SEED') {
     description('Creates a new job based on the provided GitHub repository and display name.')
     parameters {
@@ -29,8 +25,8 @@ job('Tools/SEED') {
     steps {
         dsl {
             text('''
-                job("$DISPLAY_NAME") {
-                    description("Job for $GITHUB_NAME")
+                job($DISPLAY_NAME) {
+                    description('Job created by the SEED job.')
                     properties {
                         githubProjectUrl("https://github.com/$GITHUB_NAME")
                     }
@@ -43,10 +39,7 @@ job('Tools/SEED') {
                         }
                     }
                     triggers {
-                        scm('H/1 * * * *')  // Poll SCM every minute
-                    }
-                    wrappers {
-                        preBuildCleanup()
+                        scm('H/1 * * * *')
                     }
                     steps {
                         shell('make fclean')
@@ -54,8 +47,12 @@ job('Tools/SEED') {
                         shell('make tests_run')
                         shell('make clean')
                     }
+                    wrappers {
+                        preBuildCleanup()
+                    }
                 }
             ''')
         }
     }
+    triggers {}
 }
