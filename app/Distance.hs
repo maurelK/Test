@@ -6,7 +6,7 @@ import Text.Read
 import System.IO
 import Control.Monad
 import Data.Ord (comparing)
-import System.Random (random)
+-- import System.Random (random)
 import Data.List (minimumBy, groupBy, sortBy, delete)
 import Data.Function (on)
 import Data.Maybe (fromMaybe)

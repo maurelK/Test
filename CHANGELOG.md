@@ -1,4 +1,4 @@
-# Changelog for `wolfram`
+# Changelog for `mon-projet`
 
 All notable changes to this project will be documented in this file.
 
