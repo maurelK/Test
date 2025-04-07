@@ -31,6 +31,9 @@ struct MenuChoice {
     template <typename T>
     T* libLoading(const std::string &lib, const std::string &symbol);
     int RunMenu(std::string default_lib);
+    void gameLoop(IGraphical* graphic, IGame* game);
+    void switchGraphics(const std::string& newLib);
+    void saveScore(const std::string& game, const std::string& player, int score);
 };
 
 #endif

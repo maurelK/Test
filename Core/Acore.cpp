@@ -59,25 +59,28 @@ bool Acore::Game_lib(const std::string &filename_comp)
     return true;
 }
 
+// Improved libLoading in Acore.cpp
 template <typename T>
-T* Acore::libLoading(const std::string &lib, const std::string &symbol)
+std::pair<T*, void*> Acore::libLoading(const std::string &lib, const std::string &symbol)
 {
     void *handle = dlopen(lib.c_str(), RTLD_LAZY);
     if (!handle) {
-        std::cerr << "Unable to load the library: " << lib << std::endl;
-        return nullptr;
+        std::cerr << "dlopen error: " << dlerror() << std::endl;
+        return {nullptr, nullptr};
     }
 
-    typedef T* (*CreateInstance)();
-    CreateInstance createInstance = (CreateInstance)dlsym(handle, symbol.c_str());
-
-    if (!createInstance) {
-        std::cerr << "Unable to load symbol in library: " << lib << std::endl;
+    dlerror(); // Clear any existing error
+    typedef T* (*CreateFunc)();
+    CreateFunc createFunc = (CreateFunc)dlsym(handle, symbol.c_str());
+    
+    const char *dlsym_error = dlerror();
+    if (dlsym_error) {
+        std::cerr << "dlsym error: " << dlsym_error << std::endl;
         dlclose(handle);
-        return nullptr;
+        return {nullptr, nullptr};
     }
 
-    return createInstance();
+    return {createFunc(), handle};
 }
 
 int Acore::RunMenu(std::string default_lib)

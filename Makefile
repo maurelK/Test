@@ -5,30 +5,39 @@
 ## compilation
 ##
 
-NAME	= arcade
+# Main Makefile
+NAME = arcade
 
-core	=	Core
+CXX = g++
+CXXFLAGS = -Wall -Wextra -fPIC -fno-gnu-unique
+LDFLAGS = -ldl
 
-games	=	Games
+SRC_CORE = Core/Acore.cpp
+OBJ_CORE = $(SRC_CORE:.cpp=.o)
 
-graphicals	=	Graphics
+all: core games graphicals
 
-SRCS	= Acore.cpp	
+core: $(OBJ_CORE)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ_CORE) $(LDFLAGS)
 
-OBJS	= $(SRCS:.c=.o)
+games:
+#	$(MAKE) -C Games
 
-all: $(NAME)
-
-$(NAME): $(OBJS)
-
-	g++ $(SRCS) -o $(NAME) -fno-gnu-unique
+graphicals:
+	$(MAKE) -C Graphics
 
 clean:
-	rm -rf *.o
+	rm -f $(OBJ_CORE)
+#	$(MAKE) -C Games clean
+	$(MAKE) -C Graphics clean
 
 fclean: clean
 	rm -f $(NAME)
+#	$(MAKE) -C Games fclean
+	$(MAKE) -C Graphics fclean
 
 re: fclean all
+
+.PHONY: all core games graphicals clean fclean re
 
 
