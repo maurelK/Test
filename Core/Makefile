@@ -5,13 +5,7 @@
 ## compilation
 ##
 
-NAME	= arcade
-
-core	=	Core
-
-games	=	Games
-
-graphicals	=	Graphics
+NAME	= Core
 
 SRCS	= Acore.cpp	
 
@@ -21,7 +15,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 
-	g++ $(SRCS) -o $(NAME) -fno-gnu-unique
+	g++ $(SRCS) -o $(NAME)
 
 clean:
 	rm -rf *.o
