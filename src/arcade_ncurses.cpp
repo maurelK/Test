@@ -1,4 +1,5 @@
 #include "../include/arcade_ncurses.hpp"
+#include "arcade_ncurses.hpp"
 
 ArcadeNcurses::ArcadeNcurses()
 {
@@ -55,6 +56,43 @@ int ArcadeNcurses::getInput()
 {
     return getch();
 }
+
+std::string ArcadeNcurses::getPlayerName()
+{
+    echo();
+    char name[128];
+    mvprintw(0, 0, "Enter your name: ");
+    getnstr(name, sizeof(name) - 1);
+    noecho();
+    return std::string(name);
+}
+
+std::string ArcadeNcurses::displayMenu(const std::vector<std::string> &gameLibs) {
+    int highlight = 0;
+    int input = 0;
+
+    while (true) {
+        clear();
+        mvprintw(0, 0, "== Select a Game ==");
+        for (size_t i = 0; i < gameLibs.size(); ++i) {
+            if ((int)i == highlight)
+                attron(A_REVERSE);
+            mvprintw(2 + i, 2, gameLibs[i].c_str());
+            if ((int)i == highlight)
+                attroff(A_REVERSE);
+        }
+        refresh();
+
+        input = getch();
+        if (input == KEY_UP)
+            highlight = (highlight - 1 + gameLibs.size()) % gameLibs.size();
+        else if (input == KEY_DOWN)
+            highlight = (highlight + 1) % gameLibs.size();
+        else if (input == '\n')
+            return gameLibs[highlight];
+    }
+}
+
 
 extern "C"
 {

@@ -21,6 +21,9 @@ public:
     void close() override;
     void render(const RenderData& data) override;
     int getInput() override;
+    std::string getPlayerName() override;
+    //std::string displayMenu(const std::vector<std::string>& games, const std::vector<std::string>& libs) override;
+    std::string displayMenu(const std::vector<std::string>& games) override;
 
 private:
     void initColors();

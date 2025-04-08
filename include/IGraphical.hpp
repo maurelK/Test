@@ -21,6 +21,9 @@ public:
     virtual void close() = 0;
     virtual void render(const RenderData &data) = 0;
     virtual int getInput() = 0;
+    virtual std::string getPlayerName() = 0;
+    virtual std::string displayMenu(const std::vector<std::string>& games) = 0;
+
 };
 
 extern "C"

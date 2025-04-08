@@ -21,6 +21,7 @@ bool Acore::isValidLibrary(const std::string &path, const std::string &symbol)
     return sym != nullptr;
 }
 
+
 void Acore::run(const std::string &graphicalLibPath, const std::string &gameLibPath)
 {
     // === 1. Validation des librairies ===
@@ -90,4 +91,45 @@ void Acore::run(const std::string &graphicalLibPath, const std::string &gameLibP
     deleteGame(game);
     dlclose(graphicalHandle);
     dlclose(gameHandle);
+}
+
+void Acore::runMenu(const std::string &defaultGraphicalLib)
+{
+    std::vector<std::string> gamesLibs;
+    std::string graphicalLib;
+
+    // === 1. Charger toutes les libs dans ./lib ===
+    for (const auto &entry : std::filesystem::directory_iterator("./lib")) {
+        const std::string filename = entry.path().string();
+        if (filename.find(".so") == std::string::npos)
+            continue;
+        if (isValidLibrary(filename, "createGraphical"))
+            graphicalLib = filename; // on garde la dernière (ou la seule)
+        else if (isValidLibrary(filename, "createGame"))
+            gamesLibs.push_back(filename);
+    }
+
+    if (graphicalLib.empty() || gamesLibs.empty()) {
+        std::cerr << "Error: No valid graphical or game libraries found.\n";
+        return;
+    }
+
+    // === 2. Charger la lib graphique ===
+    void *graphicHandle = dlopen(graphicalLib.c_str(), RTLD_LAZY);
+    if (!graphicHandle) {
+        std::cerr << "Error (dlopen): " << dlerror() << std::endl;
+        return;
+    }
+
+    auto createGraphical = reinterpret_cast<IGraphical *(*)()>(dlsym(graphicHandle, "createGraphical"));
+    auto deleteGraphical = reinterpret_cast<void (*)(IGraphical *)>(dlsym(graphicHandle, "deleteGraphical"));
+    if (!createGraphical || !deleteGraphical) {
+        std::cerr << "Error: invalid graphical lib symbols\n";
+        dlclose(graphicHandle);
+        return;
+    }
+
+   
+    // === 4. Lancer le jeu ===
+    run(graphicalLib, chosenGame);
 }

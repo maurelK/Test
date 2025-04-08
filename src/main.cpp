@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     }
     try {
         Acore core;
-        core.run(argv[1], argv[2]);
+        core.runMenu(argv[1]);
     }
     catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
