@@ -54,42 +54,50 @@ int arcade_ncurses::getInput()
 std::string arcade_ncurses::displayMenu(const std::vector<std::string> &games)
 {
     int highlight = 0;
-    int choice = 0;
     int input;
+    int width, height;
 
+    getmaxyx(stdscr, height, width);
     keypad(stdscr, TRUE);
     curs_set(0);
 
     while (true) {
         clear();
-        mvprintw(1, 2, "Select a game:");
+        box(stdscr, 0, 0);
+
+        std::string title = "Arcade Menu (Ncurses)";
+        mvprintw(1, (width - title.size()) / 2, "%s", title.c_str());
+
+        std::string info = "Use ↑ ↓ to navigate, Enter to select";
+        mvprintw(3, (width - info.size()) / 2, "%s", info.c_str());
+
+        int startY = height / 2 - games.size() / 2;
+
         for (size_t i = 0; i < games.size(); ++i) {
+            int posX = (width - games[i].size()) / 2;
             if ((int)i == highlight)
                 attron(A_REVERSE);
-            mvprintw(3 + i, 4, games[i].c_str());
+            mvprintw(startY + i, posX, "%s", games[i].c_str());
             if ((int)i == highlight)
                 attroff(A_REVERSE);
         }
 
-
         input = getch();
         switch (input) {
             case KEY_UP:
-                highlight--;
-                if (highlight < 0)
-                    highlight = games.size() - 1;
+                highlight = (highlight - 1 + games.size()) % games.size();
                 break;
             case KEY_DOWN:
-                highlight++;
-                if (highlight >= (int)games.size())
-                    highlight = 0;
+                highlight = (highlight + 1) % games.size();
                 break;
             case 10: // Enter key
                 return games[highlight];
         }
+
         refresh();
     }
 }
+
 
 
 extern "C" IGraphical* createInstance() {

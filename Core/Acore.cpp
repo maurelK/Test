@@ -83,16 +83,11 @@ std::pair<std::unique_ptr<T>, void*> Acore::libLoading(const std::string &lib, c
 }
 
 int Acore::RunMenu(std::string default_lib) {
-    if (Graphics_lib.empty()) {
-        std::cerr << "Error: No graphical libraries found" << std::endl;
-        return 84;
-    }
-
-    // Validate default library
+    // Validate default library exists
     auto it = std::find(Graphics_lib.begin(), Graphics_lib.end(), default_lib);
     if (it == Graphics_lib.end()) {
-        std::cerr << "Warning: Default library not found, using first available" << std::endl;
-        default_lib = Graphics_lib[0];
+        std::cerr << "Error: Specified library not found: " << default_lib << std::endl;
+        return 84;
     }
 
     auto [graphic, handle] = libLoading<IGraphical>(default_lib, "createInstance");
@@ -102,6 +97,7 @@ int Acore::RunMenu(std::string default_lib) {
     }
 
     try {
+        graphic->init();
         MenuChoice choice;
         choice.playerName = graphic->getPlayerName();
         choice.selectedGraphic = default_lib;
@@ -113,7 +109,7 @@ int Acore::RunMenu(std::string default_lib) {
             return 84;
         }
 
-        //runGame(choice);
+        runGame(choice);
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         dlclose(handle);
@@ -124,55 +120,42 @@ int Acore::RunMenu(std::string default_lib) {
     return 0;
 }
 
-//void Acore::runGame(const MenuChoice& choice) {
-//    auto [graphic, graphicHandle] = libLoading<IGraphical>(choice.selectedGraphic, "createInstance");
-//    auto [game, gameHandle] = libLoading<IGame>(choice.selectedGame, "createGameInstance");
-//
-//    if (!graphic || !game) {
-//        std::cerr << "Error: Failed to load required libraries" << std::endl;
-//        return;
-//    }
-//
-//    graphic->init();
-//    //game->init();
-//
-//    auto lastTime = std::chrono::high_resolution_clock::now();
-//    bool running = true;
-//
-//    while (running) {
-//        auto currentTime = std::chrono::high_resolution_clock::now();
-//        float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
-//        lastTime = currentTime;
-//
-//        // Handle input
-//        int input = graphic->getInput();
-//        if (input == 'q') {
-//            running = false;
-//        } else {
-// //           game->handleInput(input);
-//        }
-//
-//        // Update game state
-//        //game->update(deltaTime);
-//
-//        // Render
-//        graphic->clear();
-//        auto drawables = game->getDrawables();
-//        for (const auto& drawable : drawables) {
-//            graphic->draw(drawable);
-//        }
-//        graphic->refresh();
-//
-//        // Check game over
-//        if (game->isGameOver()) {
-//            running = false;
-//        }
-//    }
-//
-//    saveScore(choice.selectedGame, choice.playerName, game->getScore());
-//    dlclose(gameHandle);
-//    dlclose(graphicHandle);
-//}
+
+void Acore::runGame(const MenuChoice& choice) {
+    auto [graphic, graphicHandle] = libLoading<IGraphical>(choice.selectedGraphic, "createInstance");
+    auto [game, gameHandle] = libLoading<IGame>(choice.selectedGame, "createGameInstance");
+
+    if (!graphic || !game) {
+        std::cerr << "Error: Failed to load required libraries" << std::endl;
+        return;
+    }
+
+    graphic->init();
+    game->init();
+
+    bool running = true;
+    while (running) {
+        int input = graphic->getInput();
+        if (input == 'q') {
+            running = false;
+        } else {
+            game->handleInput(input);
+        }
+
+        game->update();
+        graphic->clear();
+        graphic->draw(game->getDisplay());
+        graphic->refresh();
+
+        if (game->isGameOver()) {
+            running = false;
+        }
+    }
+
+    // Save score here
+    dlclose(gameHandle);
+    dlclose(graphicHandle);
+}
 
 //void Acore::saveScore(const std::string& game, const std::string& player, int score) {
 //    std::filesystem::create_directory("scores");
