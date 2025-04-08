@@ -5,24 +5,27 @@
 ## compilation
 ##
 
-NAME	= Core
 
-SRCS	= Acore.cpp	
+NAME = arcade
 
-OBJS	= $(SRCS:.c=.o)
+SRC = Acore.cpp
+OBJ = $(SRC:.cpp=.o)
+
+CXX = g++
+CXXFLAGS = -Wall -Wextra -Werror -std=c++17 -fPIC -I../Graphics -I../Games
+LDFLAGS = -ldl
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-
-	g++ $(SRCS) -o $(NAME)
+$(NAME): $(OBJ)
+	$(CXX) -o $(NAME) $(OBJ) $(LDFLAGS)
 
 clean:
-	rm -rf *.o
+	rm -f $(OBJ)
 
 fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
 
-
+.PHONY: all clean fclean re

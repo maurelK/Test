@@ -132,7 +132,26 @@ void SnakeGame::updateHighScore()
         this->_highScore = this->_score;
     }
 }
-
+const std::vector<std::string>& SnakeGame::getDisplay() const {
+    static std::vector<std::string> display;
+    display.clear();
+    
+    // Create empty grid
+    for (int y = 0; y < 20; y++) {
+        std::string row(30, ' ');
+        display.push_back(row);
+    }
+    
+    // Draw food
+    display[_food.y][_food.x] = 'O';
+    
+    // Draw snake
+    for (const auto& segment : _snake) {
+        display[segment.y][segment.x] = segment == _snake.front() ? 'H' : '#';
+    }
+    
+    return display;
+}
 extern "C" {
     IGame *createGameInstance() {
         return new SnakeGame();

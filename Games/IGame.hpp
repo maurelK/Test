@@ -6,29 +6,21 @@
 */
 
 #ifndef IGAME_HPP
-    #define IGAME_HPP
-    #include <cstddef> 
+#define IGAME_HPP
 
-class IGraphical;
-
-enum GameState {
-    RUNNING,
-    PAUSED,
-    GAME_OVER,
-    MENU
-};
+#include <vector>
+#include <string>
 
 class IGame {
 public:
     virtual ~IGame() = default;
+    
     virtual void init() = 0;
     virtual void update() = 0;
     virtual void handleInput(int input) = 0;
-    virtual GameState getState() const = 0;
-    virtual size_t getScore() const = 0;
-    virtual size_t getHighScore() const = 0;
-    virtual float getElapsedTime() const = 0;
-    virtual float getFrameRate() const = 0;
+    virtual const std::vector<std::string>& getDisplay() const = 0;
+    virtual int getScore() const = 0;
+    virtual bool isGameOver() const = 0;
 };
 
 extern "C" {

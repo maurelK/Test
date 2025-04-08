@@ -50,6 +50,18 @@ int arcade_ncurses::getInput()
     return(getch());
 }
 
+// arcade_ncurses.cpp
+void arcade_ncurses::clear() {
+    ::clear();
+}
+
+void arcade_ncurses::draw(const std::vector<std::string>& display) {
+    for (size_t y = 0; y < display.size(); y++) {
+        for (size_t x = 0; x < display[y].size(); x++) {
+            mvaddch(y, x, display[y][x]);
+        }
+    }
+}
 
 std::string arcade_ncurses::displayMenu(const std::vector<std::string> &games)
 {
