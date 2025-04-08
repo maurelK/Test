@@ -5,23 +5,30 @@
 ## compilation
 ##
 
-NAME	= Graphicals
+NAME1   = ../lib/arcade_ncurses.so
+NAME2   = ../lib/arcade_sdl2.so
 
-SRCS	= arcade_ncurses.cpp
+SRCS1   = arcade_ncurses.cpp
+SRCS2   = arcade_sdl2.cpp
 
-OBJS	= $(SRCS:.cpp=.o)  # Correcting this to handle .cpp files
+OBJS1   = $(SRCS1:.cpp=.o)
+OBJS2   = $(SRCS2:.cpp=.o)
 
-all: $(NAME)
+CXX     = g++
+CXXFLAGS = -fPIC
 
-$(NAME): $(OBJS)
-	g++ -shared -o ../lib/arcade_ncurses.so -fPIC $(SRCS) -lncurses  # Use OBJS instead of SRCS
+all: $(NAME1) $(NAME2)
+
+$(NAME1): $(SRCS1)
+	$(CXX) $(CXXFLAGS) -shared -o $@ $^ -lncurses
+
+$(NAME2): $(SRCS2)
+	$(CXX) $(CXXFLAGS) -shared -o $@ $^ $(sdl2-config --cflags --libs)
 
 clean:
 	rm -rf *.o
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME1) $(NAME2)
 
 re: fclean all
-
-

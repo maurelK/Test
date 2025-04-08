@@ -1,11 +1,10 @@
 ##
-## EPITECH PROJECT, 2023
+## EPITECH PROJECT, 2025
 ## my_Makefile
 ## File description:
 ## compilation
 ##
 
-# Main Makefile
 NAME = arcade
 
 CXX = g++

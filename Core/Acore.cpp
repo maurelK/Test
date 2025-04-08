@@ -1,137 +1,210 @@
 #include "Acore.hpp"
 
-int Acore::libRead(const std::string &path)
-{
-    DIR *dir;
-    struct dirent *ent;
-
-    dir = opendir(path.c_str());
+int Acore::libRead(const std::string &path) {
+    DIR *dir = opendir(path.c_str());
     if (!dir) {
-        std::cerr << "Could not open directory: " << path << std::endl;
+        std::cerr << "Error: Could not open directory: " << path << std::endl;
         return 84;
     }
-    while((ent = readdir(dir)) != NULL) {
-        std::string filename;
-        filename = ent->d_name;
-        std::string filename_comp;
-        //if (filename.substr(filename.size() - 3) == ".so") {
+
+    struct dirent *ent;
+    while ((ent = readdir(dir)) != nullptr) {
+        std::string filename = ent->d_name;
         if (filename.size() > 3 && filename.substr(filename.size() - 3) == ".so") {
-            filename_comp = path + "/" + filename;
-        
-            if (Graphical_lib(filename_comp) == true) {
-                Graphics_lib.push_back(filename_comp);
-            } else if (Game_lib(filename_comp) == true) {
-                Games_lib.push_back(filename_comp);
+            std::string fullPath = path + "/" + filename;
+            
+            if (isGraphicalLib(fullPath)) {
+                Graphics_lib.push_back(fullPath);
+            } else if (isGameLib(fullPath)) {
+                Games_lib.push_back(fullPath);
             }
         }
     }
     closedir(dir);
+    //loadScores();
     return 0;
 }
 
-bool Acore::Graphical_lib(const std::string &filename_comp)
+bool Acore::isGraphicalLib(const std::string &filename)
 {
-    void *handle = dlopen(filename_comp.c_str(), RTLD_LAZY);
+    void *handle = dlopen(filename.c_str(), RTLD_LAZY);
     if (!handle) {
+        std::cerr << "dlopen failed for " << filename << ": " << dlerror() << std::endl;
         return false;
     }
+
     void *sym = dlsym(handle, "createInstance");
     if (!sym) {
+        std::cerr << "dlsym failed for " << filename << ": " << dlerror() << std::endl;
         dlclose(handle);
         return false;
     }
+
     dlclose(handle);
     return true;
 }
 
-bool Acore::Game_lib(const std::string &filename_comp)
-{
-    void *handle = dlopen(filename_comp.c_str(), RTLD_LAZY);
+bool Acore::isGameLib(const std::string &filename) {
+    void *handle = dlopen(filename.c_str(), RTLD_LAZY);
     if (!handle) {
+        std::cerr << "dlopen failed for " << filename << ": " << dlerror() << std::endl;
         return false;
     }
+
     void *sym = dlsym(handle, "createGameInstance");
     if (!sym) {
+        std::cerr << "dlsym failed for " << filename << ": " << dlerror() << std::endl;
         dlclose(handle);
         return false;
     }
+
     dlclose(handle);
     return true;
 }
 
-// Improved libLoading in Acore.cpp
 template <typename T>
-std::pair<T*, void*> Acore::libLoading(const std::string &lib, const std::string &symbol)
-{
+std::pair<std::unique_ptr<T>, void*> Acore::libLoading(const std::string &lib, const std::string &symbol) {
     void *handle = dlopen(lib.c_str(), RTLD_LAZY);
     if (!handle) {
-        std::cerr << "dlopen error: " << dlerror() << std::endl;
+        std::cerr << "Error: dlopen failed: " << dlerror() << std::endl;
         return {nullptr, nullptr};
     }
 
-    dlerror(); // Clear any existing error
-    typedef T* (*CreateFunc)();
-    CreateFunc createFunc = (CreateFunc)dlsym(handle, symbol.c_str());
+    dlerror(); // Clear existing errors
+    auto createFunc = reinterpret_cast<T*(*)()>(dlsym(handle, symbol.c_str()));
     
-    const char *dlsym_error = dlerror();
-    if (dlsym_error) {
-        std::cerr << "dlsym error: " << dlsym_error << std::endl;
+    if (const char* error = dlerror()) {
+        std::cerr << "Error: dlsym failed: " << error << std::endl;
         dlclose(handle);
         return {nullptr, nullptr};
     }
 
-    return {createFunc(), handle};
+    return {std::unique_ptr<T>(createFunc()), handle};
 }
 
-int Acore::RunMenu(std::string default_lib)
-{
+int Acore::RunMenu(std::string default_lib) {
     if (Graphics_lib.empty()) {
-        std::cerr << "No graphical libraries found." << std::endl;
+        std::cerr << "Error: No graphical libraries found" << std::endl;
         return 84;
     }
 
-    // Vérifier si la bibliothèque par défaut est dans la liste des bibliothèques graphiques disponibles
-    bool found = false;
-    for (const auto &lib : Graphics_lib) {
-        if (lib == default_lib) {
-            found = true;
-            break;
-        }
-    }
-
-    if (!found) {
-        std::cerr << "Graphical library " << default_lib << " not found, using the first available one." << std::endl;
-        // Utiliser la première bibliothèque graphique disponible
+    // Validate default library
+    auto it = std::find(Graphics_lib.begin(), Graphics_lib.end(), default_lib);
+    if (it == Graphics_lib.end()) {
+        std::cerr << "Warning: Default library not found, using first available" << std::endl;
         default_lib = Graphics_lib[0];
     }
 
-    IGraphical *graphic = libLoading<IGraphical>(default_lib, "createInstance");
-
+    auto [graphic, handle] = libLoading<IGraphical>(default_lib, "createInstance");
     if (!graphic) {
-        std::cerr << "Failed to load graphical lib: " << default_lib << std::endl;
+        std::cerr << "Error: Failed to load graphical library" << std::endl;
         return 84;
     }
 
-    // Demander le nom du joueur
-    std::string playerName = graphic->getPlayerName();
+    try {
+        MenuChoice choice;
+        choice.playerName = graphic->getPlayerName();
+        choice.selectedGraphic = default_lib;
+        choice.selectedGame = graphic->displayMenu(Games_lib);
 
-    // Afficher le menu et sélectionner un jeu
-    std::string selectedGame = graphic->displayMenu(Games_lib);
+        if (choice.selectedGame.empty()) {
+            std::cerr << "Error: No game selected" << std::endl;
+            dlclose(handle);
+            return 84;
+        }
 
-    // Sauvegarder les choix dans MenuChoice
-    MenuChoice choice;
-    choice.selectedGame = selectedGame;
-    choice.selectedGraphic = default_lib;
-    choice.playerName = playerName;
+        //runGame(choice);
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        dlclose(handle);
+        return 84;
+    }
 
-    // Afficher les informations sélectionnées
-    std::cout << "Chosen Game: " << choice.selectedGame << std::endl;
-    std::cout << "Chosen Graphic Mode: " << choice.selectedGraphic << std::endl;
-    std::cout << "Player: " << choice.playerName << std::endl;
-
+    dlclose(handle);
     return 0;
 }
 
+//void Acore::runGame(const MenuChoice& choice) {
+//    auto [graphic, graphicHandle] = libLoading<IGraphical>(choice.selectedGraphic, "createInstance");
+//    auto [game, gameHandle] = libLoading<IGame>(choice.selectedGame, "createGameInstance");
+//
+//    if (!graphic || !game) {
+//        std::cerr << "Error: Failed to load required libraries" << std::endl;
+//        return;
+//    }
+//
+//    graphic->init();
+//    //game->init();
+//
+//    auto lastTime = std::chrono::high_resolution_clock::now();
+//    bool running = true;
+//
+//    while (running) {
+//        auto currentTime = std::chrono::high_resolution_clock::now();
+//        float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+//        lastTime = currentTime;
+//
+//        // Handle input
+//        int input = graphic->getInput();
+//        if (input == 'q') {
+//            running = false;
+//        } else {
+// //           game->handleInput(input);
+//        }
+//
+//        // Update game state
+//        //game->update(deltaTime);
+//
+//        // Render
+//        graphic->clear();
+//        auto drawables = game->getDrawables();
+//        for (const auto& drawable : drawables) {
+//            graphic->draw(drawable);
+//        }
+//        graphic->refresh();
+//
+//        // Check game over
+//        if (game->isGameOver()) {
+//            running = false;
+//        }
+//    }
+//
+//    saveScore(choice.selectedGame, choice.playerName, game->getScore());
+//    dlclose(gameHandle);
+//    dlclose(graphicHandle);
+//}
+
+//void Acore::saveScore(const std::string& game, const std::string& player, int score) {
+//    std::filesystem::create_directory("scores");
+//    std::ofstream file("scores/" + game + ".scores", std::ios::app);
+//    
+//    if (file.is_open()) {
+//        file << player << ":" << score << "\n";
+//    } else {
+//        std::cerr << "Warning: Failed to save score for " << game << std::endl;
+//    }
+//}
+//
+//void Acore::loadScores() {
+//    if (!std::filesystem::exists("scores")) return;
+//
+//    for (const auto& entry : std::filesystem::directory_iterator("scores")) {
+//        if (entry.path().extension() == ".scores") {
+//            std::ifstream file(entry.path());
+//            std::string gameName = entry.path().stem().string();
+//            std::string line;
+//
+//            while (std::getline(file, line)) {
+//                size_t pos = line.find(':');
+//                if (pos != std::string::npos) {
+//                    std::string player = line.substr(0, pos);
+//                    int score = std::stoi(line.substr(pos + 1));
+//                    scores[gameName].push_back(score);
+//                }
+//            }
+//        }
+//    }
+//}
 
 int main(int ac, char **av)
 {
@@ -141,6 +214,8 @@ int main(int ac, char **av)
     }
     Acore acore;
     int retour = acore.libRead("lib");
+    //ici je suis conscient que je dois ajouter un cas de ;
+    //verification pour le lib car on peut passer un repertoire qui ne marche pas
     if (retour == 84) {
         exit(84);
     }

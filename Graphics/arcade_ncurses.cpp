@@ -1,41 +1,57 @@
 #include "arcade_ncurses.hpp"
 
-arcade_ncuses::arcade_ncuses()
-{}
 
-arcade_ncuses::~arcade_ncuses()
-{
+
+arcade_ncurses::arcade_ncurses() {
+    initscr();
+    cbreak();
+    noecho();
+    keypad(stdscr, TRUE);
+    curs_set(0);
+    timeout(100);
+}
+
+void arcade_ncurses::init() {
+    // si nécessaire, mets le code que tu veux
+}
+
+arcade_ncurses::~arcade_ncurses() {
     endwin();
 }
 
-void arcade_ncuses::init()
-{
-    initscr();
+std::string arcade_ncurses::getPlayerName() {
+    echo();
+    char name[256];
+    mvprintw(0, 0, "Enter your name: ");
+    getnstr(name, sizeof(name)-1);
+    noecho();
+    return std::string(name);
 }
 
-void arcade_ncuses::draw()
+
+void arcade_ncurses::draw()
 {
     clear();
     mvprintw(200, 500, "Arcade - Ncurses");
 }
 
-void arcade_ncuses::refresh()
+void arcade_ncurses::refresh()
 {
-    ::refresh;
+    ::refresh();
 }
 
-void arcade_ncuses::close()
+void arcade_ncurses::close()
 {
     endwin();
 }
 
-int arcade_ncuses::getInput()
+int arcade_ncurses::getInput()
 {
     return(getch());
 }
 
 
-std::string arcade_ncuses::displayMenu(const std::vector<std::string> &games)
+std::string arcade_ncurses::displayMenu(const std::vector<std::string> &games)
 {
     int highlight = 0;
     int choice = 0;
@@ -54,6 +70,7 @@ std::string arcade_ncuses::displayMenu(const std::vector<std::string> &games)
             if ((int)i == highlight)
                 attroff(A_REVERSE);
         }
+
 
         input = getch();
         switch (input) {
@@ -76,5 +93,5 @@ std::string arcade_ncuses::displayMenu(const std::vector<std::string> &games)
 
 
 extern "C" IGraphical* createInstance() {
-    return new arcade_ncuses();
+    return new arcade_ncurses();
 }

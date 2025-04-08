@@ -6,16 +6,16 @@
 */
 
 #ifndef AR_NCURSES
-#define AR_NCURSES
+    #define AR_NCURSES
 
     #include <string>
     #include <iostream>
     #include "IGraphical.hpp"
     #include <ncurses.h>
-class arcade_ncuses : public IGraphical {
+class arcade_ncurses : public IGraphical {
 public:
-    arcade_ncuses();
-    ~arcade_ncuses();
+    arcade_ncurses();
+    ~arcade_ncurses();
     void init() override;
     void draw() override;
     void refresh();
