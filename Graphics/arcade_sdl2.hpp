@@ -16,14 +16,11 @@ public:
     ~SDLGraphical() override;
 
     void init() override;
-    void draw() override;
+    void draw(const std::vector<std::string>& display) override;
     void refresh() override;
     void close() override;
     int getInput() override;
-    //void clear() override;
-    //void drawTile(int x, int y, char c, int color) override;
-    //void drawText(int x, int y, const std::string &text, int color) override;
-    //void initColorPairs() override;
+    void clear() override;
     std::string getPlayerName() override;
     std::string displayMenu(const std::vector<std::string> &games)override;
 private:

@@ -1,5 +1,10 @@
 #include "Acore.hpp"
-
+#include <dlfcn.h>
+#include <iostream>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <algorithm>
 int Acore::libRead(const std::string &path) {
     DIR *dir = opendir(path.c_str());
     if (!dir) {
@@ -17,11 +22,23 @@ int Acore::libRead(const std::string &path) {
                 Graphics_lib.push_back(fullPath);
             } else if (isGameLib(fullPath)) {
                 Games_lib.push_back(fullPath);
+            } else {
+                std::cerr << "Warning: " << filename << " is not a valid game or graphics library" << std::endl;
             }
         }
     }
     closedir(dir);
-    //loadScores();
+
+    if (Graphics_lib.empty()) {
+        std::cerr << "Error: No valid graphics libraries found in " << path << std::endl;
+        return 84;
+    }
+
+    if (Games_lib.empty()) {
+        std::cerr << "Error: No valid game libraries found in " << path << std::endl;
+        return 84;
+    }
+
     return 0;
 }
 
@@ -33,7 +50,7 @@ bool Acore::isGraphicalLib(const std::string &filename)
         return false;
     }
 
-    void *sym = dlsym(handle, "createInstance");
+    void *sym = dlsym(handle, "createGraphicalInstance");
     if (!sym) {
         std::cerr << "dlsym failed for " << filename << ": " << dlerror() << std::endl;
         dlclose(handle);
@@ -64,9 +81,9 @@ bool Acore::isGameLib(const std::string &filename) {
 
 template <typename T>
 std::pair<std::unique_ptr<T>, void*> Acore::libLoading(const std::string &lib, const std::string &symbol) {
-    void *handle = dlopen(lib.c_str(), RTLD_LAZY);
+    void *handle = dlopen(lib.c_str(), RTLD_NOW | RTLD_GLOBAL);
     if (!handle) {
-        std::cerr << "Error: dlopen failed: " << dlerror() << std::endl;
+        std::cerr << "Error: dlopen failed for " << lib << ": " << dlerror() << std::endl;
         return {nullptr, nullptr};
     }
 
@@ -74,12 +91,18 @@ std::pair<std::unique_ptr<T>, void*> Acore::libLoading(const std::string &lib, c
     auto createFunc = reinterpret_cast<T*(*)()>(dlsym(handle, symbol.c_str()));
     
     if (const char* error = dlerror()) {
-        std::cerr << "Error: dlsym failed: " << error << std::endl;
+        std::cerr << "Error: dlsym failed for symbol " << symbol << " in " << lib << ": " << error << std::endl;
         dlclose(handle);
         return {nullptr, nullptr};
     }
 
-    return {std::unique_ptr<T>(createFunc()), handle};
+    try {
+        return {std::unique_ptr<T>(createFunc()), handle};
+    } catch (const std::exception& e) {
+        std::cerr << "Error: Factory function failed for " << lib << ": " << e.what() << std::endl;
+        dlclose(handle);
+        return {nullptr, nullptr};
+    }
 }
 
 int Acore::RunMenu(std::string default_lib) {
@@ -90,7 +113,7 @@ int Acore::RunMenu(std::string default_lib) {
         return 84;
     }
 
-    auto [graphic, handle] = libLoading<IGraphical>(default_lib, "createInstance");
+    auto [graphic, handle] = libLoading<IGraphical>(default_lib, "createGraphicalInstance");
     if (!graphic) {
         std::cerr << "Error: Failed to load graphical library" << std::endl;
         return 84;
@@ -122,7 +145,7 @@ int Acore::RunMenu(std::string default_lib) {
 
 
 void Acore::runGame(const MenuChoice& choice) {
-    auto [graphic, graphicHandle] = libLoading<IGraphical>(choice.selectedGraphic, "createInstance");
+    auto [graphic, graphicHandle] = libLoading<IGraphical>(choice.selectedGraphic, "createGraphicalInstance");
     auto [game, gameHandle] = libLoading<IGame>(choice.selectedGame, "createGameInstance");
 
     if (!graphic || !game) {
@@ -191,16 +214,24 @@ void Acore::runGame(const MenuChoice& choice) {
 
 int main(int ac, char **av)
 {
-    if (ac < 2) {
-        std::cerr << "Na be two arguments my gee\n";
+    if (ac != 2) {
+        std::cerr << "Usage: " << av[0] << " <graphics_library_path>" << std::endl;
         return 84;
     }
-    Acore acore;
-    int retour = acore.libRead("lib");
-    //ici je suis conscient que je dois ajouter un cas de ;
-    //verification pour le lib car on peut passer un repertoire qui ne marche pas
-    if (retour == 84) {
-        exit(84);
+
+    std::string libPath = av[1];
+    FILE* file = fopen(libPath.c_str(), "r");
+    if (!file) {
+        std::cerr << "Error: Library not found: " << libPath << std::endl;
+        return 84;
     }
-    return(acore.RunMenu(av[1]));
+    fclose(file);
+
+    Acore acore;
+    int status = acore.libRead("lib");
+    if (status == 84) {
+        return 84;
+    }
+
+    return acore.RunMenu(libPath);
 }

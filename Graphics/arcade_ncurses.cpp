@@ -29,11 +29,6 @@ std::string arcade_ncurses::getPlayerName() {
 }
 
 
-void arcade_ncurses::draw()
-{
-    clear();
-    mvprintw(200, 500, "Arcade - Ncurses");
-}
 
 void arcade_ncurses::refresh()
 {
@@ -112,6 +107,6 @@ std::string arcade_ncurses::displayMenu(const std::vector<std::string> &games)
 
 
 
-extern "C" IGraphical* createInstance() {
+extern "C" IGraphical* createGraphicalInstance() {
     return new arcade_ncurses();
 }

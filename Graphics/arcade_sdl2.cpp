@@ -1,12 +1,19 @@
 /*
 ** EPITECH PROJECT, 2025
-** Cpp
+** SDL2 Graphics Implementation 
 ** File description:
-** Hpp
+** Complete SDL2 graphics library for Arcade
 */
 #include "arcade_sdl2.hpp"
+#include <SDL2/SDL_ttf.h>
+#include <iostream>
+#include <vector>
+#include <string>
 SDLGraphical::SDLGraphical() : window(nullptr), renderer(nullptr), running(true) 
 {
+    if (TTF_Init() == -1) {
+        std::cerr << "TTF_Init failed: " << TTF_GetError() << std::endl;
+    }
 }
 
 SDLGraphical::~SDLGraphical() 
@@ -34,13 +41,47 @@ void SDLGraphical::init()
     }
 }
 
-void SDLGraphical::draw() 
+void SDLGraphical::draw(const std::vector<std::string>& display) 
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    SDL_Rect rect = {100, 100, 50, 50};
-    SDL_RenderFillRect(renderer, &rect);
+
+    // Calculate cell size based on display dimensions
+    int cellSize = 20;
+    int startX = (800 - (display[0].size() * cellSize)) / 2;
+    int startY = (600 - (display.size() * cellSize)) / 2;
+
+    for (size_t y = 0; y < display.size(); y++) {
+        for (size_t x = 0; x < display[y].size(); x++) {
+            char c = display[y][x];
+            SDL_Rect rect = {
+                static_cast<int>(startX + (x * cellSize)),
+                static_cast<int>(startY + (y * cellSize)),
+                cellSize,
+                cellSize
+            };
+
+            // Set color based on character
+            switch (c) {
+                case '#': // Walls
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+                    break;
+                case 'O': // Player
+                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                    break;
+                case 'X': // Enemies/obstacles
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                    break;
+                case '.': // Collectibles
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                    break;
+                default: // Background
+                    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+            }
+
+            SDL_RenderFillRect(renderer, &rect);
+        }
+    }
 }
 
 void SDLGraphical::refresh() 
@@ -73,33 +114,31 @@ int SDLGraphical::getInput()
     return 0;
 }
 
-//void SDLGraphical::clear() 
-//{
-//    SDL_RenderClear(renderer);
-//}
-//
-//void SDLGraphical::drawTile(int x, int y, char c, int color) 
-//{
-//    SDL_Rect rect = { x * 20, y * 20, 20, 20 };
-//    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-//    SDL_RenderFillRect(renderer, &rect);
-//}
-//
-//void SDLGraphical::drawText(int x, int y, const std::string &text, int color) 
-//{
-//    std::cout << "drawText comme " << x << "," << y << ": " << text << std::endl;
-//}
-//
-//void SDLGraphical::initColorPairs() 
-//{
-//}
-
-extern "C" IGraphical* createInstance() 
+void SDLGraphical::clear() 
 {
-    return new SDLGraphical();
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+}
+std::string SDLGraphical::getPlayerName() 
+{
+    // Implémentation basique - à améliorer avec une interface SDL
+    return "Player1";
 }
 
-//extern "C" void deleteInstance(IGraphical* lib) 
-//{
-//    delete lib;
-//}
+std::string SDLGraphical::displayMenu(const std::vector<std::string>& games)
+{
+    // Implémentation basique - à améliorer
+    return games.empty() ? "" : games[0];
+}
+
+extern "C" {
+    __attribute__((visibility("default"))) IGraphical* createGraphicalInstance() 
+    {
+        return new SDLGraphical();
+    }
+
+    __attribute__((visibility("default"))) void deleteInstance(IGraphical* lib) 
+    {
+        delete lib;
+    }
+}

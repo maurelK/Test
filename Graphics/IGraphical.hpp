@@ -25,6 +25,6 @@ public:
     virtual std::string displayMenu(const std::vector<std::string>& games) = 0;
 };
 
-extern "C" IGraphical* createInstance();
+extern "C" IGraphical* createGraphicalInstance();
 
 #endif

@@ -23,13 +23,12 @@ public:
     void update() override;
     void handleInput(int input) override;
     
-    GameState getState() const override { return _state; }
-    size_t getScore() const override { return _score; }
-    size_t getHighScore() const override { return _highScore; }
-    float getElapsedTime() const override { return _elapsedTime; }
-    float getFrameRate() const override { return _frameRate; }
+    const std::vector<std::string>& getDisplay() const override;
+    int getScore() const override { return static_cast<int>(_score); }
+    bool isGameOver() const override;
 
 private:
+    enum GameState { RUNNING, GAME_OVER };
     enum Direction { UP, DOWN, LEFT, RIGHT };
     
     struct Position {

@@ -17,10 +17,11 @@ public:
     arcade_ncurses();
     ~arcade_ncurses();
     void init() override;
-    void draw() override;
-    void refresh();
-    void close();
-    int getInput();
+    void clear() override;
+    void draw(const std::vector<std::string>& display) override;
+    void refresh() override;
+    void close() override;
+    int getInput() override;
     std::string getPlayerName() override;
     std::string displayMenu(const std::vector<std::string> &games)override;
 };

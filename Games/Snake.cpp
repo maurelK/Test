@@ -40,7 +40,7 @@ void SnakeGame::update()
         this->_currentDir = this->_nextDir;
         moveSnake();
         if (checkCollision()) {
-            this->_state = GAME_OVER;
+            this->_state = SnakeGame::GAME_OVER;
             updateHighScore();
             return;
         }
@@ -123,13 +123,37 @@ void SnakeGame::growSnake()
 void SnakeGame::resetGame()
 {
     init();
-    this->_state = RUNNING;
+    this->_state = SnakeGame::RUNNING;
 }
 
 void SnakeGame::updateHighScore()
 {
     if (this->_score > this->_highScore) {
         this->_highScore = this->_score;
+    }
+}
+
+bool SnakeGame::isGameOver() const {
+    return _state == SnakeGame::GAME_OVER;
+}
+
+void SnakeGame::handleInput(int input) {
+    switch (input) {
+        case 0: // UP
+            if (_currentDir != DOWN) _nextDir = UP;
+            break;
+        case 1: // DOWN
+            if (_currentDir != UP) _nextDir = DOWN;
+            break;
+        case 2: // LEFT
+            if (_currentDir != RIGHT) _nextDir = LEFT;
+            break;
+        case 3: // RIGHT
+            if (_currentDir != LEFT) _nextDir = RIGHT;
+            break;
+        case 4: // RESET
+            resetGame();
+            break;
     }
 }
 const std::vector<std::string>& SnakeGame::getDisplay() const {
@@ -153,11 +177,13 @@ const std::vector<std::string>& SnakeGame::getDisplay() const {
     return display;
 }
 extern "C" {
-    IGame *createGameInstance() {
+    __attribute__((visibility("default"))) IGame* createGameInstance() 
+    {
         return new SnakeGame();
     }
 
-    void deleteGameInstance(IGame *game) {
+    __attribute__((visibility("default"))) void deleteGameInstance(IGame* game) 
+    {
         delete game;
     }
 }

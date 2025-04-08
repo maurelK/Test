@@ -38,7 +38,7 @@ public:
     int RunMenu(std::string default_lib);
     void runGame(const MenuChoice& choice);
 
-//private:
+private:
     std::vector<std::string> Graphics_lib;
     std::vector<std::string> Games_lib;
     std::map<std::string, std::vector<int>> scores;

@@ -25,7 +25,7 @@ public:
 
 extern "C" {
     IGame* createGameInstance();
-    void deleteGameInstance(IGame* game);
+    void deleteInstance(IGame* game);
 }
 
 #endif

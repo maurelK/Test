@@ -12,7 +12,7 @@ SRC = Acore.cpp
 OBJ = $(SRC:.cpp=.o)
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++17 -fPIC -I../Graphics -I../Games
+CXXFLAGS = -Wall -Wextra -Werror -std=c++20 -fPIC -I../Graphics -I../Games -I.
 LDFLAGS = -ldl
 
 all: $(NAME)
