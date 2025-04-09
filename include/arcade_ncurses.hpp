@@ -23,8 +23,9 @@ public:
     int getInput() override;
     std::string getPlayerName() override;
     //std::string displayMenu(const std::vector<std::string>& games, const std::vector<std::string>& libs) override;
-    std::string displayMenu(const std::vector<std::string>& games) override;
-
+    std::string displayMenu(const std::vector<std::string>& games, 
+        const std::vector<std::string>& graphics,
+        const std::vector<std::pair<std::string, int>>& scores);
 private:
     void initColors();
 };

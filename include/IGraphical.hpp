@@ -16,13 +16,39 @@
 class IGraphical
 {
 public:
+    struct GameEntity {
+        int x;
+        int y;
+        int width;
+        int height;
+        int color;
+        char symbol;
+    };
+
+    struct GameText {
+        int x;
+        int y;
+        std::string content;
+        int color;
+        
+        GameText(int x, int y, std::string content, int color)
+            : x(x), y(y), content(std::move(content)), color(color) {}
+    };
+
+    struct RenderData {
+        std::vector<GameEntity> entities;
+        std::vector<GameText> texts;
+    };
+
     virtual ~IGraphical() = default;
     virtual void init() = 0;
     virtual void close() = 0;
     virtual void render(const RenderData &data) = 0;
     virtual int getInput() = 0;
     virtual std::string getPlayerName() = 0;
-    virtual std::string displayMenu(const std::vector<std::string>& games) = 0;
+    virtual std::string displayMenu(const std::vector<std::string>& games, 
+        const std::vector<std::string>& graphics,
+        const std::vector<std::pair<std::string, int>>& scores) = 0;
 
 };
 
