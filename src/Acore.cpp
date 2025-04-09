@@ -37,8 +37,8 @@ void Acore::loadAvailableLibs()
         }
     }
 
-    std::sort(this->state.gameLibs.begin(), this->state.gameLibs.end());
-    std::sort(this->state.graphicLibs.begin(), this->state.graphicLibs.end());
+    //std::sort(this->state.gameLibs.begin(), this->state.gameLibs.end());
+    //std::sort(this->state.graphicLibs.begin(), this->state.graphicLibs.end());
 }
 
 void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
@@ -111,7 +111,7 @@ void Acore::updateMenuRender(IGraphical::RenderData& renderData)
     renderData.texts.clear();
 
     // Title
-    renderData.texts.push_back(IGraphical::GameText{10, 2, /*content*/ "ARCADE MENU", 1});
+    renderData.texts.push_back(IGraphical::GameText{10, 2, /*content*/ "-----------------------------ARCADE MENU------------------------------------", 1});
 
     // Games list
     for (size_t i = 0; i < this->state.gameLibs.size(); ++i) {
@@ -165,4 +165,14 @@ void Acore::loadScores()
     }
     std::sort(this->state.scores.begin(), this->state.scores.end(), 
             [](auto& a, auto& b) { return a.second > b.second; });
+}
+
+void Acore::handleNameInput(int input)
+{
+    if (input == 127 && !state.playerName.empty()) { // Backspace
+        state.playerName.pop_back();
+    }
+    else if (isalnum(input)) {
+        state.playerName += static_cast<char>(input);
+    }
 }
