@@ -7,7 +7,7 @@
 
 NAME        = arcade
 CXX         = g++
-CXXFLAGS    = -Wall -Wextra -std=c++17 -fPIC -fno-gnu-unique
+CXXFLAGS    = -fPIC -fno-gnu-unique
 LDFLAGS     = -ldl
 SHARED      = -shared
 
@@ -20,9 +20,9 @@ CORE_SRCS   = $(SRC_DIR)/Acore.cpp $(SRC_DIR)/main.cpp
 CORE_OBJS   = $(CORE_SRCS:.cpp=.o)
 CORE_TARGET = $(BIN_DIR)/$(NAME)
 
-GRAPHICALS  = ncurses sdl
+GRAPHICALS  = ncurses 
 NCURSES_LIB = $(LIB_DIR)/arcade_ncurses.so
-SDL_LIB     = $(LIB_DIR)/arcade_sdl.so
+#SDL_LIB     = $(LIB_DIR)/arcade_sdl.so
 
 GAMES       = snake nibbler
 SNAKE_LIB   = $(LIB_DIR)/arcade_snake.so
@@ -43,9 +43,9 @@ ncurses:
 	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_ncurses.cpp -o $(NCURSES_LIB) -lncurses -I$(INC_DIR)
 	@echo "✓ Ncurses library compiled"
 
-sdl:
-	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_sdl.cpp -o $(SDL_LIB) -lSDL2 -I$(INC_DIR)
-	@echo "✓ SDL library compiled"
+#sdl:
+#	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_sdl.cpp -o $(SDL_LIB) -lSDL2 -I$(INC_DIR)
+#	@echo "✓ SDL library compiled"
 
 games: $(GAMES)
 

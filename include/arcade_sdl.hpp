@@ -5,6 +5,8 @@
 ** SDL implementation of IGraphical
 */
 
+
+
 #ifndef ARCADE_SDL_HPP
 #define ARCADE_SDL_HPP
 

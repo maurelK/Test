@@ -23,6 +23,8 @@ public:
         int height;
         int color;
         char symbol;
+        std::string spritePath; // Path to sprite image
+        bool useSprite;         // Whether to use sprite instead of primitive
     };
 
     struct GameText {

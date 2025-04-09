@@ -1,33 +1,48 @@
 #include "../include/arcade_ncurses.hpp"
 #include "arcade_ncurses.hpp"
 
-ArcadeNcurses::ArcadeNcurses()
+
+ArcadeNcurses::ArcadeNcurses() 
 {
     initColors();
 }
 
-ArcadeNcurses::~ArcadeNcurses()
+ArcadeNcurses::~ArcadeNcurses() 
 {
     close();
 }
 
-void ArcadeNcurses::close()
-{
-    endwin();
-}
-void ArcadeNcurses::init()
+void ArcadeNcurses::init() 
 {
     initscr();
+    if (LINES < 24 || COLS < 80) {
+        endwin();
+        throw std::runtime_error("Terminal too small! Minimum 80x24");
+    }
+    
+    if (!has_colors()) {
+        endwin();
+        throw std::runtime_error("Terminal doesn't support colors");
+    }
+
     cbreak();
-    noecho(); 
-    keypad(stdscr, TRUE); 
+    noecho();
+    keypad(stdscr, TRUE);
     curs_set(0);
     timeout(100);
+    start_color();
+    initColors();
+}
+
+void ArcadeNcurses::close() 
+{
+    endwin();
 }
 
 void ArcadeNcurses::initColors()
 {
     start_color();
+    use_default_colors();
     init_pair(1, COLOR_RED, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
     init_pair(3, COLOR_YELLOW, COLOR_BLACK);
@@ -35,103 +50,117 @@ void ArcadeNcurses::initColors()
     init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
 }
 
-void ArcadeNcurses::render(const RenderData &data)
+void ArcadeNcurses::render(const RenderData& data) 
 {
-    clear();
-    for (const auto &entity : data.entities) {
+    wclear(stdscr);
+    
+    // Render entities (game objects)
+    for (const auto& entity : data.entities) {
         attron(COLOR_PAIR(entity.color));
         mvaddch(entity.y, entity.x, entity.symbol);
         attroff(COLOR_PAIR(entity.color));
     }
-
-    for (const auto &text : data.texts) {
-        attron(COLOR_PAIR(4));
+    
+    // Render texts (UI elements)
+    for (const auto& text : data.texts) {
+        attron(COLOR_PAIR(text.color));
         mvprintw(text.y, text.x, "%s", text.content.c_str());
-        attroff(COLOR_PAIR(4));
+        attroff(COLOR_PAIR(text.color));
     }
-    refresh();
+    
+    wnoutrefresh(stdscr);
+    doupdate();
 }
 
-int ArcadeNcurses::getInput()
+int ArcadeNcurses::getInput() 
 {
     return getch();
 }
 
-std::string ArcadeNcurses::getPlayerName()
+std::string ArcadeNcurses::getPlayerName() 
 {
     echo();
-    char name[128];
-    mvprintw(0, 0, "Enter your name: ");
-    getnstr(name, sizeof(name) - 1);
+    curs_set(1);
+    
+    char name[32];
+    mvprintw(LINES/2, (COLS-30)/2, "Enter your name (max 30 chars): ");
+    clrtoeol();
+    move(LINES/2 + 1, (COLS-30)/2);
+    
+    int ch;
+    int pos = 0;
+    while ((ch = getch()) != '\n' && pos < 30) {
+        if (ch == 127 || ch == KEY_BACKSPACE) {
+            if (pos > 0) {
+                pos--;
+                addch('\b');
+                clrtoeol();
+            }
+        }
+        else if (isalnum(ch) || ch == ' ') {
+            name[pos++] = ch;
+            addch(ch);
+        }
+    }
+    name[pos] = '\0';
+    
     noecho();
+    curs_set(0);
     return std::string(name);
 }
 
-std::string ArcadeNcurses::displayMenu(const std::vector<std::string>& games, 
+std::string ArcadeNcurses::displayMenu(
+    const std::vector<std::string>& games,
     const std::vector<std::string>& graphics,
     const std::vector<std::pair<std::string, int>>& scores)
 {
-WINDOW* gameWin = newwin(15, 40, 2, 2);
-WINDOW* graphicWin = newwin(15, 40, 2, 45);
-WINDOW* scoreWin = newwin(10, 80, 18, 2);
-WINDOW* nameWin = newwin(3, 40, 20, 2);
+    // Create windows
+    WINDOW* gameWin = newwin(15, 40, 2, 2);
+    WINDOW* graphicWin = newwin(15, 40, 2, 45);
+    WINDOW* scoreWin = newwin(10, 80, 18, 2);
 
-// Afficher les jeux
-wclear(gameWin);
-box(gameWin, 0, 0);
-mvwprintw(gameWin, 1, 1, "Available Games:");
-for (size_t i = 0; i < games.size(); ++i) {
-mvwprintw(gameWin, 3 + i, 2, "%s", games[i].c_str());
+    // Render game list
+    box(gameWin, 0, 0);
+    mvwprintw(gameWin, 1, 1, "Available Games:");
+    for (size_t i = 0; i < games.size(); ++i) {
+        mvwprintw(gameWin, 3 + i, 2, " %s", games[i].c_str());
+    }
+
+    // Render graphics list
+    box(graphicWin, 0, 0);
+    mvwprintw(graphicWin, 1, 1, "Graphics Libraries:");
+    for (size_t i = 0; i < graphics.size(); ++i) {
+        mvwprintw(graphicWin, 3 + i, 2, " %s", graphics[i].c_str());
+    }
+
+    // Render scores
+    box(scoreWin, 0, 0);
+    mvwprintw(scoreWin, 1, 1, "High Scores:");
+    for (size_t i = 0; i < scores.size() && i < 5; ++i) {
+        mvwprintw(scoreWin, 3 + i, 2, "%2d. %-20s %5d", 
+                i+1, scores[i].first.c_str(), scores[i].second);
+    }
+
+    // Refresh all windows
+    wrefresh(gameWin);
+    wrefresh(graphicWin);
+    wrefresh(scoreWin);
+
+    // Cleanup windows
+    delwin(gameWin);
+    delwin(graphicWin);
+    delwin(scoreWin);
+
+    return ""; // Selection handled by core
 }
 
-// Afficher les libs graphiques
-wclear(graphicWin);
-box(graphicWin, 0, 0);
-mvwprintw(graphicWin, 1, 1, "Graphics Libraries:");
-for (size_t i = 0; i < graphics.size(); ++i) {
-mvwprintw(graphicWin, 3 + i, 2, "%s", graphics[i].c_str());
-}
-
-// Afficher les scores
-wclear(scoreWin);
-box(scoreWin, 0, 0);
-mvwprintw(scoreWin, 1, 1, "High Scores:");
-for (size_t i = 0; i < scores.size(); ++i) {
-mvwprintw(scoreWin, 3 + i, 2, "%s: %d", 
-scores[i].first.c_str(), scores[i].second);
-}
-
-// Gestion des inputs
-keypad(gameWin, TRUE);
-int highlight = 0;
-while (true) {
-// Mettre à jour la sélection
-for (size_t i = 0; i < games.size(); ++i) {
-mvwchgat(gameWin, 3 + i, 2, -1, 
-(i == highlight) ? A_REVERSE : A_NORMAL, 0, NULL);
-}
-wrefresh(gameWin);
-
-int ch = wgetch(gameWin);
-switch (ch) {
-case KEY_UP: highlight = (highlight - 1) % games.size(); break;
-case KEY_DOWN: highlight = (highlight + 1) % games.size(); break;
-case 10: return games[highlight];
-case 27: return "";
-}
-}
-}
-
-
-extern "C"
+// Factory functions
+extern "C" IGraphical* createGraphical() 
 {
-    IGraphical *createGraphical()
-    {
-        return new ArcadeNcurses();
-    }
+    return new ArcadeNcurses();
+}
 
-    void deleteGraphical(IGraphical *graphical)
-    {
-        delete static_cast<ArcadeNcurses *>(graphical);
-    }
+extern "C" void deleteGraphical(IGraphical* graphical) 
+{
+    delete static_cast<ArcadeNcurses*>(graphical);
 }
