@@ -15,7 +15,7 @@ ArcadeNcurses::~ArcadeNcurses()
 void ArcadeNcurses::init() 
 {
     initscr();
-    if (LINES < 24 || COLS < 80) {
+    /*if (LINES < 24 || COLS < 80) {
         endwin();
         throw std::runtime_error("Terminal too small! Minimum 80x24");
     }
@@ -23,7 +23,7 @@ void ArcadeNcurses::init()
     if (!has_colors()) {
         endwin();
         throw std::runtime_error("Terminal doesn't support colors");
-    }
+    }*/
 
     cbreak();
     noecho();

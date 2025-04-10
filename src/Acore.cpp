@@ -41,7 +41,7 @@ void Acore::loadAvailableLibs()
     std::sort(this->state.graphicLibs.begin(), this->state.graphicLibs.end());
 }
 
-void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
+/*void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
     void* newHandle = dlopen(newLib.c_str(), RTLD_LAZY | RTLD_NODELETE);
     if (!newHandle) {
         std::cerr << "Failed to load graphical lib: " << dlerror() << std::endl;
@@ -56,12 +56,12 @@ void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphi
     }
 
     IGraphical* newGraphical = create();
-    /*if (!newGraphical->init()) {
+    if (!newGraphical->init()) {
         std::cerr << "Failed to initialize graphical library" << std::endl;
         delete newGraphical;
         dlclose(newHandle);
         return;
-    }*/
+    }
 
     if (handle) {
         graphical->close();
@@ -70,7 +70,22 @@ void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphi
     
     handle = newHandle;
     graphical = newGraphical;
+}*/
+
+void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
+    if (handle) dlclose(handle);
+    
+    handle = dlopen(newLib.c_str(), RTLD_LAZY);
+    if (!handle) {
+        std::cerr << "Failed to load graphical lib: " << dlerror() << std::endl;
+        return;
+    }
+
+    auto create = reinterpret_cast<IGraphical*(*)()>(dlsym(handle, "createGraphical"));
+    graphical = create();
+    graphical->init();
 }
+
 
 void Acore::runMenu(const std::string& initialLib) {
     if (!isValidLibrary(initialLib, "createGraphical")) {
