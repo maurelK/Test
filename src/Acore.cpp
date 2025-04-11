@@ -112,13 +112,31 @@ void Acore::runMenu(const std::string& initialLib) {
 
     bool running = true;
     while (running) {
-        IGraphical::RenderData renderData;
-        updateMenuRender(renderData);
-        graphical->render(renderData);
+        if (currentGame) {
+            // Boucle de jeu
+            int input = graphical->getInput();
+            currentGame->handleInput(input);
+            currentGame->update();
+            const auto& gameRenderData = currentGame->getRenderData();
+            
+            // Rendu du jeu
+            IGraphical::RenderData renderData;
+            // Convertir gameRenderData en renderData pour la bibliothèque graphique
+            graphical->render(renderData);
 
-        int input = graphical->getInput();
-        handleGlobalInput(input, graphicHandle, graphical);
+            if (gameRenderData.shouldClose) {
+                unloadGame();
+            }
+        } else {
+            // Boucle du menu
+            IGraphical::RenderData renderData;
+            updateMenuRender(renderData);
+            graphical->render(renderData);
+            int input = graphical->getInput();
+            handleGlobalInput(input, graphicHandle, graphical);
+        }
     }
+
 
     graphical->close();
     dlclose(graphicHandle);
@@ -130,7 +148,7 @@ void Acore::updateMenuRender(IGraphical::RenderData& renderData)
     renderData.entities.clear();
     renderData.texts.clear();
 
-    renderData.texts.push_back(IGraphical::GameText{10, 2, "-----------------------------ARCADE MENU------------------------------------", 1});
+    renderData.texts.push_back(IGraphical::GameText{10, 2, "ARCADE MENU", 1});
 
     //game list my gee
     for (size_t i = 0; i < this->state.gameLibs.size(); ++i) {
@@ -194,6 +212,39 @@ void Acore::handleNameInput(int input)
     }
 }
 
+void Acore::loadGame(const std::string& path) {
+    // Fermer le jeu actuel s'il existe
+    unloadGame();
+
+    // Charger la nouvelle librairie de jeu
+    currentGameHandle = dlopen(path.c_str(), RTLD_LAZY);
+    if (!currentGameHandle) {
+        std::cerr << "Error loading game: " << dlerror() << std::endl;
+        return;
+    }
+
+    // Créer une instance du jeu
+    auto createGame = reinterpret_cast<IGame*(*)()>(dlsym(currentGameHandle, "createGame"));
+    if (!createGame) {
+        std::cerr << "Invalid game library: " << dlerror() << std::endl;
+        dlclose(currentGameHandle);
+        return;
+    }
+
+    currentGame = createGame();
+    currentGame->init();
+}
+
+void Acore::unloadGame() {
+    if (currentGame) {
+        delete currentGame;
+        currentGame = nullptr;
+    }
+    if (currentGameHandle) {
+        dlclose(currentGameHandle);
+        currentGameHandle = nullptr;
+    }
+}
 void Acore::handleGlobalInput(int input, void*& handle, IGraphical*& graphical) {
     switch (input) {
         case 27: // ESC
@@ -204,20 +255,20 @@ void Acore::handleGlobalInput(int input, void*& handle, IGraphical*& graphical) 
                 switchGraphicalLib(state.graphicLibs[state.selectedGraphic], handle, graphical);
             }
             break;
-        case KEY_DOWN:
+        case KEY_DOWN: // 1
             state.selectedGame = (state.selectedGame + 1) % state.gameLibs.size();
-            break;
-        case KEY_UP:
+            //break;
+            
+        case KEY_UP: // 0
             state.selectedGame = (state.selectedGame - 1 + state.gameLibs.size()) % state.gameLibs.size();
-            break;
-        case 127: // Backspace
-        case KEY_BACKSPACE:
-            handleNameInput(input);
-            break;
-        default:
-            if (isalnum(input)) {
-                handleNameInput(input);
+            //break;
+        case 10: // Touche Entrée
+            
+            if (!state.gameLibs.empty()) {
+                loadGame(state.gameLibs[state.selectedGame]);
+                // Ajouter ici la logique pour lancer le jeu
             }
             break;
+        // ... autres cas
     }
 }

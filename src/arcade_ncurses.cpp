@@ -72,9 +72,19 @@ void ArcadeNcurses::render(const RenderData& data)
     doupdate();
 }
 
-int ArcadeNcurses::getInput() 
-{
-    return getch();
+
+int ArcadeNcurses::getInput() {
+    int ch = getch();
+    switch (ch) {
+        case KEY_UP:    return 0; // KEY_UP du core
+        case KEY_DOWN:  return 1; // KEY_DOWN du core
+        case KEY_LEFT:  return 2;
+        case KEY_RIGHT: return 3;
+        case 127:       // Backspace
+        case KEY_BACKSPACE: return 4;
+        case '\n':      return 10; // Touche Entrée
+        default:        return ch;
+    }
 }
 
 std::string ArcadeNcurses::getPlayerName() 
@@ -114,42 +124,6 @@ std::string ArcadeNcurses::displayMenu(
     const std::vector<std::string>& graphics,
     const std::vector<std::pair<std::string, int>>& scores)
 {
-    // Create windows
-    WINDOW* gameWin = newwin(15, 40, 2, 2);
-    WINDOW* graphicWin = newwin(15, 40, 2, 45);
-    WINDOW* scoreWin = newwin(10, 80, 18, 2);
-
-    // Render game list
-    box(gameWin, 0, 0);
-    mvwprintw(gameWin, 1, 1, "Available Games:");
-    for (size_t i = 0; i < games.size(); ++i) {
-        mvwprintw(gameWin, 3 + i, 2, " %s", games[i].c_str());
-    }
-
-    // Render graphics list
-    box(graphicWin, 0, 0);
-    mvwprintw(graphicWin, 1, 1, "Graphics Libraries:");
-    for (size_t i = 0; i < graphics.size(); ++i) {
-        mvwprintw(graphicWin, 3 + i, 2, " %s", graphics[i].c_str());
-    }
-
-    // Render scores
-    box(scoreWin, 0, 0);
-    mvwprintw(scoreWin, 1, 1, "High Scores:");
-    for (size_t i = 0; i < scores.size() && i < 5; ++i) {
-        mvwprintw(scoreWin, 3 + i, 2, "%2d. %-20s %5d", 
-                i+1, scores[i].first.c_str(), scores[i].second);
-    }
-
-    // Refresh all windows
-    wrefresh(gameWin);
-    wrefresh(graphicWin);
-    wrefresh(scoreWin);
-
-    // Cleanup windows
-    delwin(gameWin);
-    delwin(graphicWin);
-    delwin(scoreWin);
 
     return ""; // Selection handled by core
 }
