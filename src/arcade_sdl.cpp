@@ -1,137 +1,226 @@
-#include "../include/arcade_ncurses.hpp"
-#include "arcade_ncurses.hpp"
+#include "../include/arcade_sdl.hpp"
+#include <iostream>
+#include <stdexcept>
+#include <chrono>
 
-ArcadeNcurses::ArcadeNcurses()
-{
-    initColors();
-}
+ArcadeSDL::ArcadeSDL() : window(nullptr), renderer(nullptr), font(nullptr) {}
 
-ArcadeNcurses::~ArcadeNcurses()
-{
+ArcadeSDL::~ArcadeSDL() {
     close();
 }
 
-void ArcadeNcurses::close()
-{
-    endwin();
-}
-void ArcadeNcurses::init()
-{
-    initscr();
-    cbreak();
-    noecho(); 
-    keypad(stdscr, TRUE); 
-    curs_set(0);
-    timeout(100);
+bool ArcadeSDL::init() {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        throw std::runtime_error("SDL_Init Error: " + std::string(SDL_GetError()));
+    }
+
+    if (TTF_Init() == -1) {
+        throw std::runtime_error("TTF_Init Error: " + std::string(TTF_GetError()));
+    }
+
+    window = SDL_CreateWindow("Arcade Game", 
+                             SDL_WINDOWPOS_CENTERED, 
+                             SDL_WINDOWPOS_CENTERED, 
+                             1600, 800, 
+                             SDL_WINDOW_SHOWN);
+    if (!window) {
+        throw std::runtime_error("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
+    }
+
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!renderer) {
+        throw std::runtime_error("SDL_CreateRenderer Error: " + std::string(SDL_GetError()));
+    }
+
+    font = TTF_OpenFont("assets/font.ttf", 10);
+    if (!font) {
+        std::cerr << "Warning: Could not load font, using default SDL font" << std::endl;
+    }
 }
 
-void ArcadeNcurses::initColors()
-{
-    start_color();
-    init_pair(1, COLOR_RED, COLOR_BLACK);
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);
-    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(4, COLOR_CYAN, COLOR_BLACK);
-    init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+void ArcadeSDL::close() {
+    if (font) {
+        TTF_CloseFont(font);
+        font = nullptr;
+    }
+    if (renderer) {
+        SDL_DestroyRenderer(renderer);
+        renderer = nullptr;
+    }
+    if (window) {
+        SDL_DestroyWindow(window);
+        window = nullptr;
+    }
+    TTF_Quit();
+    SDL_Quit();
 }
 
-void ArcadeNcurses::render(const RenderData &data)
-{
-    clear();
+SDL_Color ArcadeSDL::getColorFromCode(int colorCode) {
+    switch (colorCode) {
+        case 1: return {255, 255, 255, 255}; // White
+        case 2: return {255, 0, 0, 255};     // Red
+        case 3: return {0, 255, 0, 255};     // Green
+        case 4: return {0, 0, 255, 255};     // Blue
+        case 5: return {255, 255, 0, 255};   // Yellow
+        default: return {255, 255, 255, 255};// Default white
+    }
+}
+
+void ArcadeSDL::renderText(const std::string &text, int x, int y, SDL_Color color) {
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (!texture) {
+        SDL_FreeSurface(surface);
+        return;
+    }
+
+    SDL_Rect rect = {x, y, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, nullptr, &rect);
+    
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+}
+
+void ArcadeSDL::render(const RenderData &data) {
+    if (!renderer) return;
+
+    // Clear screen
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    // Render entities
     for (const auto &entity : data.entities) {
-        attron(COLOR_PAIR(entity.color));
-        mvaddch(entity.y, entity.x, entity.symbol);
-        attroff(COLOR_PAIR(entity.color));
+        SDL_Rect rect = {entity.x * 10, entity.y * 10, 10, 10};
+        SDL_Color color = getColorFromCode(entity.color);
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+        SDL_RenderFillRect(renderer, &rect);
     }
 
+    // Render texts
     for (const auto &text : data.texts) {
-        attron(COLOR_PAIR(4));
-        mvprintw(text.y, text.x, "%s", text.content.c_str());
-        attroff(COLOR_PAIR(4));
+        SDL_Color color = getColorFromCode(text.color);
+        renderText(text.content, text.x * 10, text.y * 10, color);
     }
-    refresh();
+
+    SDL_RenderPresent(renderer);
 }
 
-int ArcadeNcurses::getInput()
-{
-    return getch();
+int ArcadeSDL::getInput() {
+    static Uint32 lastInputTime = 0;
+    const Uint32 inputDelay = 200; // 200ms debounce delay
+    
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_QUIT) {
+            close();
+            SDL_DestroyWindow(window);
+            return 27; // ESC
+        }
+
+        Uint32 currentTime = SDL_GetTicks();
+        if (currentTime - lastInputTime < inputDelay) {
+            continue; // Skip input during debounce period
+        }
+
+        if (e.type == SDL_KEYDOWN) {
+            lastInputTime = currentTime;
+            switch (e.key.keysym.sym) {
+                case SDLK_UP: return 0;
+                case SDLK_DOWN: return 1;
+                case SDLK_LEFT: return 2;
+                case SDLK_RIGHT: return 3;
+                case SDLK_RETURN: return 10;
+                case SDLK_n: return 'n';
+                case SDLK_ESCAPE: return 27;
+                default: return e.key.keysym.sym;
+            }
+        }
+    }
+    return -1;  // No input detected
 }
 
-std::string ArcadeNcurses::getPlayerName()
-{
-        echo();
-        char name[128];
-        mvprintw(0, 0, "Enter your name: ");
-        getnstr(name, sizeof(name) - 1);
-        noecho();
-        return std::string(name);
+std::string ArcadeSDL::getPlayerName() {
+    // Simple implementation - can be enhanced with SDL text input
+    return "Player";
 }
 
-std::string ArcadeNcurses::displayMenu(const std::vector<std::string>& games, 
-        const std::vector<std::string>& graphics,
-        const std::vector<std::pair<std::string, int>>& scores)
-{
-    WINDOW* gameWin = newwin(15, 40, 2, 2);
-    WINDOW* graphicWin = newwin(15, 40, 2, 45);
-    WINDOW* scoreWin = newwin(10, 80, 18, 2);
-    WINDOW* nameWin = newwin(3, 40, 20, 2);
+std::string ArcadeSDL::displayMenu(const std::vector<std::string> &games,
+                                  const std::vector<std::string> &graphics,
+                                  const std::vector<std::pair<std::string, int>> &scores) {
+    /*int selected = 0;
+    bool menuRunning = true;
+    const int frameDelay = 1000/60; // 60 FPS
+    
+    while (menuRunning) {
+        Uint32 frameStart = SDL_GetTicks();
+        
+        // Clear screen
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
 
-    // Afficher les jeux
-    wclear(gameWin);
-    box(gameWin, 0, 0);
-    mvwprintw(gameWin, 1, 1, "Available Games:");
-    for (size_t i = 0; i < games.size(); ++i) {
-    mvwprintw(gameWin, 3 + i, 2, "%s", games[i].c_str());
-    }
+        // Render menu title
+        renderText("ARCADE GAMES", 300, 50, {255, 255, 255, 255});
 
-    // Afficher les libs graphiques
-    wclear(graphicWin);
-    box(graphicWin, 0, 0);
-    mvwprintw(graphicWin, 1, 1, "Graphics Libraries:");
-    for (size_t i = 0; i < graphics.size(); ++i) {
-    mvwprintw(graphicWin, 3 + i, 2, "%s", graphics[i].c_str());
-    }
+        // Render game options
+        for (size_t i = 0; i < games.size(); ++i) {
+            SDL_Color color = (i == selected) ? 
+                SDL_Color{255, 255, 0, 255} : // Yellow for selected
+                SDL_Color{255, 255, 255, 255}; // White for others
+            renderText(games[i], 300, 100 + (i * 40), color);
+        }
 
-    // Afficher les scores
-    wclear(scoreWin);
-    box(scoreWin, 0, 0);
-    mvwprintw(scoreWin, 1, 1, "High Scores:");
-    for (size_t i = 0; i < scores.size(); ++i) {
-    mvwprintw(scoreWin, 3 + i, 2, "%s: %d", 
-    scores[i].first.c_str(), scores[i].second);
-    }
+        // Render controls hint
+        renderText("UP/DOWN: Select  ENTER: Choose  ESC: Exit", 200, 500, {200, 200, 200, 255});
 
-    // Gestion des inputs
-    keypad(gameWin, TRUE);
-    int highlight = 0;
-    while (true) {
-    // Mettre à jour la sélection
-    for (size_t i = 0; i < games.size(); ++i) {
-    mvwchgat(gameWin, 3 + i, 2, -1, 
-    (i == highlight) ? A_REVERSE : A_NORMAL, 0, NULL);
-    }
-    wrefresh(gameWin);
+        SDL_RenderPresent(renderer);
 
-    int ch = wgetch(gameWin);
-    switch (ch) {
-    case KEY_UP: highlight = (highlight - 1) % games.size(); break;
-    case KEY_DOWN: highlight = (highlight + 1) % games.size(); break;
-    case 10: return games[highlight];
-    case 27: return "";
+        // Handle input
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                close();
+                return "";
+            }
+            if (e.type == SDL_KEYDOWN) {
+                switch (e.key.keysym.sym) {
+                    case SDLK_UP: 
+                        selected = (selected - 1 + games.size()) % games.size();
+                        break;
+                    case SDLK_DOWN:
+                        selected = (selected + 1) % games.size();
+                        break;
+                    case SDLK_RETURN:
+                        menuRunning = false;
+                        break;
+                    case SDLK_ESCAPE:
+                        return "";
+                }
+            }
+        }
+
+        // Frame rate control
+        limitFramerate(frameStart);
     }
-    }
+    return games[selected];*/
+    return "";
 }
 
+//void ArcadeSDL::limitFramerate(Uint32 frameStart) {
+//    const int frameDelay = 1000/60; // 60 FPS
+//    int frameTime = SDL_GetTicks() - frameStart;
+//    if (frameTime < frameDelay) {
+//        SDL_Delay(frameDelay - frameTime);
+//    }
+//}
 
-extern "C"
-{
-    IGraphical *createGraphical()
-    {
-        return new ArcadeNcurses();
+extern "C" {
+    IGraphical *createGraphical() {
+        return new ArcadeSDL();
     }
 
-    void deleteGraphical(IGraphical *graphical)
-    {
-        delete static_cast<ArcadeNcurses *>(graphical);
+    void deleteGraphical(IGraphical *graphical) {
+        delete static_cast<ArcadeSDL *>(graphical);
     }
 }

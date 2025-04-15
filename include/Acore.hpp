@@ -35,9 +35,6 @@ public:
         std::string playerName;
     };
 
-
-//public:
-
     Acore();
     ~Acore();
     bool isValidLibrary(const std::string &path, const std::string &symbol);
@@ -47,14 +44,14 @@ public:
     void saveScore(const std::string& game, int score);
     void loadScores();
     void handleNameInput(int input);
-    //void handleMenuNavigation(int input);
+    std::string getLibName(const std::string& path) const;
     void updateMenuRender(IGraphical::RenderData& renderData);
-    void runMenu(const std::string& initialLib);
+    int runMenu(const std::string& initialLib);
+    
 private:
     MenuState state;
     void* currentGameHandle = nullptr;
     IGame* currentGame = nullptr;
-
     void loadGame(const std::string& path);
     void unloadGame();
 };

@@ -40,7 +40,7 @@ public:
 
     virtual void init() = 0;      
     virtual void update() = 0; 
-    virtual void handleInput(int key) = 0;
+    virtual bool handleInput(int key) = 0;
     virtual const RenderData &getRenderData() const = 0;
     virtual std::string getName() const { return "Unnamed Game"; }
     virtual int getScore() const { return 0; }

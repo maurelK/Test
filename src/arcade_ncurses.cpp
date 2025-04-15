@@ -12,19 +12,9 @@ ArcadeNcurses::~ArcadeNcurses()
     close();
 }
 
-void ArcadeNcurses::init() 
+bool ArcadeNcurses::init() 
 {
     initscr();
-    /*if (LINES < 24 || COLS < 80) {
-        endwin();
-        throw std::runtime_error("Terminal too small! Minimum 80x24");
-    }
-    
-    if (!has_colors()) {
-        endwin();
-        throw std::runtime_error("Terminal doesn't support colors");
-    }*/
-
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
@@ -54,14 +44,11 @@ void ArcadeNcurses::render(const RenderData& data)
 {
     wclear(stdscr);
     
-    // Render entities (game objects)
     for (const auto& entity : data.entities) {
         attron(COLOR_PAIR(entity.color));
         mvaddch(entity.y, entity.x, entity.symbol);
         attroff(COLOR_PAIR(entity.color));
     }
-    
-    // Render texts (UI elements)
     for (const auto& text : data.texts) {
         attron(COLOR_PAIR(text.color));
         mvprintw(text.y, text.x, "%s", text.content.c_str());
@@ -76,15 +63,16 @@ void ArcadeNcurses::render(const RenderData& data)
 int ArcadeNcurses::getInput() {
     int ch = getch();
     switch (ch) {
-        case KEY_UP:    return 0; // KEY_UP du core
-        case KEY_DOWN:  return 1; // KEY_DOWN du core
+        case KEY_UP:    return 0;
+        case KEY_DOWN:  return 1;
         case KEY_LEFT:  return 2;
         case KEY_RIGHT: return 3;
-        case 127:       // Backspace
+        case 127:       
         case KEY_BACKSPACE: return 4;
-        case '\n':      return 10; // Touche Entrée
+        case '\n':      return 10;
         default:        return ch;
     }
+
 }
 
 std::string ArcadeNcurses::getPlayerName() 
@@ -125,10 +113,10 @@ std::string ArcadeNcurses::displayMenu(
     const std::vector<std::pair<std::string, int>>& scores)
 {
 
-    return ""; // Selection handled by core
+    return "";
 }
 
-// Factory functions
+
 extern "C" IGraphical* createGraphical() 
 {
     return new ArcadeNcurses();

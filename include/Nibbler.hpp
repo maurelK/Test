@@ -1,30 +1,26 @@
-/*
-** EPITECH PROJECT, 2025
-** IGAME
-** File description:
-** IGAMEe of my program
-*/
-
-#ifndef SNAKE_HPP
-#define SNAKE_HPP
+#ifndef NIBBLER_HPP
+#define NIBBLER_HPP
 
 #include "IGame.hpp"
 #include <vector>
+#include <string>
+
 #ifndef KEY_UP
 #define KEY_UP 0403
 #define KEY_DOWN 0402
 #define KEY_LEFT 0404
 #define KEY_RIGHT 0405
 #endif
-class Snake : public IGame
+
+class Nibbler : public IGame
 {
 public:
-    Snake();
+    Nibbler();
     void init() override;
     void update() override;
     bool handleInput(int key) override;
     const RenderData &getRenderData() const override;
-    std::string getName() const override { return "Snake"; }
+    std::string getName() const override { return "Nibbler"; }
     int getScore() const override { return score; }
 
 private:
@@ -36,26 +32,33 @@ private:
         RIGHT
     };
 
-    std::vector<std::pair<int, int>> body; // Corps du serpent
-    std::pair<int, int> food;              // Position de la nourriture
+    struct Wall
+    {
+        int x, y;
+        int width, height;
+    };
+
+    std::vector<std::pair<int, int>> body;
+    std::vector<std::pair<int, int>> foods;
+    std::vector<Wall> walls;
     Direction currentDir;
     Direction nextDir;
     RenderData renderData;
     int score;
-    int highScore;
     bool gameOver;
-    bool isPaused;
-    float moveSpeed;
-    float baseSpeed;
-    int speedIncreaseThreshold;
     int gridWidth = 30;
     int gridHeight = 20;
+    float moveTimer = 0;
+    const float moveInterval = 0.15f;
 
-    void spawnFood();
+    void generateMaze();
+    void spawnFood(int count = 5);
     bool checkCollision() const;
     void moveSnake();
-    void growSnake();
-    void updateRenderData(); // Met à jour renderData
+    void checkFood();
+    void updateRenderData();
+    bool isPositionFree(int x, int y) const;
+    void handleWallCollision();
 };
 
 extern "C"

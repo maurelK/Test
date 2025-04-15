@@ -20,9 +20,9 @@ CORE_SRCS   = $(SRC_DIR)/Acore.cpp $(SRC_DIR)/main.cpp
 CORE_OBJS   = $(CORE_SRCS:.cpp=.o)
 CORE_TARGET = $(BIN_DIR)/$(NAME)
 
-GRAPHICALS  = ncurses 
+GRAPHICALS  = ncurses sdl
 NCURSES_LIB = $(LIB_DIR)/arcade_ncurses.so
-#SDL_LIB     = $(LIB_DIR)/arcade_sdl.so
+SDL_LIB     = $(LIB_DIR)/arcade_sdl.so
 
 GAMES       = snake nibbler
 SNAKE_LIB   = $(LIB_DIR)/arcade_snake.so
@@ -35,35 +35,28 @@ core: $(CORE_TARGET)
 $(CORE_TARGET): $(CORE_OBJS)
 	@mkdir -p $(LIB_DIR)
 	$(CXX) $(CXXFLAGS) $(CORE_OBJS) -o $(CORE_TARGET) $(LDFLAGS)
-	@echo "✓ Core compiled"
 
 graphicals: $(GRAPHICALS)
 
 ncurses:
 	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_ncurses.cpp -o $(NCURSES_LIB) -lncurses -I$(INC_DIR)
-	@echo "✓ Ncurses library compiled"
 
-#sdl:
-#	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_sdl.cpp -o $(SDL_LIB) -lSDL2 -I$(INC_DIR)
-#	@echo "✓ SDL library compiled"
+sdl:
+	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_sdl.cpp -o $(SDL_LIB) -lSDL2 -lSDL2_ttf -I$(INC_DIR)
 
 games: $(GAMES)
 
 snake:
 	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/Snake.cpp -o $(SNAKE_LIB) -I$(INC_DIR)
-	@echo "✓ Snake game compiled"
 
 nibbler:
 	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/Nibbler.cpp -o $(NIBBLER_LIB) -I$(INC_DIR)
-	@echo "✓ Nibbler game compiled"
 
 clean:
 	rm -f $(CORE_OBJS)
-	@echo "✓ Object files removed"
 
 fclean: clean
 	rm -f $(CORE_TARGET)
 	rm -f $(LIB_DIR)/*.so
-	@echo "✓ Binaries and libraries removed"
 
 re: fclean all

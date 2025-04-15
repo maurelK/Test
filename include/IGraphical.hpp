@@ -43,7 +43,7 @@ public:
     };
 
     virtual ~IGraphical() = default;
-    virtual void init() = 0;
+    virtual bool init() = 0;
     virtual void close() = 0;
     virtual void render(const RenderData &data) = 0;
     virtual int getInput() = 0;

@@ -41,36 +41,36 @@ void Acore::loadAvailableLibs()
     std::sort(this->state.graphicLibs.begin(), this->state.graphicLibs.end());
 }
 
-/*void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
-    void* newHandle = dlopen(newLib.c_str(), RTLD_LAZY | RTLD_NODELETE);
-    if (!newHandle) {
-        std::cerr << "Failed to load graphical lib: " << dlerror() << std::endl;
-        return;
-    }
-
-    auto create = reinterpret_cast<IGraphical*(*)()>(dlsym(newHandle, "createGraphical"));
-    if (!create) {
-        std::cerr << "dlsym error: " << dlerror() << std::endl;
-        dlclose(newHandle);
-        return;
-    }
-
-    IGraphical* newGraphical = create();
-    if (!newGraphical->init()) {
-        std::cerr << "Failed to initialize graphical library" << std::endl;
-        delete newGraphical;
-        dlclose(newHandle);
-        return;
-    }
-
-    if (handle) {
-        graphical->close();
-        dlclose(handle);
-    }
-    
-    handle = newHandle;
-    graphical = newGraphical;
-}*/
+//void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
+//    void* newHandle = dlopen(newLib.c_str(), RTLD_LAZY | RTLD_NODELETE);
+//    if (!newHandle) {
+//        std::cerr << "Failed to load graphical lib: " << dlerror() << std::endl;
+//        return;
+//    }
+//
+//    auto create = reinterpret_cast<IGraphical*(*)()>(dlsym(newHandle, "createGraphical"));
+//    if (!create) {
+//        std::cerr << "dlsym error: " << dlerror() << std::endl;
+//        dlclose(newHandle);
+//        return;
+//    }
+//
+//    IGraphical* newGraphical = create();
+//    if (!newGraphical->init()) {
+//        std::cerr << "Failed to initialize graphical library" << std::endl;
+//        delete newGraphical;
+//        dlclose(newHandle);
+//        return;
+//    }
+//
+//    if (handle) {
+//        graphical->close();
+//        dlclose(handle);
+//    }
+//    
+//    handle = newHandle;
+//    graphical = newGraphical;
+//}
 
 void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
     if (handle) dlclose(handle);
@@ -85,12 +85,49 @@ void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphi
     graphical = create();
     graphical->init();
 }
+//void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
+//    // Clean up previous library
+//    if (graphical) {
+//        graphical->close();
+//        delete graphical;
+//        graphical = nullptr;
+//    }
+//    if (handle) {
+//        dlclose(handle);
+//        handle = nullptr;
+//    }
+//
+//    // Load new library
+//    handle = dlopen(newLib.c_str(), RTLD_LAZY);
+//    if (!handle) {
+//        std::cerr << "Failed to load graphical lib: " << dlerror() << std::endl;
+//        return;
+//    }
+//
+//    // Create new instance
+//    auto create = reinterpret_cast<IGraphical*(*)()>(dlsym(handle, "createGraphical"));
+//    if (!create) {
+//        std::cerr << "Failed to find createGraphical symbol: " << dlerror() << std::endl;
+//        dlclose(handle);
+//        return;
+//    }
+//
+//    graphical = create();
+//    if (!graphical->init()) {
+//        std::cerr << "Failed to initialize graphical library" << std::endl;
+//        delete graphical;
+//        dlclose(handle);
+//        graphical = nullptr;
+//        handle = nullptr;
+//    } else {
+//        std::cout << "Successfully switched to: " << newLib << std::endl;
+//    }
+//}
 
-
-void Acore::runMenu(const std::string& initialLib) {
+int Acore::runMenu(const std::string& initialLib) {
     if (!isValidLibrary(initialLib, "createGraphical")) {
         std::cerr << "Error: '" << initialLib << "' is not a valid graphical library.\n";
-        exit(EXIT_FAILURE);
+        exit(84);
     }
 
     loadAvailableLibs();
@@ -121,8 +158,33 @@ void Acore::runMenu(const std::string& initialLib) {
             
             // Rendu du jeu
             IGraphical::RenderData renderData;
-            // Convertir gameRenderData en renderData pour la bibliothèque graphique
+
+            // Convertir les entités
+            for (const auto& entity : gameRenderData.entities) {
+                renderData.entities.push_back({
+                    entity.x,
+                    entity.y,
+                    1,  // width
+                    1,  // height
+                    entity.color,
+                    entity.symbol,
+                    "",  // spritePath
+                    false // useSprite
+                });
+            }
+            
+            // Convertir les textes
+            for (const auto& text : gameRenderData.texts) {
+                renderData.texts.emplace_back(
+                    text.x,
+                    text.y,
+                    text.content,
+                    text.color
+                );
+            }
+            
             graphical->render(renderData);
+            
 
             if (gameRenderData.shouldClose) {
                 unloadGame();
@@ -141,6 +203,7 @@ void Acore::runMenu(const std::string& initialLib) {
     graphical->close();
     dlclose(graphicHandle);
     delete graphical;
+    return 0;
 }
 
 void Acore::updateMenuRender(IGraphical::RenderData& renderData)
@@ -148,31 +211,41 @@ void Acore::updateMenuRender(IGraphical::RenderData& renderData)
     renderData.entities.clear();
     renderData.texts.clear();
 
-    renderData.texts.push_back(IGraphical::GameText{10, 2, "ARCADE MENU", 1});
+    renderData.texts.emplace_back(35, 1, "ARCADE MENU", 2);
 
-    //game list my gee
-    for (size_t i = 0; i < this->state.gameLibs.size(); ++i) {
-        std::string name = std::filesystem::path(this->state.gameLibs[i]).stem().string();
-        renderData.texts.push_back(IGraphical::GameText{15, 5 + (int)i, name, (i == this->state.selectedGame) ? 2 : 3});
+
+    renderData.texts.emplace_back(5, 3, "----- GAMES -----", 3);
+    renderData.texts.emplace_back(45, 3, "-- GRAPHICAL LIBS --", 3);
+
+    
+    for (size_t i = 0; i < state.gameLibs.size(); ++i) {
+        std::string name = std::filesystem::path(state.gameLibs[i]).stem().string();
+        std::string display = (i == state.selectedGame) ? "> " + name : "  " + name;
+        renderData.texts.emplace_back(5, 5 + (int)i, display, (i == state.selectedGame) ? 4 : 1);
     }
 
-    // Graphics list also gee
-    for (size_t i = 0; i < this->state.graphicLibs.size(); ++i) {
-        std::string name = std::filesystem::path(this->state.graphicLibs[i]).stem().string();
-        renderData.texts.push_back(IGraphical::GameText{40, 5 + (int)i, name, (i == this->state.selectedGraphic) ? 2 : 3});
+    
+    for (size_t i = 0; i < state.graphicLibs.size(); ++i) {
+        std::string name = std::filesystem::path(state.graphicLibs[i]).stem().string();
+        std::string display = (i == state.selectedGraphic) ? "> " + name : "  " + name;
+        renderData.texts.emplace_back(45, 5 + (int)i, display, (i == state.selectedGraphic) ? 4 : 1);
     }
 
-    // Player name
-    renderData.texts.push_back(IGraphical::GameText{10, 20, "Player: " + this->state.playerName, 1});
-
-    // Scores
-    for (size_t i = 0; i < std::min(this->state.scores.size(), (size_t)5); ++i) {
-        renderData.texts.push_back(IGraphical::GameText{40, 20 + (int)i, /*content*/ 
-                                 this->state.scores[i].first + ": " + 
-                                 std::to_string(this->state.scores[i].second), 4});
+    
+    renderData.texts.emplace_back(5, 15, "PLAYER: " + state.playerName, 5);
+    renderData.texts.emplace_back(45, 15, "TOP SCORES", 2);
+    for (size_t i = 0; i < std::min(state.scores.size(), (size_t)5); ++i) {
+        std::string score = std::to_string(i + 1) + ". " + state.scores[i].first + " - " + std::to_string(state.scores[i].second);
+        renderData.texts.emplace_back(45, 17 + (int)i, score, 3);
     }
+
+    
+    renderData.texts.emplace_back(5, 23, "UP/DOWN: Select game", 1);
+    renderData.texts.emplace_back(5, 24, "LEFT/RIGHT: Select lib", 1);
+    renderData.texts.emplace_back(5, 25, "ENTER: Launch game", 1);
+    renderData.texts.emplace_back(5, 26, "N: Switch graphical lib", 1);
+    renderData.texts.emplace_back(5, 27, "ESC: Quit", 1);
 }
-
 void Acore::saveScore(const std::string& game, int score)
 {
     std::ofstream file("scores.txt", std::ios::app);
@@ -202,6 +275,12 @@ void Acore::loadScores()
             [](auto& a, auto& b) { return a.second > b.second; });
 }
 
+std::string Acore::getLibName(const std::string& path) const {
+    size_t start = path.find_last_of("/\\") + 1;
+    size_t end = path.find_last_of('.');
+    return path.substr(start, end - start);
+}
+
 void Acore::handleNameInput(int input)
 {
     if (input == 127 && !state.playerName.empty()) { // Backspace
@@ -216,23 +295,37 @@ void Acore::loadGame(const std::string& path) {
     // Fermer le jeu actuel s'il existe
     unloadGame();
 
-    // Charger la nouvelle librairie de jeu
+    std::cout << "Loading game from: " << path << std::endl;
+
     currentGameHandle = dlopen(path.c_str(), RTLD_LAZY);
     if (!currentGameHandle) {
-        std::cerr << "Error loading game: " << dlerror() << std::endl;
+        std::cerr << "Error loading game library: " << dlerror() << std::endl;
         return;
     }
-
-    // Créer une instance du jeu
     auto createGame = reinterpret_cast<IGame*(*)()>(dlsym(currentGameHandle, "createGame"));
     if (!createGame) {
-        std::cerr << "Invalid game library: " << dlerror() << std::endl;
+        std::cerr << "Error: Missing createGame symbol: " << dlerror() << std::endl;
         dlclose(currentGameHandle);
         return;
     }
 
     currentGame = createGame();
-    currentGame->init();
+    if (!currentGame) {
+        std::cerr << "Error: Game creation failed" << std::endl;
+        dlclose(currentGameHandle);
+        return;
+    }
+
+    try {
+        currentGame->init();
+        std::cout << "Game initialized successfully" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error initializing game: " << e.what() << std::endl;
+        delete currentGame;
+        dlclose(currentGameHandle);
+        currentGame = nullptr;
+        currentGameHandle = nullptr;
+    }
 }
 
 void Acore::unloadGame() {
@@ -245,30 +338,46 @@ void Acore::unloadGame() {
         currentGameHandle = nullptr;
     }
 }
+
 void Acore::handleGlobalInput(int input, void*& handle, IGraphical*& graphical) {
+    std::cout << "Current selected graphic lib: " << this->state.graphicLibs[this->state.selectedGraphic] << std::endl; // Debug statement
+    std::cout << "Current selected game: " << this->state.gameLibs[this->state.selectedGame] << std::endl; // Debug statement
     switch (input) {
-        case 27: // ESC
+        case 27:
             exit(EXIT_SUCCESS);
+            break;
+            
+        case KEY_DOWN:
+            state.selectedGame = (state.selectedGame + 1) % state.gameLibs.size();
+            break;
+            
+        case KEY_UP:
+            state.selectedGame = (state.selectedGame - 1 + state.gameLibs.size()) % state.gameLibs.size();
+            break;
+            
+        case KEY_RIGHT:
+            state.selectedGraphic = (state.selectedGraphic + 1) % state.graphicLibs.size();
+            break;
+            
+        case KEY_LEFT:
+            state.selectedGraphic = (state.selectedGraphic - 1 + state.graphicLibs.size()) % state.graphicLibs.size();
+            break;
+            
+        case 10:
+            if (!state.gameLibs.empty()) {
+                loadGame(state.gameLibs[state.selectedGame]);
+            }
+            break;
+            
         case 'n':
             if (!state.graphicLibs.empty()) {
-                state.selectedGraphic = (state.selectedGraphic + 1) % state.graphicLibs.size();
                 switchGraphicalLib(state.graphicLibs[state.selectedGraphic], handle, graphical);
             }
             break;
-        case KEY_DOWN: // 1
-            state.selectedGame = (state.selectedGame + 1) % state.gameLibs.size();
-            //break;
-            
-        case KEY_UP: // 0
-            state.selectedGame = (state.selectedGame - 1 + state.gameLibs.size()) % state.gameLibs.size();
-            //break;
-        case 10: // Touche Entrée
-            
-            if (!state.gameLibs.empty()) {
-                loadGame(state.gameLibs[state.selectedGame]);
-                // Ajouter ici la logique pour lancer le jeu
-            }
+        default:
+            //if (isalnum(input) || input == ' ') {
+            //    handleNameInput(input);
+            //}
             break;
-        // ... autres cas
     }
 }

@@ -2,7 +2,8 @@
 #include <algorithm>
 #include <random>
 
-Snake::Snake() : currentDir(RIGHT), nextDir(RIGHT), score(0), gameOver(false)
+Snake::Snake() : currentDir(RIGHT), nextDir(RIGHT), score(0), highScore(0), gameOver(false), isPaused(false),
+                 moveSpeed(0.1f), baseSpeed(0.1f), speedIncreaseThreshold(50)
 {
     init();
 }
@@ -16,6 +17,7 @@ void Snake::init()
 
     currentDir = nextDir = RIGHT;
     score = 0;
+    highScore = std::max(score, highScore);
     gameOver = false;
 
     spawnFood();
@@ -24,14 +26,13 @@ void Snake::init()
 
 void Snake::update()
 {
-    if (gameOver)
+    if (gameOver || isPaused)
         return;
-
     static float timeSinceLastMove = 0.0f;
-    const float deltaTime = 0.016f;
+    const float deltaTime = 0.65f;
     timeSinceLastMove += deltaTime;
 
-    if (timeSinceLastMove >= 0.2f) {
+    if (timeSinceLastMove >= moveSpeed) {
         timeSinceLastMove = 0.0f;
         currentDir = nextDir;
         moveSnake();
@@ -40,44 +41,72 @@ void Snake::update()
         } else if (body.front() == food) {
             growSnake();
             score += 10;
+            if (score > highScore) {
+                highScore = score;
+            }
             spawnFood();
         }
         updateRenderData();
     }
 }
 
-void Snake::handleInput(int key)
+bool Snake::handleInput(int key)
 {
     switch (key) {
-    case 'z':
-    case 'Z':
+    //case 'z':
+    //case 'Z':
+        
     case KEY_UP:
+        
         if (currentDir != DOWN)
+        
             nextDir = UP;
-        break;
-    case 's':
-    case 'S':
-    case KEY_DOWN:
+        
+                return true;
+        
+            //case 's':
+        
+        //case 'S':
+        
+        case KEY_DOWN:
+        
         if (currentDir != UP)
+        
             nextDir = DOWN;
-        break;
-    case 'q':
-    case 'Q':
-    case KEY_LEFT:
+        
+                return true;
+        
+            //case 'q':
+        
+        //case 'Q':
+        
+        case KEY_LEFT:
+        
         if (currentDir != RIGHT)
+        
             nextDir = LEFT;
-        break;
-    case 'd':
-    case 'D':
-    case KEY_RIGHT:
+        
+                return true;
+        
+            //case 'd':
+        
+        //case 'D':
+        
+        case KEY_RIGHT:
+        
         if (currentDir != LEFT)
+        
             nextDir = RIGHT;
-        break;
-    case 'r':
+        
+                return true;
+        
+            //case 'r':
     case 'R':
         if (gameOver)
             init();
-        break;
+        return true;
+    default:
+        return false; // Input not handled by game
     }
 }
 
@@ -90,8 +119,9 @@ void Snake::spawnFood()
 {
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distX(0, gridWidth - 1);
-    std::uniform_int_distribution<int> distY(0, gridHeight - 1);
+    // Spawn food within playable area (avoid borders)
+    std::uniform_int_distribution<int> distX(1, gridWidth - 2);
+    std::uniform_int_distribution<int> distY(1, gridHeight - 2);
 
     do
     {
@@ -103,13 +133,13 @@ bool Snake::checkCollision() const
 {
     const auto &head = body.front();
 
-    if (head.first < 0 || head.first >= gridWidth ||
-        head.second < 0 || head.second >= gridHeight)
+    // Check wall collisions (1 unit inside border)
+    if (head.first <= 0 || head.first >= gridWidth - 1 ||
+        head.second <= 0 || head.second >= gridHeight - 1)
     {
         return true;
     }
-
-    // Collision avec le corps
+    // Check self collisions
     for (size_t i = 1; i < body.size(); ++i)
     {
         if (head == body[i])
@@ -153,23 +183,42 @@ void Snake::updateRenderData()
     renderData.entities.clear();
     renderData.texts.clear();
 
-    for (size_t i = 0; i < body.size(); ++i) {
-        renderData.entities.push_back({
-            body[i].first,
-            body[i].second,
-            (i == 0) ? 'H' : 'o',
-            (i == 0) ? 1 : 2
-        });
+    for (int x = 0; x < gridWidth; x++)
+    {
+        renderData.entities.push_back({x, 0, '#', 4});
+        renderData.entities.push_back({x, gridHeight - 1, '#', 4});
+    }
+    for (int y = 1; y < gridHeight - 1; y++)
+    {
+        renderData.entities.push_back({0, y, '#', 4});
+        renderData.entities.push_back({gridWidth - 1, y, '#', 4});
+    }
+    for (size_t i = 0; i < body.size(); ++i)
+    {
+        renderData.entities.push_back({body[i].first,
+                                       body[i].second,
+                                       (i == 0) ? 'H' : 'o',
+                                       (i == 0) ? 1 : 2});
     }
 
     renderData.entities.push_back({food.first, food.second, 'X', 3});
-    renderData.texts.push_back({0, 0, "Score: " + std::to_string(score)});
+
+    renderData.texts.push_back({gridWidth + 2, 1, "SNAKE"});
+    renderData.texts.push_back({gridWidth + 2, 2, "======"});
+    renderData.texts.push_back({gridWidth + 2, 4, "Score: " + std::to_string(score)});
+    renderData.texts.push_back({gridWidth + 2, 5, "High: " + std::to_string(highScore)});
+    renderData.texts.push_back({gridWidth + 2, 6, "Controls:"});
+    renderData.texts.push_back({gridWidth + 2, 7, "Z - Haut"});
+    renderData.texts.push_back({gridWidth + 2, 8, "S - Bas"});
+    renderData.texts.push_back({gridWidth + 2, 9, "Q - Gauche"});
+    renderData.texts.push_back({gridWidth + 2, 10, "D - Droite"});
+    renderData.texts.push_back({gridWidth + 2, 11, "R - Restart"});
+
     if (gameOver)
     {
-        renderData.texts.push_back({10, 10, "GAME OVER - Press R to restart"});
+        renderData.texts.push_back({gridWidth / 2 - 10, gridHeight / 2, "GAME OVER - Press R to restart"});
     }
 }
-
 extern "C"
 {
     IGame *createGame()

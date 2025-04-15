@@ -17,7 +17,7 @@ public:
     ArcadeNcurses();
     ~ArcadeNcurses() override;
 
-    void init() override;
+    bool init() override;
     void close() override;
     void render(const RenderData& data) override;
     int getInput() override;
