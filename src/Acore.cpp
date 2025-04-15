@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 
-Acore::Acore() :state{0, 0, {}, {}, {}, ""} {}
+Acore::Acore() : state{0, 0, {}, {}, {}, ""} {}
 Acore::~Acore() {}
 
 bool Acore::isValidLibrary(const std::string &path, const std::string &symbol)
@@ -41,52 +41,6 @@ void Acore::loadAvailableLibs()
     std::sort(this->state.graphicLibs.begin(), this->state.graphicLibs.end());
 }
 
-//void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
-//    void* newHandle = dlopen(newLib.c_str(), RTLD_LAZY | RTLD_NODELETE);
-//    if (!newHandle) {
-//        std::cerr << "Failed to load graphical lib: " << dlerror() << std::endl;
-//        return;
-//    }
-//
-//    auto create = reinterpret_cast<IGraphical*(*)()>(dlsym(newHandle, "createGraphical"));
-//    if (!create) {
-//        std::cerr << "dlsym error: " << dlerror() << std::endl;
-//        dlclose(newHandle);
-//        return;
-//    }
-//
-//    IGraphical* newGraphical = create();
-//    if (!newGraphical->init()) {
-//        std::cerr << "Failed to initialize graphical library" << std::endl;
-//        delete newGraphical;
-//        dlclose(newHandle);
-//        return;
-//    }
-//
-//    if (handle) {
-//        graphical->close();
-//        dlclose(handle);
-//    }
-//    
-//    handle = newHandle;
-//    graphical = newGraphical;
-//}
-
-/*void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
-    if (handle) dlclose(handle);
-    
-    handle = dlopen(newLib.c_str(), RTLD_LAZY);
-    if (!handle) {
-        std::cerr << "Failed to load graphical lib: " << dlerror() << std::endl;
-        return;
-    }
-
-    auto create = reinterpret_cast<IGraphical*(*)()>(dlsym(handle, "createGraphical"));
-    graphical = create();
-    graphical->init();
-}*/
-
-
 void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
     // Clean up previous library
     if (graphical) {
@@ -116,15 +70,6 @@ void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphi
 
     graphical = create();
     graphical->init();
-    //if (!graphical->init()) {
-    //    std::cerr << "Failed to initialize graphical library" << std::endl;
-    //    delete graphical;
-    //    dlclose(handle);
-    //    graphical = nullptr;
-    //    handle = nullptr;
-    //} else {
-    //    std::cout << "Successfully switched to: " << newLib << std::endl;
-    //}
 }
 
 
@@ -222,6 +167,10 @@ int Acore::runMenu(const std::string& initialLib) {
         if (currentGame) {
             // Boucle de jeu
             int input = graphical->getInput();
+            if (input == 27) { // ESC key or SDL_QUIT
+                running = false;
+                continue;
+            }
             currentGame->handleInput(input);
             currentGame->update();
             const auto& gameRenderData = currentGame->getRenderData();
@@ -265,10 +214,15 @@ int Acore::runMenu(const std::string& initialLib) {
             updateMenuRender(renderData);
             graphical->render(renderData);
             int input = graphical->getInput();
-            handleGlobalInput(input, graphicHandle, graphical);
+            if (input == 27) { // ESC key or SDL_QUIT
+                running = false;
+            } else {
+                handleGlobalInput(input, graphicHandle, graphical);
+            }
         }
     }
 
+    unloadGame(); // Ensure game is unloaded before cleanup
 
     graphical->close();
     dlclose(graphicHandle);
@@ -414,7 +368,8 @@ void Acore::handleGlobalInput(int input, void*& handle, IGraphical*& graphical) 
     std::cout << "Current selected game: " << this->state.gameLibs[this->state.selectedGame] << std::endl; // Debug statement
     switch (input) {
         case 27:
-            exit(EXIT_SUCCESS);
+            // exit(EXIT_SUCCESS);
+            // Do nothing here, handled in runMenu loop
             break;
             
         case KEY_DOWN:

@@ -44,16 +44,22 @@ void ArcadeNcurses::initColors()
 void ArcadeNcurses::render(const RenderData& data) 
 {
     wclear(stdscr);
+    int max_y, max_x;
+    getmaxyx(stdscr, max_y, max_x);
     
     for (const auto& entity : data.entities) {
-        attron(COLOR_PAIR(entity.color));
-        mvaddch(entity.y, entity.x, entity.symbol);
-        attroff(COLOR_PAIR(entity.color));
+        if (entity.y >= 0 && entity.y < max_y && entity.x >= 0 && entity.x < max_x) {
+            attron(COLOR_PAIR(entity.color));
+            mvaddch(entity.y, entity.x, entity.symbol);
+            attroff(COLOR_PAIR(entity.color));
+        }
     }
     for (const auto& text : data.texts) {
-        attron(COLOR_PAIR(text.color));
-        mvprintw(text.y, text.x, "%s", text.content.c_str());
-        attroff(COLOR_PAIR(text.color));
+        if (text.y >= 0 && text.y < max_y && text.x >= 0 && text.x < max_x) {
+            attron(COLOR_PAIR(text.color));
+            mvprintw(text.y, text.x, "%s", text.content.c_str());
+            attroff(COLOR_PAIR(text.color));
+        }
     }
     
     wnoutrefresh(stdscr);
