@@ -241,6 +241,7 @@ bool Nibbler::handleInput(int key)
             init();
         break;
     }
+    return true;
 }
 
 void Nibbler::updateRenderData()

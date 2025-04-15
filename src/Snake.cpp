@@ -29,7 +29,7 @@ void Snake::update()
     if (gameOver || isPaused)
         return;
     static float timeSinceLastMove = 0.0f;
-    const float deltaTime = 0.65f;
+    const float deltaTime = 0.01f;
     timeSinceLastMove += deltaTime;
 
     if (timeSinceLastMove >= moveSpeed) {
@@ -53,54 +53,32 @@ void Snake::update()
 bool Snake::handleInput(int key)
 {
     switch (key) {
-    //case 'z':
-    //case 'Z':
-        
+    case 'z':
+    case 'Z':
     case KEY_UP:
-        
-        if (currentDir != DOWN)
-        
-            nextDir = UP;
-        
-                return true;
-        
-            //case 's':
-        
-        //case 'S':
-        
-        case KEY_DOWN:
-        
-        if (currentDir != UP)
-        
-            nextDir = DOWN;
-        
-                return true;
-        
-            //case 'q':
-        
-        //case 'Q':
-        
-        case KEY_LEFT:
-        
-        if (currentDir != RIGHT)
-        
-            nextDir = LEFT;
-        
-                return true;
-        
-            //case 'd':
-        
-        //case 'D':
-        
-        case KEY_RIGHT:
-        
-        if (currentDir != LEFT)
-        
-            nextDir = RIGHT;
-        
-                return true;
-        
-            //case 'r':
+    if (currentDir != DOWN)
+        nextDir = UP;
+            return true;
+    case 's':
+    case 'S':
+    case KEY_DOWN:
+    if (currentDir != UP)
+        nextDir = DOWN;
+            return true;
+    case 'q':
+    case 'Q':
+    case KEY_LEFT:
+    if (currentDir != RIGHT)
+        nextDir = LEFT;
+            return true;
+    case 'd':
+    case 'D':
+    case KEY_RIGHT:
+    if (currentDir != LEFT)
+        nextDir = RIGHT;
+            return true;
+    
+    case 'r':
     case 'R':
         if (gameOver)
             init();
@@ -197,7 +175,7 @@ void Snake::updateRenderData()
     {
         renderData.entities.push_back({body[i].first,
                                        body[i].second,
-                                       (i == 0) ? 'H' : 'o',
+                                       (i == 0) ? '@' : 'o',
                                        (i == 0) ? 1 : 2});
     }
 

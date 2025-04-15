@@ -22,6 +22,7 @@ bool ArcadeNcurses::init()
     timeout(100);
     start_color();
     initColors();
+    return true;
 }
 
 void ArcadeNcurses::close() 
@@ -81,8 +82,8 @@ std::string ArcadeNcurses::getPlayerName()
     curs_set(1);
     
     char name[32];
-    mvprintw(LINES/2, (COLS-30)/2, "Enter your name (max 30 chars): ");
-    clrtoeol();
+    mvprintw(LINES/2, (COLS-30)/2, "Your name ?: ");
+    //clrtoeol();
     move(LINES/2 + 1, (COLS-30)/2);
     
     int ch;
@@ -106,16 +107,6 @@ std::string ArcadeNcurses::getPlayerName()
     curs_set(0);
     return std::string(name);
 }
-
-std::string ArcadeNcurses::displayMenu(
-    const std::vector<std::string>& games,
-    const std::vector<std::string>& graphics,
-    const std::vector<std::pair<std::string, int>>& scores)
-{
-
-    return "";
-}
-
 
 extern "C" IGraphical* createGraphical() 
 {

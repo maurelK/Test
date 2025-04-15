@@ -36,6 +36,7 @@ bool ArcadeSDL::init() {
     if (!font) {
         std::cerr << "Warning: Could not load font, using default SDL font" << std::endl;
     }
+    return true;
 }
 
 void ArcadeSDL::close() {
@@ -54,7 +55,6 @@ void ArcadeSDL::close() {
     TTF_Quit();
     SDL_Quit();
 }
-
 SDL_Color ArcadeSDL::getColorFromCode(int colorCode) {
     switch (colorCode) {
         case 1: return {255, 255, 255, 255}; // White
@@ -105,11 +105,12 @@ void ArcadeSDL::render(const RenderData &data) {
     }
 
     SDL_RenderPresent(renderer);
+    SDL_Delay(16); // Limit frame rate to ~60 FPS
 }
 
 int ArcadeSDL::getInput() {
     static Uint32 lastInputTime = 0;
-    const Uint32 inputDelay = 200; // 200ms debounce delay
+    const Uint32 inputDelay = 100;
     
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
@@ -121,7 +122,7 @@ int ArcadeSDL::getInput() {
 
         Uint32 currentTime = SDL_GetTicks();
         if (currentTime - lastInputTime < inputDelay) {
-            continue; // Skip input during debounce period
+            continue;
         }
 
         if (e.type == SDL_KEYDOWN) {
@@ -138,82 +139,13 @@ int ArcadeSDL::getInput() {
             }
         }
     }
-    return -1;  // No input detected
+    return -1;
 }
 
 std::string ArcadeSDL::getPlayerName() {
     // Simple implementation - can be enhanced with SDL text input
     return "Player";
 }
-
-std::string ArcadeSDL::displayMenu(const std::vector<std::string> &games,
-                                  const std::vector<std::string> &graphics,
-                                  const std::vector<std::pair<std::string, int>> &scores) {
-    /*int selected = 0;
-    bool menuRunning = true;
-    const int frameDelay = 1000/60; // 60 FPS
-    
-    while (menuRunning) {
-        Uint32 frameStart = SDL_GetTicks();
-        
-        // Clear screen
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        // Render menu title
-        renderText("ARCADE GAMES", 300, 50, {255, 255, 255, 255});
-
-        // Render game options
-        for (size_t i = 0; i < games.size(); ++i) {
-            SDL_Color color = (i == selected) ? 
-                SDL_Color{255, 255, 0, 255} : // Yellow for selected
-                SDL_Color{255, 255, 255, 255}; // White for others
-            renderText(games[i], 300, 100 + (i * 40), color);
-        }
-
-        // Render controls hint
-        renderText("UP/DOWN: Select  ENTER: Choose  ESC: Exit", 200, 500, {200, 200, 200, 255});
-
-        SDL_RenderPresent(renderer);
-
-        // Handle input
-        SDL_Event e;
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
-                close();
-                return "";
-            }
-            if (e.type == SDL_KEYDOWN) {
-                switch (e.key.keysym.sym) {
-                    case SDLK_UP: 
-                        selected = (selected - 1 + games.size()) % games.size();
-                        break;
-                    case SDLK_DOWN:
-                        selected = (selected + 1) % games.size();
-                        break;
-                    case SDLK_RETURN:
-                        menuRunning = false;
-                        break;
-                    case SDLK_ESCAPE:
-                        return "";
-                }
-            }
-        }
-
-        // Frame rate control
-        limitFramerate(frameStart);
-    }
-    return games[selected];*/
-    return "";
-}
-
-//void ArcadeSDL::limitFramerate(Uint32 frameStart) {
-//    const int frameDelay = 1000/60; // 60 FPS
-//    int frameTime = SDL_GetTicks() - frameStart;
-//    if (frameTime < frameDelay) {
-//        SDL_Delay(frameDelay - frameTime);
-//    }
-//}
 
 extern "C" {
     IGraphical *createGraphical() {

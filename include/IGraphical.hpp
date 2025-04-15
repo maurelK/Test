@@ -48,10 +48,6 @@ public:
     virtual void render(const RenderData &data) = 0;
     virtual int getInput() = 0;
     virtual std::string getPlayerName() = 0;
-    virtual std::string displayMenu(const std::vector<std::string>& games, 
-        const std::vector<std::string>& graphics,
-        const std::vector<std::pair<std::string, int>>& scores) = 0;
-
 };
 
 extern "C"

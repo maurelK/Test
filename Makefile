@@ -23,6 +23,7 @@ CORE_TARGET = $(BIN_DIR)/$(NAME)
 GRAPHICALS  = ncurses sdl
 NCURSES_LIB = $(LIB_DIR)/arcade_ncurses.so
 SDL_LIB     = $(LIB_DIR)/arcade_sdl.so
+#SFML_LIB    = $(LIB_DIR)/arcade_sfml.so
 
 GAMES       = snake nibbler
 SNAKE_LIB   = $(LIB_DIR)/arcade_snake.so
@@ -39,18 +40,26 @@ $(CORE_TARGET): $(CORE_OBJS)
 graphicals: $(GRAPHICALS)
 
 ncurses:
-	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_ncurses.cpp -o $(NCURSES_LIB) -lncurses -I$(INC_DIR)
+	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_ncurses.cpp \
+	-o $(NCURSES_LIB) -lncurses -I$(INC_DIR)
 
 sdl:
-	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_sdl.cpp -o $(SDL_LIB) -lSDL2 -lSDL2_ttf -I$(INC_DIR)
+	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_sdl.cpp \
+	-o $(SDL_LIB) -lSDL2 -lSDL2_ttf -I$(INC_DIR)
 
+#sfml:
+#	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/arcade_sfml.cpp \
+#	-o $(SFML_LIB) -lsfml-graphics -lsfml-window -lsfml-system -I$(INC_DIR)
+#
 games: $(GAMES)
 
 snake:
-	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/Snake.cpp -o $(SNAKE_LIB) -I$(INC_DIR)
+	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/Snake.cpp \
+	-o $(SNAKE_LIB) -I$(INC_DIR)
 
 nibbler:
-	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/Nibbler.cpp -o $(NIBBLER_LIB) -I$(INC_DIR)
+	$(CXX) $(CXXFLAGS) $(SHARED) $(SRC_DIR)/Nibbler.cpp \
+	-o $(NIBBLER_LIB) -I$(INC_DIR)
 
 clean:
 	rm -f $(CORE_OBJS)

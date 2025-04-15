@@ -72,7 +72,7 @@ void Acore::loadAvailableLibs()
 //    graphical = newGraphical;
 //}
 
-void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
+/*void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
     if (handle) dlclose(handle);
     
     handle = dlopen(newLib.c_str(), RTLD_LAZY);
@@ -84,7 +84,77 @@ void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphi
     auto create = reinterpret_cast<IGraphical*(*)()>(dlsym(handle, "createGraphical"));
     graphical = create();
     graphical->init();
+}*/
+
+
+void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
+    // Clean up previous library
+    if (graphical) {
+        graphical->close();
+        delete graphical;
+        graphical = nullptr;
+    }
+    if (handle) {
+        dlclose(handle);
+        handle = nullptr;
+    }
+
+    // Load new library
+    handle = dlopen(newLib.c_str(), RTLD_LAZY);
+    if (!handle) {
+        std::cerr << "Failed to load graphical lib: " << dlerror() << std::endl;
+        return;
+    }
+
+    // Create new instance
+    auto create = reinterpret_cast<IGraphical*(*)()>(dlsym(handle, "createGraphical"));
+    if (!create) {
+        std::cerr << "Failed to find createGraphical symbol: " << dlerror() << std::endl;
+        dlclose(handle);
+        return;
+    }
+
+    graphical = create();
+    graphical->init();
+    //if (!graphical->init()) {
+    //    std::cerr << "Failed to initialize graphical library" << std::endl;
+    //    delete graphical;
+    //    dlclose(handle);
+    //    graphical = nullptr;
+    //    handle = nullptr;
+    //} else {
+    //    std::cout << "Successfully switched to: " << newLib << std::endl;
+    //}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //void Acore::switchGraphicalLib(const std::string& newLib, void*& handle, IGraphical*& graphical) {
 //    // Clean up previous library
 //    if (graphical) {
@@ -364,8 +434,10 @@ void Acore::handleGlobalInput(int input, void*& handle, IGraphical*& graphical) 
             break;
             
         case 10:
-            if (!state.gameLibs.empty()) {
+            if (!state.gameLibs.empty() || !state.graphicLibs.empty()) {
+                switchGraphicalLib(state.graphicLibs[state.selectedGraphic], handle, graphical);
                 loadGame(state.gameLibs[state.selectedGame]);
+
             }
             break;
             
