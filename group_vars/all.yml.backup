@@ -1,0 +1,6 @@
+vault_postgres_password: democracyIsFragile
+vault_postgres_user: paul
+vault_postgres_db: paul
+
+vault_sudo_password: 0123
+ansible_become_pass: "{{ vault_sudo_password }}"

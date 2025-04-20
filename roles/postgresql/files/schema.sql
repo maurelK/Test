@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS votes (
+  id SERIAL PRIMARY KEY,
+  option TEXT NOT NULL,
+  voter_id TEXT NOT NULL UNIQUE
+);
