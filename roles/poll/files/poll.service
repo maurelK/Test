@@ -1,0 +1,14 @@
+[Unit]
+Description=Poll Web App
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/opt/poll
+Environment="REDIS_HOST=redis-1"
+Environment="REDIS_PORT=6379"
+ExecStart=/opt/poll/venv/bin/python app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,52 @@
+- name: Ensure dependencies are present
+  apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+    state: present
+  become: true
+
+- name: Create application directory
+  file:
+    path: /opt/result
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  become: true
+
+- name: Extract result.tar archive
+  unarchive:
+    src: result.tar
+    dest: /opt/result
+    remote_src: false
+  become: true
+
+- name: Create virtual environment
+  command: python3 -m venv /opt/result/venv
+  args:
+    creates: /opt/result/venv/bin/activate
+  become: true
+
+- name: Install Python dependencies
+  pip:
+    requirements: /opt/result/requirements.txt
+    virtualenv: /opt/result/venv
+  become: true
+
+- name: Upload result systemd service
+  copy:
+    src: result.service
+    dest: /etc/systemd/system/result.service
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+
+- name: Enable and start result service
+  systemd:
+    name: result.service
+    enabled: true
+    state: started
+  become: true

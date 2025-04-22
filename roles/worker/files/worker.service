@@ -1,0 +1,18 @@
+[Unit]
+Description=Octopus Java Worker
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/java -jar /opt/worker/worker.jar
+WorkingDirectory=/opt/worker
+Environment=REDIS_HOST=redis-1
+Environment=REDIS_PORT=6379
+Environment=DB_HOST=postgresql-1
+Environment=DB_USER=paul
+Environment=DB_PASSWORD=democracyIsFragile
+Environment=DB_NAME=paul
+Restart=always
+User=nobody
+
+[Install]
+WantedBy=multi-user.target

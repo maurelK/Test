@@ -1,0 +1,52 @@
+- name: Ensure Python and pip are installed
+  apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+    state: present
+  become: true
+
+- name: Create application directory
+  file:
+    path: /opt/poll
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  become: true
+
+- name: Extract poll.tar archive
+  unarchive:
+    src: poll.tar
+    dest: /opt/poll
+    remote_src: false
+  become: true
+
+- name: Create virtual environment
+  command: python3 -m venv /opt/poll/venv
+  args:
+    creates: /opt/poll/venv/bin/activate
+  become: true
+
+- name: Install dependencies with pip
+  pip:
+    requirements: /opt/poll/requirements.txt
+    virtualenv: /opt/poll/venv
+  become: true
+
+- name: Copy systemd service
+  copy:
+    src: poll.service
+    dest: /etc/systemd/system/poll.service
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+
+- name: Enable and start poll service
+  systemd:
+    name: poll.service
+    enabled: true
+    state: started
+  become: true

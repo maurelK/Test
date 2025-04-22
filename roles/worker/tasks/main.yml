@@ -1,0 +1,32 @@
+- name: Create /opt/worker directory
+  file:
+    path: /opt/worker
+    state: directory
+    mode: '0755'
+
+- name: Extract worker.tar to /opt/worker
+  unarchive:
+    src: worker.tar
+    dest: /opt/worker
+    remote_src: false
+  become: true
+
+- name: Move service file to systemd
+  copy:
+    src: worker.service
+    dest: /etc/systemd/system/worker.service
+    remote_src: yes
+    mode: '0644'
+  become: true
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  become: true
+
+- name: Enable and start worker service
+  systemd:
+    name: worker.service
+    enabled: true
+    state: started
+  become: true
