@@ -36,7 +36,7 @@ ghc-options:
 - -Wredundant-constraints
 
 library:
-  source-dirs: src
+  source-dirs: app
 
 executables:
   mypandoc:
@@ -65,3 +65,4 @@ tests:
     - base >= 4.7 && < 5
     - optparse-applicative
     - containers
+    - hspec

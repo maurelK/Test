@@ -9,22 +9,36 @@ module ParserJson (parseDocument) where
 import MyDocFormat
 import Data.Char (isDigit)
 import Data.List (find)
+import Debug.Trace (trace)
 
 -- Main document parser
 parseDocument :: String -> Maybe Document
 parseDocument s = do
-    (fields, _) <- parseFields s
-    (headerFields, _) <- lookup "header" fields >>= parseFields
-    title <- lookup "title" headerFields
-    let author = lookup "author" headerFields
-    let date = lookup "date" headerFields
-    bodyContent <- lookup "body" fields
-    (contents, _) <- parseBody bodyContent
-    Just $ Document (Header title author date) contents
+    trace ("parseDocument input: " ++ take 100 s) $ return ()
+    (fields, rest) <- parseFields s
+    trace ("parseFields result: " ++ show fields ++ ", rest: " ++ take 50 rest) $ return ()
+    if not (null (skipWhitespace rest))
+      then trace "Extra data after parsing fields" Nothing
+      else do
+        (headerFields, restHeader) <- lookup "header" fields >>= parseFields
+        trace ("headerFields: " ++ show headerFields ++ ", restHeader: " ++ take 50 restHeader) $ return ()
+        if not (null (skipWhitespace restHeader))
+          then trace "Extra data after parsing header fields" Nothing
+          else do
+            title <- lookup "title" headerFields
+            let author = lookup "author" headerFields
+            let date = lookup "date" headerFields
+            bodyContent <- lookup "body" fields
+            trace ("bodyContent: " ++ take 100 bodyContent) $ return ()
+            (contents, restBody) <- parseBody bodyContent
+            trace ("parseBody result: " ++ show (map show contents) ++ ", restBody: " ++ take 50 restBody) $ return ()
+            if not (null (skipWhitespace restBody))
+              then trace "Extra data after parsing body content" Nothing
+              else Just $ Document (Header title author date) contents
 
 -- Parse the body content which can be arrays or objects
 parseBody :: String -> Maybe ([Content], String)
-parseBody s = case skipWhitespace s of
+parseBody s = trace ("parseBody input: " ++ take 100 s) $ case skipWhitespace s of
     '[':rest -> parseArrayOfContents rest
     '{':rest -> do
         (content, rest') <- parseContent s
@@ -33,11 +47,12 @@ parseBody s = case skipWhitespace s of
   where
     parseArrayOfContents s' = do
         (contents, rest) <- parseMixedArray s'
+        trace ("parseMixedArray result: " ++ show (map show (concat contents)) ++ ", rest: " ++ take 50 rest) $ return ()
         return (concat contents, rest)
 
 -- Parse mixed array that can contain both strings and objects
 parseMixedArray :: String -> Maybe ([[Content]], String)
-parseMixedArray s = case skipWhitespace s of
+parseMixedArray s = trace ("parseMixedArray input: " ++ take 100 s) $ case skipWhitespace s of
     ']':rest -> Just ([], rest)
     _ -> do
         (first, rest1) <- parseArrayElement s
@@ -45,13 +60,13 @@ parseMixedArray s = case skipWhitespace s of
         Just (first : restElems, rest2)
 
 parseMixedArrayTail :: String -> Maybe ([[Content]], String)
-parseMixedArrayTail s = case skipWhitespace s of
+parseMixedArrayTail s = trace ("parseMixedArrayTail input: " ++ take 100 s) $ case skipWhitespace s of
     ',':rest -> parseMixedArray rest
     ']':rest -> Just ([], rest)
     _ -> Nothing
 
 parseArrayElement :: String -> Maybe ([Content], String)
-parseArrayElement s = case skipWhitespace s of
+parseArrayElement s = trace ("parseArrayElement input: " ++ take 100 s) $ case skipWhitespace s of
     '[':rest -> do
         (items, rest') <- parseMixedArray rest
         case items of
@@ -65,7 +80,7 @@ parseArrayElement s = case skipWhitespace s of
         return ([Text str], rest')
     _ -> Nothing
 
--- Main content par
+-- Main content parser
 parseContent :: String -> Maybe (Content, String)
 parseContent s = do
     (fields, rest) <- parseFields s
@@ -127,24 +142,53 @@ parseFields s = case skipWhitespace s of
   where
     parsePairs ('}':xs) acc = Just (reverse acc, skipWhitespace xs)
     parsePairs s' acc = do
+        trace ("parsePairs input: " ++ take 100 s') $ return ()
         (key, afterKey) <- parseString (skipWhitespace s')
+        trace ("parsePairs key: " ++ key ++ ", afterKey: " ++ take 50 afterKey) $ return ()
         afterColon <- stripPrefix ':' (skipWhitespace afterKey)
-        (value, afterValue) <- parseValue (skipWhitespace afterColon)
+        trace ("parsePairs afterColon: " ++ take 50 afterColon) $ return ()
+        (value, afterValue) <- parseValue afterColon
+        trace ("parsePairs value: " ++ take 100 value ++ ", afterValue: " ++ take 50 afterValue) $ return ()
         let next = case skipWhitespace afterValue of
                     ',':xs' -> skipWhitespace xs'
                     xs' -> xs'
+        trace ("parsePairs next: " ++ take 100 next) $ return ()
         parsePairs next ((key, value) : acc)
 
 parseValue :: String -> Maybe (String, String)
 parseValue s = case skipWhitespace s of
     '"':_ -> parseString s
-    '{':_ -> wrap parseFields s
-    '[':_ -> wrap parseMixedArray s
+    '{':_ -> do
+        let (objStr, rest) = extractObject s
+        return (objStr, rest)
+    '[':_ -> do
+        let (arrStr, rest) = extractArray s
+        return (arrStr, rest)
     _ -> parseLiteral s
+
+-- Helper function to extract the raw substring of an object including braces
+extractObject :: String -> (String, String)
+extractObject s = go 1 "" (tail s)
   where
-    wrap p str = do
-        (val, rest) <- p str
-        Just (show val, skipWhitespace rest)  -- Convert back to string for consistency
+    go :: Int -> String -> String -> (String, String)
+    go _ acc [] = (reverse acc, [])
+    go 0 acc (x:xs) = (reverse (x:acc), xs)
+    go n acc (x:xs)
+      | x == '{' = go (n + 1) (x:acc) xs
+      | x == '}' = go (n - 1) (x:acc) xs
+      | otherwise = go n (x:acc) xs
+
+-- Helper function to extract the raw substring of an array including brackets
+extractArray :: String -> (String, String)
+extractArray s = go 1 "" (tail s)
+  where
+    go :: Int -> String -> String -> (String, String)
+    go _ acc [] = (reverse acc, [])
+    go 0 acc (x:xs) = (reverse (x:acc), xs)
+    go n acc (x:xs)
+      | x == '[' = go (n + 1) (x:acc) xs
+      | x == ']' = go (n - 1) (x:acc) xs
+      | otherwise = go n (x:acc) xs
 
 parseLiteral :: String -> Maybe (String, String)
 parseLiteral s = case span (\c -> not (c `elem` " \t\n\r,}]")) s of

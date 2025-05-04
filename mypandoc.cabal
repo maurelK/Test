@@ -25,13 +25,18 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Main
+      MyDocFormat
+      ParserJson
+      ParserMarkdown
+      ParserXml
+      Usage
   other-modules:
       Paths_mypandoc
   autogen-modules:
       Paths_mypandoc
   hs-source-dirs:
-      src
+      app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
@@ -44,6 +49,8 @@ executable mypandoc
   other-modules:
       MyDocFormat
       ParserJson
+      ParserMarkdown
+      ParserXml
       Usage
       Paths_mypandoc
   autogen-modules:
@@ -71,6 +78,7 @@ test-suite mypandoc-test
   build-depends:
       base >=4.7 && <5
     , containers
+    , hspec
     , mypandoc
     , optparse-applicative
   default-language: Haskell2010
