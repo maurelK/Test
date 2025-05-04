@@ -52,23 +52,24 @@ parseMixedArrayTail s = case skipWhitespace s of
 
 parseArrayElement :: String -> Maybe ([Content], String)
 parseArrayElement s = case skipWhitespace s of
-    '[':rest -> do  -- Nested array case
+    '[':rest -> do
         (items, rest') <- parseMixedArray rest
-        return (concat items, rest')
-    '{':rest -> do  -- Object case
+        case items of
+            [[Text single]] -> return ([Text single], rest')
+            _ -> return (concat items, rest')
+    '{':rest -> do
         (content, rest') <- parseContent s
         return ([content], rest')
-    '"':rest -> do  -- String case
+    '"':rest -> do
         (str, rest') <- parseString s
         return ([Text str], rest')
     _ -> Nothing
 
--- Main content parser
+-- Main content par
 parseContent :: String -> Maybe (Content, String)
 parseContent s = do
     (fields, rest) <- parseFields s
-    case find (\(k,_) -> k `elem` ["text", "bold", "italic", "paragraph", "section", 
-                                  "codeblock", "list", "link", "image"]) fields of
+    case find (\(k,_) -> k `elem` contentTypes) fields of
         Just ("text", val) -> Just (Text val, rest)
         Just ("bold", inner) -> do
             (content, _) <- parseContent inner
@@ -76,33 +77,44 @@ parseContent s = do
         Just ("italic", inner) -> do
             (content, _) <- parseContent inner
             Just (Italic content, rest)
+        Just ("code", inner) -> do
+            (content, _) <- parseContent inner
+            Just (Code content, rest)
         Just ("paragraph", arr) -> do
             (contents, _) <- parseBody arr
             Just (Paragraph contents, rest)
         Just ("section", obj) -> do
             (fields, _) <- parseFields obj
-            title <- lookup "title" fields
+            let mtitle = lookup "title" fields  -- mtitle is Maybe String
             (contents, _) <- lookup "content" fields >>= parseBody
-            Just (Section title contents, rest)
+            Just (Section (SectionData mtitle contents), rest)
         Just ("codeblock", arr) -> do
             (contents, _) <- parseBody arr
             case contents of
                 [Text code] -> Just (CodeBlock code, rest)
                 _ -> Nothing
         Just ("list", arr) -> do
-            (items, _) <- parseBody arr
-            Just (Paragraph items, rest)  -- Representing list as Paragraph for simplicity
+            (items, rest') <- parseListItems arr
+            Just (List (ListData Unordered items), rest')
         Just ("link", obj) -> do
             (fields, _) <- parseFields obj
             url <- lookup "url" fields
             (contents, _) <- lookup "content" fields >>= parseBody
-            Just (Paragraph [Text $ "<" ++ url ++ ">"], rest)  -- Simplified link representation
+            Just (Link (LinkData contents url), rest)
         Just ("image", obj) -> do
             (fields, _) <- parseFields obj
             url <- lookup "url" fields
-            alt <- lookup "alt" fields >>= parseString
-            Just (Paragraph [Text $ "![" ++ snd alt ++ "](" ++ url ++ ")"], rest)  -- Markdown-style image
+            (altText, _) <- lookup "alt" fields >>= parseString
+            Just (Image (ImageData altText url), rest)
         _ -> Nothing
+  where
+    contentTypes = ["text", "bold", "italic", "code", "paragraph", 
+                   "section", "codeblock", "list", "link", "image"]
+
+parseListItems :: String -> Maybe ([ListItem], String)
+parseListItems s = do
+    (contentsList, rest) <- parseBody s
+    return (map (\content -> ListItem [content]) contentsList, rest)
 
 -- Helper functions (same as before but with improved whitespace handling)
 skipWhitespace :: String -> String
@@ -143,9 +155,8 @@ parseString :: String -> Maybe (String, String)
 parseString ('"':rest) = go "" rest
   where
     go acc ('\\':x:xs) = case x of
-        'n' -> go ('\n':acc) xs
-        't' -> go ('\t':acc) xs
-        'r' -> go ('\r':acc) xs
+        '"' -> go ('"':acc) xs
+        '\\' -> go ('\\':acc) xs
         _ -> go (x:acc) xs
     go acc ('"':xs) = Just (reverse acc, skipWhitespace xs)
     go acc (x:xs) = go (x:acc) xs

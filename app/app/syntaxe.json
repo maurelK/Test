@@ -1,0 +1,10 @@
+{
+  "header": {
+    "title": "My Document",
+    "author": "John Doe",
+    "date": "2024-05-01"
+  },
+  "body": [
+    { "text": "Hello world" }
+  ]
+}

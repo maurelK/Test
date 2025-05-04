@@ -1,0 +1,9 @@
+{
+    "header": {
+      "title": "Test",
+      "author": "Auteur"
+    },
+    "body": [
+      { "text": "Hello" }
+    ]
+  }
