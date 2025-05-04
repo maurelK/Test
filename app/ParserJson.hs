@@ -4,19 +4,49 @@
 -- File description:
 -- Parser file
 -}
-module ParserJson (parseDocument) where
+module ParserJson (parseJsonDoc) where
 
 import MyDocFormat
 
 -- Parse the full document
-parseDocument :: String -> Maybe Document
-parseDocument s = do
-  (fields, _) <- parseFields s
-  headerStr <- lookup "header" fields
-  (hdr, _) <- parseHeader headerStr
-  contentStr <- lookup "content" fields
-  (content, _) <- parseContentArray contentStr
-  Just $ Document hdr content
+--parseDocument :: String -> Maybe Document
+--parseDocument s = do
+--  (fields, _) <- parseFields s
+--  headerStr <- lookup "header" fields
+--  (hdr, _) <- parseHeader headerStr
+--  contentStr <- lookup "content" fields
+--  (content, _) <- parseContentArray contentStr
+--  Just $ Document hdr content
+
+--toJsonDoc :: Document -> String
+--toXmlDoc :: Document -> String
+--toMarkdownDoc :: Document -> String
+
+--parseJsonDoc s = do
+--  (fields, _) <- parseFields s
+--  headerJson <- lookup "header" fields
+--  (Header title author date, _) <- parseHeader headerJson  -- <- Premier niveau de parsing
+--  
+--  contentJson <- lookup "content" fields
+--  (content, _) <- parseContentArray contentJson -- # <- Deuxième niveau de parsing
+--  
+--  return $ Document (Header title author date) content
+
+
+
+parseJsonDoc :: String -> Either String Document
+parseJsonDoc s = case parseFields s of
+  Nothing -> Left "Invalid JSON object"
+  Just (fields, _) -> do
+    case lookup "header" fields of
+      Nothing -> Left "Missing 'header' field"
+      Just headerJson -> case parseHeader headerJson of
+        Nothing -> Left "Failed to parse header"
+        Just (Header title author date, _) -> case lookup "content" fields of
+          Nothing -> Left "Missing 'content' field"
+          Just contentJson -> case parseContentArray contentJson of
+            Nothing -> Left "Failed to parse content"
+            Just (content, _) -> Right $ Document (Header title author date) content
 
 -- Parse header object
 parseHeader :: String -> Maybe (Header, String)
@@ -90,13 +120,20 @@ parseArray :: String -> Maybe (String, String)
 parseArray s = extractBraces '[' ']' s
 
 -- Parse a quoted string: "something"
-parseString :: String -> Maybe (String, String)
+--parseString :: String -> Maybe (String, String)
+--parseString ('"':rest) = go "" rest
+--  where
+--    go acc ('"':xs) = Just (reverse acc, xs)
+--    go acc (x:xs)   = go (x:acc) xs
+--    go _ []         = Nothing
+--parseString _ = Nothing
+
 parseString ('"':rest) = go "" rest
   where
+    go acc ('\\':x:xs) = go (x:acc) xs  -- Gère les caractères échappés
     go acc ('"':xs) = Just (reverse acc, xs)
-    go acc (x:xs)   = go (x:acc) xs
-    go _ []         = Nothing
-parseString _ = Nothing
+    go acc (x:xs) = go (x:acc) xs
+    go _ [] = Nothing
 
 -- Strip prefix if it matches
 stripPrefix :: Char -> String -> Maybe String
