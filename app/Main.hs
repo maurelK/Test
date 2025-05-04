@@ -9,7 +9,7 @@ import MyDocFormat
 
 main :: IO ()
 main = do
-  content <- readFile "sample.json"
+  content <- readFile "syntaxe.json"
   case parseDocument content of
       Just doc -> print doc
       Nothing -> putStrLn "Échec du parsing : le JSON est invalide ou mal formé."

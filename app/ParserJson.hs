@@ -7,148 +7,152 @@
 module ParserJson (parseDocument) where
 
 import MyDocFormat
+import Data.Char (isDigit)
+import Data.List (find)
 
+-- Main document parser
+parseDocument :: String -> Maybe Document
+parseDocument s = do
+    (fields, _) <- parseFields s
+    (headerFields, _) <- lookup "header" fields >>= parseFields
+    title <- lookup "title" headerFields
+    let author = lookup "author" headerFields
+    let date = lookup "date" headerFields
+    bodyContent <- lookup "body" fields
+    (contents, _) <- parseBody bodyContent
+    Just $ Document (Header title author date) contents
+
+-- Parse the body content which can be arrays or objects
+parseBody :: String -> Maybe ([Content], String)
+parseBody s = case skipWhitespace s of
+    '[':rest -> parseArrayOfContents rest
+    '{':rest -> do
+        (content, rest') <- parseContent s
+        return ([content], rest')
+    _ -> Nothing
+  where
+    parseArrayOfContents s' = do
+        (contents, rest) <- parseMixedArray s'
+        return (concat contents, rest)
+
+-- Parse mixed array that can contain both strings and objects
+parseMixedArray :: String -> Maybe ([[Content]], String)
+parseMixedArray s = case skipWhitespace s of
+    ']':rest -> Just ([], rest)
+    _ -> do
+        (first, rest1) <- parseArrayElement s
+        (restElems, rest2) <- parseMixedArrayTail rest1
+        Just (first : restElems, rest2)
+
+parseMixedArrayTail :: String -> Maybe ([[Content]], String)
+parseMixedArrayTail s = case skipWhitespace s of
+    ',':rest -> parseMixedArray rest
+    ']':rest -> Just ([], rest)
+    _ -> Nothing
+
+parseArrayElement :: String -> Maybe ([Content], String)
+parseArrayElement s = case skipWhitespace s of
+    '[':rest -> do  -- Nested array case
+        (items, rest') <- parseMixedArray rest
+        return (concat items, rest')
+    '{':rest -> do  -- Object case
+        (content, rest') <- parseContent s
+        return ([content], rest')
+    '"':rest -> do  -- String case
+        (str, rest') <- parseString s
+        return ([Text str], rest')
+    _ -> Nothing
+
+-- Main content parser
+parseContent :: String -> Maybe (Content, String)
+parseContent s = do
+    (fields, rest) <- parseFields s
+    case find (\(k,_) -> k `elem` ["text", "bold", "italic", "paragraph", "section", 
+                                  "codeblock", "list", "link", "image"]) fields of
+        Just ("text", val) -> Just (Text val, rest)
+        Just ("bold", inner) -> do
+            (content, _) <- parseContent inner
+            Just (Bold content, rest)
+        Just ("italic", inner) -> do
+            (content, _) <- parseContent inner
+            Just (Italic content, rest)
+        Just ("paragraph", arr) -> do
+            (contents, _) <- parseBody arr
+            Just (Paragraph contents, rest)
+        Just ("section", obj) -> do
+            (fields, _) <- parseFields obj
+            title <- lookup "title" fields
+            (contents, _) <- lookup "content" fields >>= parseBody
+            Just (Section title contents, rest)
+        Just ("codeblock", arr) -> do
+            (contents, _) <- parseBody arr
+            case contents of
+                [Text code] -> Just (CodeBlock code, rest)
+                _ -> Nothing
+        Just ("list", arr) -> do
+            (items, _) <- parseBody arr
+            Just (Paragraph items, rest)  -- Representing list as Paragraph for simplicity
+        Just ("link", obj) -> do
+            (fields, _) <- parseFields obj
+            url <- lookup "url" fields
+            (contents, _) <- lookup "content" fields >>= parseBody
+            Just (Paragraph [Text $ "<" ++ url ++ ">"], rest)  -- Simplified link representation
+        Just ("image", obj) -> do
+            (fields, _) <- parseFields obj
+            url <- lookup "url" fields
+            alt <- lookup "alt" fields >>= parseString
+            Just (Paragraph [Text $ "![" ++ snd alt ++ "](" ++ url ++ ")"], rest)  -- Markdown-style image
+        _ -> Nothing
+
+-- Helper functions (same as before but with improved whitespace handling)
 skipWhitespace :: String -> String
 skipWhitespace = dropWhile (\c -> c `elem` " \t\n\r")
 
-
--- Parse the full document
-parseDocument :: String -> Maybe Document
-parseDocument s = do
-  (fields, _) <- parseFields s
-  -- Ne pas traiter header comme une chaîne JSON mais directement comme un objet
-  (hdrFields, _) <- lookup "header" fields >>= parseFields
-  title <- lookup "title" hdrFields
-  let author = lookup "author" hdrFields
-  let date = lookup "date" hdrFields
-  let hdr = Header title author date
-  
-  -- Traiter content directement comme un tableau
-  contentStr <- lookup "content" fields
-  (content, _) <- parseContentArray contentStr
-  Just $ Document hdr content
-
---parseDocument s = do
---  (fields, _) <- parseFields s
---  headerJson <- lookup "header" fields
---  (Header title author date, _) <- parseHeader headerJson  -- <- Premier niveau de parsing
---  
---  contentJson <- lookup "content" fields
---  (content, _) <- parseContentArray contentJson -- # <- Deuxième niveau de parsing
---  
---  return $ Document (Header title author date) content
-
--- Parse header object
-parseHeader :: String -> Maybe (Header, String)
-parseHeader s = do
-  (fields, rest) <- parseFields s
-  title <- lookup "title" fields        -- title is required
-  let author = lookup "author" fields   -- optional
-  let date = lookup "date" fields       -- optional
-  return (Header title author date, rest)
-
-
-
--- Parse a single content object
-parseContent :: String -> Maybe (Content, String)
-parseContent s = do
-  (fields, rest) <- parseFields s
-  case fields of
-    [("text", val)] -> Just (Text val, rest)
-    [("bold", inner)] -> do
-      (innerContent, _) <- parseContent inner
-      Just (Bold innerContent, rest)
-    [("italic", inner)] -> do
-      (innerContent, _) <- parseContent inner
-      Just (Italic innerContent, rest)
-    [("paragraph", arr)] -> do
-      (innerArr, _) <- parseContentArray arr
-      Just (Paragraph innerArr, rest)
-    _ -> Nothing
-
--- Parse object fields: { "key": "value", ... }
-
 parseFields :: String -> Maybe ([(String, String)], String)
 parseFields s = case skipWhitespace s of
-  ('{':rest) -> parsePairs (skipWhitespace rest) []
-  _ -> Nothing
+    '{':rest -> parsePairs (skipWhitespace rest) []
+    _ -> Nothing
   where
     parsePairs ('}':xs) acc = Just (reverse acc, skipWhitespace xs)
-    parsePairs s acc = do
-      (key, afterKey) <- parseString (skipWhitespace s)
-      afterColon <- stripPrefix ':' (skipWhitespace afterKey)
-      (value, afterValue) <- parseValue (skipWhitespace afterColon)
-      let next = skipWhitespace afterValue
-      parsePairs next ((key, value) : acc)
+    parsePairs s' acc = do
+        (key, afterKey) <- parseString (skipWhitespace s')
+        afterColon <- stripPrefix ':' (skipWhitespace afterKey)
+        (value, afterValue) <- parseValue (skipWhitespace afterColon)
+        let next = case skipWhitespace afterValue of
+                    ',':xs' -> skipWhitespace xs'
+                    xs' -> xs'
+        parsePairs next ((key, value) : acc)
 
-parseContentArray :: String -> Maybe ([Content], String)
-parseContentArray s = case skipWhitespace s of
-  ('[':rest) -> parseElems (skipWhitespace rest) []
-  _ -> Nothing
-  where
-    parseElems (']':xs) acc = Just (reverse acc, skipWhitespace xs)
-    parseElems s acc = do
-      (c, rest1) <- parseContent (skipWhitespace s)
-      let rest2 = skipWhitespace rest1
-      parseElems rest2 (c : acc)
-
--- Parse either a string or a nested object/array as a value
 parseValue :: String -> Maybe (String, String)
 parseValue s = case skipWhitespace s of
-  ('"':_) -> parseString s
-  ('{':_) -> wrap parseObject s
-  ('[':_) -> wrap parseArray s
-  _ -> Nothing
+    '"':_ -> parseString s
+    '{':_ -> wrap parseFields s
+    '[':_ -> wrap parseMixedArray s
+    _ -> parseLiteral s
   where
     wrap p str = do
-      (val, rest) <- p str
-      Just (val, skipWhitespace rest)
-  
--- Parse a JSON object as a raw string
-parseObject :: String -> Maybe (String, String)
-parseObject s = extractBraces '{' '}' s
+        (val, rest) <- p str
+        Just (show val, skipWhitespace rest)  -- Convert back to string for consistency
 
--- Parse a JSON array as a raw string
-parseArray :: String -> Maybe (String, String)
-parseArray s = extractBraces '[' ']' s
-
--- Parse a quoted string: "something"
---parseString :: String -> Maybe (String, String)
---parseString ('"':rest) = go "" rest
---  where
---    go acc ('"':xs) = Just (reverse acc, xs)
---    go acc (x:xs)   = go (x:acc) xs
---    go _ []         = Nothing
---parseString _ = Nothing
+parseLiteral :: String -> Maybe (String, String)
+parseLiteral s = case span (\c -> not (c `elem` " \t\n\r,}]")) s of
+    ("", _) -> Nothing
+    (lit, rest) -> Just (lit, skipWhitespace rest)
 
 parseString :: String -> Maybe (String, String)
 parseString ('"':rest) = go "" rest
   where
-    go acc ('\\':x:xs) = go (x:acc) xs  -- Handles escaped characters
-    go acc ('"':xs) = Just (reverse acc, xs)
+    go acc ('\\':x:xs) = case x of
+        'n' -> go ('\n':acc) xs
+        't' -> go ('\t':acc) xs
+        'r' -> go ('\r':acc) xs
+        _ -> go (x:acc) xs
+    go acc ('"':xs) = Just (reverse acc, skipWhitespace xs)
     go acc (x:xs) = go (x:acc) xs
     go _ [] = Nothing
-parseString _ = Nothing  -- Handle all other cases
+parseString _ = Nothing
 
--- Strip prefix if it matches
 stripPrefix :: Char -> String -> Maybe String
-stripPrefix c (x:xs) | x == c = Just xs
-stripPrefix _ _ = Nothing
-
--- Extract content between balanced braces/brackets
-extractBraces :: Char -> Char -> String -> Maybe (String, String)
-extractBraces open close s@(x:_)
-  | x /= open = Nothing
-  | otherwise = go 0 "" s
-  where
-    go :: Int -> String -> String -> Maybe (String, String)
-    go _ acc [] = Nothing
-    go depth acc (y:ys)
-      | y == open = go (depth + 1) (y:acc) ys
-      | y == close =
-          let newDepth = depth - 1
-          in if newDepth == 0
-             then Just (reverse (y:acc), ys)
-             else go newDepth (y:acc) ys
-      | otherwise = go depth (y:acc) ys
-extractBraces _ _ _ = Nothing
+stripPrefix c s = case skipWhitespace s of
+    (x:xs) | x == c -> Just (skipWhitespace xs)
+    _ -> Nothing
