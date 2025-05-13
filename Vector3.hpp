@@ -5,7 +5,20 @@
 ** frrttr
 */
 
-struct Vector3 {
-    float x, y, z;
-    Vector3(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
-};
+#ifndef VECTOR3
+#define VECTOR3
+
+class Vector3 {
+    public:
+        float x, y, z;
+    
+        Vector3() : x(0), y(0), z(0) {}
+        Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
+        Vector3(const libconfig::Setting& setting) {
+            x = setting["x"];
+            y = setting["y"];
+            z = setting["z"];
+        }
+    };
+    
+#endif    

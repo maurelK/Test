@@ -1,3 +1,4 @@
+
 #include "load_scene.hpp"
 
 void Scene::load_scene(const std::string path)
@@ -38,4 +39,3 @@ void Scene::load_scene(const std::string path)
     }
     return scene;
 }
-

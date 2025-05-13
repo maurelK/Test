@@ -13,6 +13,7 @@
     #include "Camera.hpp"
     #include "Color.hpp"
     #include "Scene.hpp"
+    #include "Vector3.hpp"
     #include "PrimFactory.hpp"
 
 class Scene {
