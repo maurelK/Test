@@ -1,35 +1,24 @@
 ##
 ## EPITECH PROJECT, 2025
-## Makefile
+## tyetyyt
 ## File description:
-## Makefile
+## rttytuyytr
 ##
 
-NAME = mypandoc
+NAME	=	raytracer
 
-STACK = stack
+SRCS	= 	$(wildcard *.cpp)
 
-BUILD_DIR = $(shell $(STACK) path --local-install-root)
+OBJS	= 	$(SRCS:.c=.o)
 
-EXEC = $(BUILD_DIR)/bin/$(NAME)
+all: 		$(NAME)
 
-TARGET = ./$(NAME)
+$(NAME):	$(OBJS)
 
-.PHONY: all build clean fclean re run
-
-all: build
-
-build:
-	$(STACK) build
-	cp $(EXEC) $(TARGET)
-
+	g++ $(SRCS) -o $(NAME) -lconfig++
 clean:
-	$(STACK) clean
 
 fclean: clean
-	rm -f $(TARGET)
+	rm -rf *.a
 
 re: fclean all
-
-run: build
-	./$(TARGET)
