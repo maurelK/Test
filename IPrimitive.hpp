@@ -14,10 +14,14 @@
     #include <algorithm>
     #include <stdexcept>
     #include <memory>
+    #include "Color.hpp"
 
 class IPrimitive {
-private:
-
 public:
+    virtual ~IPrimitive() = default;
+    //virtual bool intersect(const Ray& ray, float& t) const = 0;
+    //virtual Color getColor() const = 0;
+    
 };
+
 #endif

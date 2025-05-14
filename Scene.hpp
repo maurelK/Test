@@ -1,35 +1,30 @@
-/*
-** EPITECH PROJECT, 2025
-** Loader
-** File description:
-** Load our scene class
-*/
-#ifndef SCENE
-    #define SCENE
-    #include <libconfig.h++>
-    #include <vector>
-    #include <memory>
-    #include "Camera.hpp"
-    #include "Color.hpp"
-    #include "IPrimitive.hpp"
-    #include "PrimFactory.hpp"
+#ifndef SCENE_HPP
+#define SCENE_HPP
+
+#include <string>
+#include <vector>
+#include <memory>
+#include "IPrimitive.hpp"
+#include "Camera.hpp"
+#include "ILight.hpp"
+#include <memory>
+#include "Vec3.hpp"
 
 class Scene {
 public:
-
+    void load_scene(const std::string& path);
     void setCamera(const Camera& cam);
     const Camera& getCamera() const;
     void addPrimitive(std::unique_ptr<IPrimitive> prim);
     const std::vector<std::unique_ptr<IPrimitive>>& getPrimitives() const;
-    //void addLight(std::unique_ptr<ILight> light);
-    //const std::vector<std::unique_ptr<ILight>>& getLights() const;
-    void load_scene(const std::string path);
 
+    void addLight(std::unique_ptr<ILight> light);
+    const std::vector<std::unique_ptr<ILight>>& getLights() const;
 
 private:
     Camera camera;
     std::vector<std::unique_ptr<IPrimitive>> _primitives;
-    //std::vector<std::unique_ptr<ILight>> _lights; // Optional
+    std::vector<std::unique_ptr<ILight>> _lights;
 };
 
-#endif
+#endif // SCENE_HPP

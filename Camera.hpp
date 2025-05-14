@@ -9,16 +9,16 @@
     #include <libconfig.h++>
     #include <vector>
     #include <memory>
-    #include "Vector3.hpp"
+    #include "Vec3.hpp"
 
 class Camera {
 public:
     Camera();
-    Camera(int width, int height, const Vector3& position, const Vector3& rotation, float fieldOfView);
+    Camera(int width, int height, const Vec3& position, const Vec3& rotation, float fieldOfView);
     int width;
     int height;
-    Vector3 position;
-    Vector3 rotation;
+    Vec3 position;
+    Vec3 rotation;
     float fieldOfView;
 };
 

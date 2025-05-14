@@ -1,24 +1,25 @@
 ##
-## EPITECH PROJECT, 2025
-## tyetyyt
+## EPITECH PROJECT, 2023
+## my_Makefile
 ## File description:
-## rttytuyytr
+## compilation
 ##
 
-NAME	=	raytracer
+NAME	= raytracer
 
-SRCS	= 	$(wildcard *.cpp)
+SRCS	= $(wildcard *.cpp)
 
-OBJS	= 	$(SRCS:.c=.o)
+OBJS	= $(SRCS:.c=.o)
 
-all: 		$(NAME)
+all: $(NAME)
 
-$(NAME):	$(OBJS)
+$(NAME): $(OBJS) $(MAIN)
+	g++ $(OBJS) -o $(NAME) -lconfig++
 
-	g++ $(SRCS) -o $(NAME) -lconfig++
 clean:
+	rm -rf *.o test_scene
 
 fclean: clean
-	rm -rf *.a
+	rm -f $(NAME)
 
 re: fclean all

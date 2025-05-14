@@ -10,8 +10,8 @@
 
 Color parseColor(const libconfig::Setting &setting)
 {
-    float r = setting["r"];
-    float g = setting["g"];
-    float b = setting["b"];
+    int r = setting["r"];
+    int g = setting["g"];
+    int b = setting["b"];
     return Color(r, g, b);
 }

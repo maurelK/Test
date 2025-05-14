@@ -15,7 +15,7 @@
     #include <stdexcept>
     #include <memory>
     #include "IPrimitive.hpp"
-    #include "Vector3.hpp"
+    #include "Vec3.hpp"
     #include "Color.hpp"
 class PrimFactory {
 private:
