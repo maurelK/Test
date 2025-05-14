@@ -8,10 +8,9 @@
 #include "Color.hpp"
 #include <libconfig.h++>
 
-Color parseColor(const libconfig::Setting &setting)
-{
+Color parseColor(const libconfig::Setting &setting) {
     int r = setting["r"];
     int g = setting["g"];
     int b = setting["b"];
-    return Color(r, g, b);
+    return Color(r / 255.0f, g / 255.0f, b / 255.0f);
 }

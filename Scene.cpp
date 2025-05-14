@@ -59,7 +59,7 @@ void Scene::load_scene(const std::string& path) {
 
     try {
         const auto& prims = cfg.lookup("primitives");
-
+            
         if (prims.exists("spheres")) {
             const auto& spheres = prims["spheres"];
             for (int i = 0; i < spheres.getLength(); ++i) {
@@ -67,6 +67,7 @@ void Scene::load_scene(const std::string& path) {
                 this->addPrimitive(std::move(sphere));
             }
         }
+
         if (prims.exists("planes")) {
             const auto& planes = prims["planes"];
             for (int i = 0; i < planes.getLength(); ++i) {

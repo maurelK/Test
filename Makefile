@@ -9,7 +9,7 @@ NAME	= raytracer
 
 SRCS	= $(wildcard *.cpp)
 
-OBJS	= $(SRCS:.c=.o)
+OBJS    = $(SRCS:.cpp=.o)  
 
 all: $(NAME)
 
