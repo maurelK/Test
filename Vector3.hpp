@@ -7,7 +7,7 @@
 
 #ifndef VECTOR3
 #define VECTOR3
-
+#include <libconfig.h++> 
 class Vector3 {
     public:
         float x, y, z;

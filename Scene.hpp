@@ -12,6 +12,7 @@
     #include "Camera.hpp"
     #include "Color.hpp"
     #include "IPrimitive.hpp"
+    #include "PrimFactory.hpp"
 
 class Scene {
 public:
@@ -22,6 +23,8 @@ public:
     const std::vector<std::unique_ptr<IPrimitive>>& getPrimitives() const;
     //void addLight(std::unique_ptr<ILight> light);
     //const std::vector<std::unique_ptr<ILight>>& getLights() const;
+    void load_scene(const std::string path);
+
 
 private:
     Camera camera;

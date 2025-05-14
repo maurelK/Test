@@ -14,8 +14,12 @@
 class Camera {
 public:
     Camera();
-    Camera(int widht, int height, const Vector3& position, const Vector3& rotation, float fieldOfView);
-    int _widht;
-
+    Camera(int width, int height, const Vector3& position, const Vector3& rotation, float fieldOfView);
+    int width;
+    int height;
+    Vector3 position;
+    Vector3 rotation;
+    float fieldOfView;
 };
+
 #endif
