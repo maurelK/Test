@@ -14,14 +14,22 @@
     #include <algorithm>
     #include <stdexcept>
     #include <memory>
+    #include "Vec3.hpp"
+    #include "Ray.hpp"
     #include "Color.hpp"
 
-class IPrimitive {
-public:
-    virtual ~IPrimitive() = default;
-    //virtual bool intersect(const Ray& ray, float& t) const = 0;
-    //virtual Color getColor() const = 0;
+    struct HitRecord {
+        float t;
+        Vec3 point;
+        Vec3 normal;
+        Color color;
+        bool hit;
+    };
     
-};
-
+    class IPrimitive {
+    public:
+        virtual ~IPrimitive() = default;
+        virtual bool intersect(const Ray& ray, HitRecord& hit) const = 0;
+    };
+    
 #endif

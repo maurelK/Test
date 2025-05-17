@@ -23,12 +23,19 @@
 #include "Vec3.hpp"
 #include "IPrimitive.hpp"
 #include "ILight.hpp"
+#include "Sphere.hpp"
+#include "Plane.hpp"
 #include <iostream>
 #include <memory>
 
+#include "Scene.hpp"
+#include "Camera.hpp"
+#include "RayGenerator.hpp"
+#include <iostream>
+
 int main(int argc, char** argv) {
     if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <scene.cfg>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <scene_config_file>" << std::endl;
         return 84;
     }
 
@@ -36,41 +43,19 @@ int main(int argc, char** argv) {
 
     try {
         scene.load_scene(argv[1]);
-        std::cout << "Scene loaded successfully ✅\n" << std::endl;
+        std::cout << " Scene loaded successfully.\n";
 
-        // === Camera ===
         const Camera& cam = scene.getCamera();
-        std::cout << "[CAMERA]" << std::endl;
-        std::cout << "Resolution: " << cam.width << " x " << cam.height << std::endl;
-        std::cout << "Position  : (" << cam.position.x << ", " << cam.position.y << ", " << cam.position.z << ")\n";
-        std::cout << "Rotation  : (" << cam.rotation.x << ", " << cam.rotation.y << ", " << cam.rotation.z << ")\n";
-        std::cout << "FOV       : " << cam.fieldOfView << "\n" << std::endl;
+        RayGenerator rayGen(cam, cam.width, cam.height);
 
-        // === Primitives ===
-        std::cout << "[PRIMITIVES]" << std::endl;
-        int idx = 0;
-        for (const auto& prim : scene.getPrimitives()) {
-            std::cout << "- Primitive #" << idx++ << " loaded (type unknown statically)\n";
-            // Bonus: tu peux plus tard faire un cast dynamique ici
-        }
-        std::cout << "Total: " << scene.getPrimitives().size() << " primitives\n" << std::endl;
+        std::string filename = "render.ppm";
+        std::cout << " Rendering to: " << filename << std::endl;
 
-        // === Lights ===
-        std::cout << "[LIGHTS]" << std::endl;
-        idx = 0;
-        for (const auto& light : scene.getLights()) {
-            if (dynamic_cast<AmbientLight*>(light.get()))
-                std::cout << "- Light #" << idx++ << ": Ambient\n";
-            else if (dynamic_cast<PointLight*>(light.get()))
-                std::cout << "- Light #" << idx++ << ": Point\n";
-            else if (dynamic_cast<DirectionalLight*>(light.get()))
-                std::cout << "- Light #" << idx++ << ": Directional\n";
-            else
-                std::cout << "- Light #" << idx++ << ": Unknown\n";
-        }
+        scene.render(cam.width, cam.height, rayGen, filename);
+        std::cout << " Render complete.\n";
 
     } catch (const std::exception& e) {
-        std::cerr << "⚠️  Error while loading scene: " << e.what() << std::endl;
+        std::cerr << " Error: " << e.what() << std::endl;
         return 84;
     }
 

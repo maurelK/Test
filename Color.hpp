@@ -9,5 +9,8 @@
 
 struct Color {
     float r, g, b;
-    inline Color(float r_, float g_, float b_) : r(r_), g(g_), b(b_) {}
+    Color() : r(0), g(0), b(0) {}
+
+    Color(float r_, float g_, float b_) : r(r_), g(g_), b(b_) {}
 };
+

@@ -9,6 +9,9 @@
 #include "ILight.hpp"
 #include <memory>
 #include "Vec3.hpp"
+#include "Ray.hpp"
+#include "RayGenerator.hpp"
+
 
 class Scene {
 public:
@@ -20,7 +23,10 @@ public:
 
     void addLight(std::unique_ptr<ILight> light);
     const std::vector<std::unique_ptr<ILight>>& getLights() const;
+    Color trace(const Ray& ray) const;
+    void render(int width, int height, const RayGenerator& rayGen, const std::string& filename) const;
 
+    
 private:
     Camera camera;
     std::vector<std::unique_ptr<IPrimitive>> _primitives;

@@ -1,6 +1,12 @@
 #include "Scene.hpp"
 #include "PrimFactory.hpp"
 #include "Vec3.hpp"
+#include "Ray.hpp"
+#include "Camera.hpp"
+#include "Scene.hpp"
+#include <limits>
+
+
 
 void Scene::setCamera(const Camera& cam) {
     camera = cam;
@@ -42,16 +48,14 @@ void Scene::load_scene(const std::string& path) {
 
     try {
         const auto& cam = cfg.lookup("camera");
-        std::cout << "cam[\"resolution\"][\"width\"]: " << (int)cam["resolution"]["width"] << std::endl;
-        std::cout << "cam[\"resolution\"][\"height\"]: " << (int)cam["resolution"]["height"] << std::endl;
-        this->camera.width = (int)cam["resolution"]["width"];
-        this->camera.height = (int)cam["resolution"]["height"];
-        std::cout << "cam[\"position\"] type: " << cam["position"].getType() << std::endl;
-        std::cout << "cam[\"rotation\"] type: " << cam["rotation"].getType() << std::endl;
-        Vec3 position = parseVec3(cam["position"]);
-        Vec3 rotation = parseVec3(cam["rotation"]);
-        std::cout << "cam[\"fieldOfView\"] type: " << cam["fieldOfView"].getType() << std::endl;
-        this->camera.fieldOfView = static_cast<float>(cam["fieldOfView"]);
+        this->setCamera(Camera(
+        cam["resolution"]["width"],
+        cam["resolution"]["height"],
+        parseVec3(cam["position"]),
+        parseVec3(cam["rotation"]),
+        static_cast<float>(cam["fieldOfView"])
+    ));
+
     } catch (const libconfig::SettingTypeException &ex) {
         std::cerr << "SettingTypeException in camera section: " << ex.what() << std::endl;
         throw;
@@ -59,7 +63,7 @@ void Scene::load_scene(const std::string& path) {
 
     try {
         const auto& prims = cfg.lookup("primitives");
-            
+
         if (prims.exists("spheres")) {
             const auto& spheres = prims["spheres"];
             for (int i = 0; i < spheres.getLength(); ++i) {
@@ -88,7 +92,7 @@ void Scene::load_scene(const std::string& path) {
         }
         if (lights.exists("diffuse")) {
             float diffuseIntensity = static_cast<float>(lights["diffuse"]);
-            this->addLight(std::make_unique<AmbientLight>(diffuseIntensity));
+            this->addLight(std::make_unique<DiffuseLight>(diffuseIntensity));
         }
         if (lights.exists("point")) {
             const auto& pointLights = lights["point"];
@@ -108,4 +112,49 @@ void Scene::load_scene(const std::string& path) {
         std::cerr << "SettingTypeException in lights section: " << ex.what() << std::endl;
         throw;
     }
+}
+
+Color Scene::trace(const Ray& ray) const {
+    HitRecord closestHit;
+    closestHit.t = std::numeric_limits<float>::infinity();
+    closestHit.hit = false;
+
+    for (const auto& object : _primitives) {
+        HitRecord hit;
+        if (object->intersect(ray, hit) && hit.t < closestHit.t) {
+            closestHit = hit;
+        }
+    }
+
+    return closestHit.hit ? closestHit.color : Color(0, 0, 0);
+}
+
+void Scene::render(int width, int height, const RayGenerator& rayGen, const std::string& filename) const {
+    std::ofstream ppm(filename);
+    if (!ppm.is_open()) {
+        std::cerr << "Error: Cannot open file " << filename << std::endl;
+        return;
+    }
+
+    ppm << "P3\n" << width << " " << height << "\n255\n";
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            Ray ray = rayGen.generateRay(x, y);
+            Color color = trace(ray);
+
+            //int r = static_cast<int>(std::clamp(color.r, 0.f, 1.f) * 255);
+            //int g = static_cast<int>(std::clamp(color.g, 0.f, 1.f) * 255);
+            //int b = static_cast<int>(std::clamp(color.b, 0.f, 1.f) * 255);
+            //
+            int r = int(255.999 * color.r);
+            int g = int(255.999 * color.g);
+            int b = int(255.999 * color.b);
+
+            ppm << r << " " << g << " " << b << "\n";
+        }
+    }
+
+    ppm.close();
+    std::cout << "Rendered image written to " << filename << std::endl;
 }

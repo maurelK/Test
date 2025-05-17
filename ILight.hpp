@@ -14,6 +14,12 @@ public:
     AmbientLight(float intensity) : intensity(intensity) {}
 };
 
+class DiffuseLight : public ILight {
+public:
+    float diffusion;
+    DiffuseLight(float intensity) : diffusion(intensity) {}
+};
+
 class PointLight : public ILight {
 public:
     Vec3 position;
