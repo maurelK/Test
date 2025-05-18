@@ -12,5 +12,6 @@ Color parseColor(const libconfig::Setting &setting) {
     int r = setting["r"];
     int g = setting["g"];
     int b = setting["b"];
-    return Color(r, g , b);
+    return Color(r / 255.f, g / 255.f, b / 255.f);
+
 }

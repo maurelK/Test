@@ -20,10 +20,24 @@ struct Vec3 {
             throw std::runtime_error("Cannot normalize zero vector");
         return Vec3(x / norm, y / norm, z / norm);
     }
-
+    Vec3 operator-() const {
+        return Vec3(-x, -y, -z);
+    }
     Vec3 operator-(const Vec3& other) const {
         return Vec3(x - other.x, y - other.y, z - other.z);
     }
+
+    // Multiplication Vec3 * float
+Vec3 operator*(float scalar) const {
+    return Vec3(x * scalar, y * scalar, z * scalar);
+}
+
+// Division Vec3 / float (utile aussi)
+Vec3 operator/(float scalar) const {
+    if (scalar == 0.0f)
+        throw std::runtime_error("Division by zero in Vec3");
+    return Vec3(x / scalar, y / scalar, z / scalar);
+}
 
     float dot(const Vec3& other) const {
         return x * other.x + y * other.y + z * other.z;
