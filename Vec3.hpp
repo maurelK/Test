@@ -58,37 +58,6 @@ struct Vec3 {
         );
     }
 
-    /*Vec3 rotate(const Vec3& v, const Vec3& rotDeg) {
-    float pitch = rotDeg.x * M_PI / 180.0f;
-    float yaw   = rotDeg.y * M_PI / 180.0f;
-    float roll  = rotDeg.z * M_PI / 180.0f;
-
-    Vec3 res = v;
-
-    // Rotation X (pitch)
-    res = Vec3(
-        res.x,
-        res.y * cos(pitch) - res.z * sin(pitch),
-        res.y * sin(pitch) + res.z * cos(pitch)
-    );
-
-    // Rotation Y (yaw)
-    res = Vec3(
-        res.x * cos(yaw) + res.z * sin(yaw),
-        res.y,
-        -res.x * sin(yaw) + res.z * cos(yaw)
-    );
-
-    // Rotation Z (roll)
-    res = Vec3(
-        res.x * cos(roll) - res.y * sin(roll),
-        res.x * sin(roll) + res.y * cos(roll),
-        res.z
-    );
-
-    return res;
-}*/
-
     float length() const {
         return sqrt( x * x + y * y + z * z);
     }

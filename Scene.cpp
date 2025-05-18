@@ -6,7 +6,7 @@
 #include "Scene.hpp"
 #include <limits>
 #include <bits/stdc++.h>
-
+#include "CameraBuilder.hpp"
 
 
 void Scene::setCamera(const Camera& cam) {
@@ -48,14 +48,9 @@ void Scene::load_scene(const std::string& path) {
     }
 
     try {
-        const auto& cam = cfg.lookup("camera");
-        this->setCamera(Camera(
-        cam["resolution"]["width"],
-        cam["resolution"]["height"],
-        parseVec3(cam["position"]),
-        parseVec3(cam["rotation"]),
-        static_cast<float>(cam["fieldOfView"])
-    ));
+        const auto& camSetting = cfg.lookup("camera");
+        Camera cam = CameraBuilder::build(camSetting);
+        this->setCamera(cam);
 
     } catch (const libconfig::SettingTypeException &ex) {
         std::cerr << "SettingTypeException in camera section: " << ex.what() << std::endl;
@@ -72,7 +67,6 @@ void Scene::load_scene(const std::string& path) {
                 this->addPrimitive(std::move(sphere));
             }
         }
-
         if (prims.exists("planes")) {
             const auto& planes = prims["planes"];
             for (int i = 0; i < planes.getLength(); ++i) {
@@ -94,23 +88,23 @@ void Scene::load_scene(const std::string& path) {
         }
         if (lights.exists("diffuse")) {
             this->light.diffuse = static_cast<float>(lights["diffuse"]);;
-             float diffuseIntensity = static_cast<float>(lights["diffuse"]);
-             this->addLight(std::make_unique<DiffuseLight>(diffuseIntensity));
+             //float diffuseIntensity = static_cast<float>(lights["diffuse"]);
+             //this->addLight(std::make_unique<DiffuseLight>(diffuseIntensity));
         }
         if (lights.exists("point")) {
             const auto& pointLights = lights["point"];
             for (int i = 0; i < pointLights.getLength(); ++i) {
                 Vec3 pos = parseVec3(pointLights[i]["position"]);
                 this->light.pointLights.push_back(pos);
-                this->addLight(std::make_unique<PointLight>(pos));
+                //this->addLight(std::make_unique<PointLight>(pos));
             }
         }
         if (lights.exists("directional")) {
             const auto& directionalLights = lights["directional"];
             for (int i = 0; i < directionalLights.getLength(); ++i) {
                 Vec3 dir = parseVec3(directionalLights[i]["direction"]);
-                this->light.directionLights.push_back(dir);
-                this->addLight(std::make_unique<DirectionalLight>(dir));
+                //this->light.directionLights.push_back(dir);
+                //this->addLight(std::make_unique<DirectionalLight>(dir));
             }
         }
     } catch (const libconfig::SettingTypeException &ex) {
@@ -122,19 +116,14 @@ void Scene::load_scene(const std::string& path) {
 Color Scene::shade(HitRecord &hit) const
 {
     Color color = hit.color * light.ambient;
-    
     for (const auto& point : light.pointLights) {
         Vec3 lightDir = (point - hit.point).normalized();
-        
         Ray shadowRay(hit.point + (hit.normal * 0.0001f), lightDir);
         bool inShadow = false;
-        
         double lightDistance = (point - hit.point).length();
-        
         HitRecord closestHit;
         closestHit.t = std::numeric_limits<float>::infinity();
         closestHit.hit = false;
-        
         for (const auto &obj : _primitives) {
             if (obj->intersect(shadowRay, closestHit) && closestHit.t < lightDistance) {
                 inShadow = true;
@@ -149,7 +138,8 @@ Color Scene::shade(HitRecord &hit) const
     return color;
 }
 
-Color Scene::trace(const Ray& ray) const {
+Color Scene::trace(const Ray& ray) const
+{
     HitRecord closestHit;
     closestHit.t = std::numeric_limits<float>::infinity();
     closestHit.hit = false;
@@ -158,12 +148,11 @@ Color Scene::trace(const Ray& ray) const {
         HitRecord hit;
         if (object->intersect(ray, hit) && hit.t < closestHit.t) {
             closestHit = hit;
-            // std::cout << "Hit Something\n";
         }
     }
     if (closestHit.hit) {
         return shade(closestHit);
-        return closestHit.color;//shade(closestHit);
+        return closestHit.color;
     }
     return Color(0, 0, 0);
 }
@@ -182,15 +171,13 @@ void Scene::render(int width, int height, const RayGenerator& rayGen, const std:
         for (int x = 0; x < width; ++x) {
             Ray ray = rayGen.generateRay(x, y);
             Color color = trace(ray);
-
-            int r = static_cast<int>(color.r); //(std::clamp(color.r, 0.f, 1.f) * 255);
-            int g = static_cast<int>(color.g);//(std::clamp(color.g, 0.f, 1.f) * 255);
-            int b = static_cast<int>(color.b);//(std::clamp(color.b, 0.f, 1.f) * 255);
-
+            int r = static_cast<int>(color.r);
+            int g = static_cast<int>(color.g);
+            int b = static_cast<int>(color.b);
             ppm << r << " " << g << " " << b << "\n";
         }
     }
 
     ppm.close();
-    std::cout << "Rendered image written to " << filename << std::endl;
 }
+
