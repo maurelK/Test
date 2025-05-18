@@ -19,6 +19,8 @@ private:
     std::string axis_;
     float position_;
     Color color_;
+    Vec3 point;
+    Vec3 norm;
 };
 
 #endif

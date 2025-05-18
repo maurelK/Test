@@ -20,27 +20,77 @@ struct Vec3 {
             throw std::runtime_error("Cannot normalize zero vector");
         return Vec3(x / norm, y / norm, z / norm);
     }
-    Vec3 operator-() const {
-        return Vec3(-x, -y, -z);
-    }
+
     Vec3 operator-(const Vec3& other) const {
         return Vec3(x - other.x, y - other.y, z - other.z);
     }
 
-    // Multiplication Vec3 * float
-Vec3 operator*(float scalar) const {
-    return Vec3(x * scalar, y * scalar, z * scalar);
-}
+    Vec3 operator+(const Vec3& other) const {
+        return Vec3(x + other.x, y + other.y, z + other.z);
+    }
 
-// Division Vec3 / float (utile aussi)
-Vec3 operator/(float scalar) const {
-    if (scalar == 0.0f)
-        throw std::runtime_error("Division by zero in Vec3");
-    return Vec3(x / scalar, y / scalar, z / scalar);
-}
+    Vec3 operator*(const float n) const {
+        return Vec3(n * x, n * y, n * z);
+    }
 
-    float dot(const Vec3& other) const {
+    Vec3 operator*(const int n) const {
+        return Vec3(n * x, n * y, n * z);
+    }
+
+    Vec3 operator*(const Vec3& other) const {
+        return Vec3(x * other.x, y * other.y, z * other.z);
+    }
+
+
+    Vec3 operator/(const Vec3& other) const {
+        return Vec3(x / other.x, y / other.y, z / other.z);
+    }
+
+    double dot(const Vec3& other) const {
         return x * other.x + y * other.y + z * other.z;
+    }
+
+    Vec3 cross(const Vec3& v) const {
+        return Vec3(
+            y * v.z - z * v.y,
+            z * v.x - x * v.z,
+            x * v.y - y * v.x
+        );
+    }
+
+    /*Vec3 rotate(const Vec3& v, const Vec3& rotDeg) {
+    float pitch = rotDeg.x * M_PI / 180.0f;
+    float yaw   = rotDeg.y * M_PI / 180.0f;
+    float roll  = rotDeg.z * M_PI / 180.0f;
+
+    Vec3 res = v;
+
+    // Rotation X (pitch)
+    res = Vec3(
+        res.x,
+        res.y * cos(pitch) - res.z * sin(pitch),
+        res.y * sin(pitch) + res.z * cos(pitch)
+    );
+
+    // Rotation Y (yaw)
+    res = Vec3(
+        res.x * cos(yaw) + res.z * sin(yaw),
+        res.y,
+        -res.x * sin(yaw) + res.z * cos(yaw)
+    );
+
+    // Rotation Z (roll)
+    res = Vec3(
+        res.x * cos(roll) - res.y * sin(roll),
+        res.x * sin(roll) + res.y * cos(roll),
+        res.z
+    );
+
+    return res;
+}*/
+
+    float length() const {
+        return sqrt( x * x + y * y + z * z);
     }
 
     static float getFloat(const libconfig::Setting& setting, const char* key) {

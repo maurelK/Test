@@ -11,7 +11,7 @@
 #include "Vec3.hpp"
 #include "Ray.hpp"
 #include "RayGenerator.hpp"
-
+#include "Light.hpp"
 
 class Scene {
 public:
@@ -25,10 +25,12 @@ public:
     const std::vector<std::unique_ptr<ILight>>& getLights() const;
     Color trace(const Ray& ray) const;
     void render(int width, int height, const RayGenerator& rayGen, const std::string& filename) const;
+    Color shade(HitRecord &hit) const;
 
     
 private:
     Camera camera;
+    Light light;
     std::vector<std::unique_ptr<IPrimitive>> _primitives;
     std::vector<std::unique_ptr<ILight>> _lights;
 };

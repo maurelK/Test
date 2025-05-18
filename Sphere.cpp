@@ -7,14 +7,15 @@ Sphere::Sphere(const Vec3& center, float radius, const Color& color)
     : center_(center), radius_(radius), color_(color) {}
 
 bool Sphere::intersect(const Ray& ray, HitRecord& hit) const {
-    Vec3 oc = ray.origin - center_;
+    Vec3 oc = center_ - ray.origin;
     float a = ray.direction.dot(ray.direction);
-    float b = 2.0f * oc.dot(ray.direction);
+    float b = -2.0f * oc.dot(ray.direction);
     float c = oc.dot(oc) - radius_ * radius_;
     float discriminant = b * b - 4 * a * c;
 
-    if (discriminant < 0)
+    if (discriminant < 0) {
         return false;
+    }
 
     float sqrt_disc = std::sqrt(discriminant);
     float t1 = (-b - sqrt_disc) / (2 * a);

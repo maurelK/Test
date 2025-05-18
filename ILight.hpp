@@ -32,4 +32,4 @@ public:
     DirectionalLight(const Vec3& direction) : direction(direction) {}
 };
 
-#endif // ILIGHT_HPP
+#endif
