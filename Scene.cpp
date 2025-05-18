@@ -48,13 +48,11 @@ void Scene::load_scene(const std::string& path) {
 
     try {
         const auto& cam = cfg.lookup("camera");
-        this->setCamera(Camera(
-        cam["resolution"]["width"],
-        cam["resolution"]["height"],
-        parseVec3(cam["position"]),
-        parseVec3(cam["rotation"]),
-        static_cast<float>(cam["fieldOfView"])
-    ));
+        this->camera.width = (int)cam["resolution"]["width"];
+        this->camera.height = (int)cam["resolution"]["height"];
+        this->camera.position = parseVec3(cam["position"]);
+        this->camera.rotation = parseVec3(cam["rotation"]);
+        this->camera.fieldOfView = static_cast<float>(cam["fieldOfView"]);
 
     } catch (const libconfig::SettingTypeException &ex) {
         std::cerr << "SettingTypeException in camera section: " << ex.what() << std::endl;
