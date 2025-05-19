@@ -62,5 +62,4 @@ Ray RayGenerator::generateRay(int x, int y) const
     Vec3 up = rotate(Vec3(0, 1, 0), camera.rotation);
     Vec3 rayDir = (forward + right * px + up * py).normalized();
     return Ray(camera.position, rayDir);
-}
-*/
+}*/

@@ -1,5 +1,5 @@
 ##
-## EPITECH PROJECT, 2023
+## EPITECH PROJECT, 2025
 ## my_Makefile
 ## File description:
 ## compilation
@@ -9,15 +9,19 @@ NAME	= raytracer
 
 SRCS	= $(wildcard *.cpp)
 
-OBJS    = $(SRCS:.cpp=.o)  
+OBJS	= $(SRCS:.cpp=.o)
+
+CXX	= g++
+CXXFLAGS = -Wall -Wextra -std=c++17
+LIBS	= -lconfig++ -lsfml-graphics -lsfml-window -lsfml-system
 
 all: $(NAME)
 
-$(NAME): $(OBJS) $(MAIN)
-	g++ $(OBJS) -o $(NAME) -lconfig++
+$(NAME): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) $(LIBS)
 
 clean:
-	rm -rf *.o test_scene
+	rm -f *.o
 
 fclean: clean
 	rm -f $(NAME)
