@@ -24,7 +24,7 @@ bool Sphere::intersect(const Ray& ray, HitRecord& hit) const {
     float t = (t1 >= 0) ? t1 : ((t2 >= 0) ? t2 : -1);
     if (t < 0)
         return false;
-    //float t = (-b - std::sqrt(discriminant) ) / (2.0*a);
+
     hit.t = t;
     hit.point = ray.at(t);
     hit.normal = (hit.point - center_).normalized();

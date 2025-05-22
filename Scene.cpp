@@ -88,23 +88,23 @@ void Scene::load_scene(const std::string& path) {
         }
         if (lights.exists("diffuse")) {
             this->light.diffuse = static_cast<float>(lights["diffuse"]);;
-             //float diffuseIntensity = static_cast<float>(lights["diffuse"]);
-             //this->addLight(std::make_unique<DiffuseLight>(diffuseIntensity));
+             float diffuseIntensity = static_cast<float>(lights["diffuse"]);
+             this->addLight(std::make_unique<DiffuseLight>(diffuseIntensity));
         }
         if (lights.exists("point")) {
             const auto& pointLights = lights["point"];
             for (int i = 0; i < pointLights.getLength(); ++i) {
                 Vec3 pos = parseVec3(pointLights[i]["position"]);
                 this->light.pointLights.push_back(pos);
-                //this->addLight(std::make_unique<PointLight>(pos));
+                this->addLight(std::make_unique<PointLight>(pos));
             }
         }
         if (lights.exists("directional")) {
             const auto& directionalLights = lights["directional"];
             for (int i = 0; i < directionalLights.getLength(); ++i) {
                 Vec3 dir = parseVec3(directionalLights[i]["direction"]);
-                //this->light.directionLights.push_back(dir);
-                //this->addLight(std::make_unique<DirectionalLight>(dir));
+                this->light.directionLights.push_back(dir);
+                this->addLight(std::make_unique<DirectionalLight>(dir));
             }
         }
     } catch (const libconfig::SettingTypeException &ex) {
@@ -152,7 +152,6 @@ Color Scene::trace(const Ray& ray) const
     }
     if (closestHit.hit) {
         return shade(closestHit);
-        return closestHit.color;
     }
     return Color(0, 0, 0);
 }

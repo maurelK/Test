@@ -60,8 +60,8 @@ int main(int argc, char** argv) {
         sf::RenderWindow window(sf::VideoMode(cam.width, cam.height), "Raytracer Output");
         window.setFramerateLimit(60);
 
-        float angle = 0.0f;
-        float radius = 20.0f;
+        
+        
 
         while (window.isOpen()) {
             sf::Event event;
@@ -69,11 +69,6 @@ int main(int argc, char** argv) {
                 if (event.type == sf::Event::Closed)
                     window.close();
             }
-            float offsetX = std::sin(angle) * radius;
-            float offsetY = std::cos(angle) * radius;
-            sprite.setPosition(offsetX, offsetY);
-            angle += 0.03f;
-
             window.clear(sf::Color::Black);
             window.draw(sprite);
             window.display();
