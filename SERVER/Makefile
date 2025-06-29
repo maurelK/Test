@@ -1,37 +1,25 @@
 ##
 ## EPITECH PROJECT, 2025
-## Makefile settingup
+## ze
 ## File description:
-## my network game
+## zr
 ##
 
-SRC	=	socket.c \
-		ressources.c \
-		player_management.c \
-		handle_cmd.c \
-		fork_eggs.c \
-		Commandes/connect.c \
-		Commandes/eject.c \
-		Commandes/forward.c \
-		Commandes/inventory.c \
-		Commandes/left.c \
-		Commandes/right.c \
-		Commandes/look.c \
-		main.c
+CC = gcc
+SRC = $(wildcard *.c Commandes/*.c)
+OBJ = $(SRC:.c=.o)
+NAME = zappy_server
+CFLAGS = -Wall -Wextra -Iinclude -lm
 
-OBJ	=	$(SRC:.c=.o)
+all: $(NAME)
 
-NAME	=	zappy_server
-
-all:	$(NAME)
-
-$(NAME):	$(OBJ)
-	gcc -o $(NAME) $(SRC)
+$(NAME): $(OBJ)
+	$(CC) $(OBJ) -o $(NAME) $(CFLAGS)
 
 clean:
-	rm -f   $(OBJ)
+	rm -f $(OBJ)
 
-fclean:	clean
-	rm -f   $(NAME)
+fclean: clean
+	rm -f $(NAME)
 
-re:	fclean  all
+re: fclean all

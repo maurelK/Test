@@ -224,7 +224,7 @@ void handle_existing_connection(struct pollfd *ufds, int i, info_t *info)
         strncpy(info->users[player_id], buffer, sizeof(info->users[player_id]) - 1);
         info->users[player_id][sizeof(info->users[player_id]) - 1] = '\0';
 
-        player_t *p = createPlayer(info, ufds[i].fd, buffer);
+        player_t *p = create_player(info, ufds[i].fd, buffer);
         if (!p) {
             printf("ERREUR: échec de createPlayer pour fd=%d\n", ufds[i].fd);
             dprintf(ufds[i].fd, "ko\n");
@@ -379,18 +379,15 @@ void reset_slot(info_t *info, int i, struct pollfd *ufds)
     if (ufds[i].fd != -1)
         close(ufds[i].fd);
     ufds[i].fd = -1;
-
     info->valid[i] = 0;
     info->to_close[i] = 0;
     info->is_gui[i] = 0;
     info->data_socket[i] = -1;
-
     memset(info->users[i], 0, sizeof(info->users[i]));
     memset(&info->game.players[i], 0, sizeof(player_t));
 }
 
-
-/*void evets(struct pollfd *ufds, int server, info_t *info)
+void evets(struct pollfd *ufds, int server, info_t *info)
 {
     for (int i = 0; i < CLIENTS; i++) {
 if (info->to_close[i]) {
@@ -412,31 +409,7 @@ if (info->to_close[i]) {
     reset_slot(info, i, ufds);
 }
     }
-}*/
-
-void evets(struct pollfd *ufds, int server, info_t *info)
-{
-    for (int i = 0; i < CLIENTS; i++) {
-        if (info->to_close[i]) {
-            player_t *player = &info->game.players[i];
-            tile_t *tile = &info->game.map[player->y][player->x];
-            for (int j = 0; j < tile->player_count; j++) {
-                if (tile->player_ids[j] == i) {
-                    for (int k = j; k < tile->player_count - 1; k++)
-                        tile->player_ids[k] = tile->player_ids[k + 1];
-                    tile->player_count--;
-                    break;
-                }
-            }
-
-            // NE PAS faire : current_clients--
-
-            reset_slot(info, i, ufds);
-        }
-    }
 }
-
-
 
 /*void usage (void) 
 {
@@ -471,28 +444,64 @@ tile_t **map_initiation(game_t *game_tools)
     return game_tools->map;
 }
 
-void dispatch_sources(game_t game)
+
+void dispatch_sources(game_t *game)
 {
     float resources[7] = {0.5, 0.3, 0.15, 0.1, 0.1, 0.08, 0.05};
-    int floor_resources[7];
-    int total_tiles = game.width * game.height;
+    int total_tiles = game->width * game->height;
+    coord_t *coords = malloc(sizeof(coord_t) * total_tiles);
 
-    for (int i = 0; i < 7; i++) {
-        floor_resources[i] = (int)(resources[i] * total_tiles);
-    }
+    if (!coords)
+        return;
+
     srand(time(NULL));
+
+    // Remplir coords[]
+    int idx = 0;
+    for (int y = 0; y < game->height; y++)
+        for (int x = 0; x < game->width; x++)
+            coords[idx++] = (coord_t){x, y};
+
+    // Pour chaque ressource :
     for (int i = 0; i < 7; i++) {
-        int x = rand() % game.width;
-        int y = rand() % game.height;
-        game.map[y][x].resources[i] = 1;
-        floor_resources[i]--;
-    }
-    for (int i = 0; i < 7; i++) {
-        while (floor_resources[i] > 0) {
-            int x = rand() % game.width;
-            int y = rand() % game.height;
-            game.map[y][x].resources[i]++;
-            floor_resources[i]--;
+        int base = total_tiles / 7;
+        int extra = (int)(resources[i] * total_tiles) - base;
+
+        // Shuffle pour base
+        for (int s = total_tiles - 1; s > 0; s--) {
+            int j = rand() % (s + 1);
+            coord_t tmp = coords[s];
+            coords[s] = coords[j];
+            coords[j] = tmp;
+        }
+
+        // Placer au moins 1 sur base tuiles
+        for (int k = 0; k < base; k++) {
+            int x = coords[k].x;
+            int y = coords[k].y;
+            game->map[y][x].resources[i]++;
+        }
+
+        // Ajouter du surplus
+        for (int e = 0; e < extra; e++) {
+            int r = rand() % total_tiles;
+            int x = coords[r].x;
+            int y = coords[r].y;
+            game->map[y][x].resources[i]++;
         }
     }
+
+    // Debug
+    printf("Resource distribution on map:\n");
+    for (int y = 0; y < game->height; y++) {
+        for (int x = 0; x < game->width; x++) {
+            printf("Tile (%d,%d): ", x, y);
+            for (int r = 0; r < 7; r++) {
+                printf("%d ", game->map[y][x].resources[r]);
+            }
+            printf("\n");
+        }
+    }
+
+    free(coords);
 }

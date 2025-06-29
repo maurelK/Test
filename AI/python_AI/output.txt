@@ -1,3 +1,0 @@
-Received: 'WELCOME'
-Slots available: None
-Error: team refused or socket closed

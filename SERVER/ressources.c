@@ -13,7 +13,7 @@ const char *resource_names[7] = {
 
 int get_resource_index(const char *name)
 {
-    for (int i = 0; i < 7; ++i) {
+    for (int i = 0; i < 7; i++) {
         if (strcmp(name, resource_names[i]) == 0)
             return i;
     }
@@ -24,15 +24,13 @@ void handle_take(int client_fd, int i, char *buffer, info_t *info)
 {
     char *res_name = strtok(buffer + 5, "\n");
     int res_index = get_resource_index(res_name);
+    player_t *player = &info->game.players[i];
+    tile_t *tile = &info->game.map[player->y][player->x];
 
     if (res_index == -1) {
         writing(client_fd, "ko\n");
         return;
     }
-
-    player_t *player = &info->game.players[i];
-    tile_t *tile = &info->game.map[player->y][player->x];
-
     if (tile->resources[res_index] > 0) {
         tile->resources[res_index]--;
         player->inventory[res_index]++;
@@ -46,15 +44,13 @@ void handle_set(int client_fd, int i, char *buffer, info_t *info)
 {
     char *res_name = strtok(buffer + 4, "\n");
     int res_index = get_resource_index(res_name);
+    player_t *player = &info->game.players[i];
+    tile_t *tile = &info->game.map[player->y][player->x];
 
     if (res_index == -1) {
         writing(client_fd, "ko\n");
         return;
     }
-
-    player_t *player = &info->game.players[i];
-    tile_t *tile = &info->game.map[player->y][player->x];
-
     if (player->inventory[res_index] > 0) {
         player->inventory[res_index]--;
         tile->resources[res_index]++;

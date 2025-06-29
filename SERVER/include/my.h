@@ -73,6 +73,8 @@ typedef struct game_s {
     int team_count;
     int freq;
     int time_unit;
+    int port;
+    int max_clients;
 } game_t;
 
 typedef struct info {
@@ -108,11 +110,39 @@ typedef struct {
     int freq;
 } args_t;
 
+typedef struct tile_info_s {
+    game_t *game;
+    player_t *player;
+    int dist;
+    int offset;
+} tile_info_t;
+
+typedef struct coords_s {
+    int tx;
+    int ty;
+} coords_t;
+
+typedef struct eject_data_s {
+    info_t *info;
+    int *ejected;
+} eject_data_t;
+typedef struct coord_s {
+    int x;
+    int y;
+} coord_t;
+
 //int parse_args(int ac, char **av, args_t *args);
 void print_usage(void);
+int handle_game_arg2(char **argv, int *i, int argc, info_t *info);
+int handle_game_arg1(char **argv, int *i, int argc, info_t *info);
+int parse_single_arg(char **argv, int *i, int argc, info_t *info);
+int parse_teams(char **argv, int *i, int argc, info_t *info);
+tile_t **allocate_map(int width, int height);
+void print_hex(const char *label, const char *str);
+void clean_strings(char *str);
 void add_cmd(int player_id, char *command, int freq);
-void process_commands(info_t* info);
-void dispatch_sources(game_t game);
+void process_commands(info_t *info);
+void dispatch_sources(game_t *game);
 int get_resource_index(const char *name);
 void handle_take(int client_fd, int i, char *buffer, info_t *info);
 void handle_set(int client_fd, int i, char *buffer, info_t *info);
@@ -144,9 +174,7 @@ void handle_help(int client_fd, int i, char *buffer, info_t *info);
 void handle_noop(int client_fd, int i, char *buffer, info_t *info);
 int count_active_fds(struct pollfd *ufds);
 void poll_react(struct pollfd *ufds, int server, info_t *info);
-// Axel functions prototypes:
-
-player_t *createPlayer(info_t *info, int socket, char *team_name);
+player_t *create_player(info_t *info, int socket, char *team_name);
 void decrease_life(info_t *info);
 void handle_take(int client_fd, int i, char *buffer, info_t *info);
 void handle_set(int client_fd, int i, char *buffer, info_t *info);
@@ -160,5 +188,4 @@ void incantation_cmd(int client_fd, int i, char *buffer, info_t *info);
 void forward_cmd(int client_fd, int i, char *buffer, info_t *info);
 void left_cmd(int client_fd, int i, char *buffer, info_t *info);
 void right_cmd(int client_fd, int i, char *buffer, info_t *info);
-
 #endif
