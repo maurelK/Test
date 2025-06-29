@@ -188,4 +188,5 @@ void incantation_cmd(int client_fd, int i, char *buffer, info_t *info);
 void forward_cmd(int client_fd, int i, char *buffer, info_t *info);
 void left_cmd(int client_fd, int i, char *buffer, info_t *info);
 void right_cmd(int client_fd, int i, char *buffer, info_t *info);
+void handle_resource_regeneration(game_t *game);
 #endif

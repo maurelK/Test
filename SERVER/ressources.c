@@ -57,6 +57,8 @@ void handle_set(int client_fd, int i, char *buffer, info_t *info)
         player->inventory[res_index]--;
         tile->resources[res_index]++;
         writing(client_fd, "ok\n");
+        printf("[SET] Player %d set %s at (%d,%d). New count: %d\n",
+               i, res_name, player->x, player->y, tile->resources[res_index]);
     } else {
         writing(client_fd, "ko\n");
     }

@@ -259,44 +259,6 @@ void handle_existing_connection(struct pollfd *ufds, int i, info_t *info)
 
 
 
-void handle_poll(struct pollfd *ufds, int server, info_t *info)
-{
-    int ret;
-    static int tick_counter = 0;
-
-    ufds[0].fd = server;
-    ufds[0].events = POLLIN;
-
-    while (1) {
-        ret = poll(ufds, CLIENTS, 100);
-        if (ret < 0) {
-            perror("poll");
-            exit(EXIT_FAILURE);
-        }
-        if (ret > 0) {
-            if (ufds[0].revents & POLLIN) {
-                int new_client = new_connexion(server);
-                if (new_client >= 0) {
-                    add_new_client(new_client, ufds, info);
-                }
-            }
-            for (int i = 1; i < CLIENTS; i++) {
-                if (ufds[i].fd != -1 && (ufds[i].revents & POLLIN)) {
-                    handle_existing_connection(ufds, i, info);
-                }
-            }
-        }
-        process_commands(info);
-        decrease_life(info);
-
-        tick_counter++;
-        if (tick_counter >= 20) {
-            handle_resource_regeneration(&info->game);
-            tick_counter = 0;
-        }
-    }
-}
-
 void my_server(int port, char *path, info_t *info)
 {
     int server;
