@@ -92,11 +92,24 @@ player_t *create_player(info_t *info, int socket, char *team_name)
 static void kill_player(info_t *info, int i)
 {
     int fd = info->data_socket[i];
+    player_t *player = &info->game.players[i];
+    tile_t *tile = &info->game.map[player->y][player->x];
 
     dprintf(fd, "dead\n");
     close(fd);
     info->valid[i] = 0;
     info->data_socket[i] = -1;
+
+    // Remove player from tile
+    for (int j = 0; j < tile->player_count; j++) {
+        if (tile->player_ids[j] == i) {
+            for (int k = j; k < tile->player_count - 1; k++)
+                tile->player_ids[k] = tile->player_ids[k + 1];
+            tile->player_count--;
+            break;
+        }
+    }
+
     printf("Player %d died of starvation\n", i);
 }
 
@@ -112,8 +125,8 @@ void decrease_life(info_t *info)
             p->life_units--;
         if (p->life_units > 0)
             continue;
-        p->inventory[0]--;
-        if (p->inventory[0] >= 0) {
+        if (p->inventory[0] > 0) {
+            p->inventory[0]--;
             p->life_units = 126;
             continue;
         }

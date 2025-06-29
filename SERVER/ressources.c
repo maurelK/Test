@@ -35,6 +35,8 @@ void handle_take(int client_fd, int i, char *buffer, info_t *info)
         tile->resources[res_index]--;
         player->inventory[res_index]++;
         writing(client_fd, "ok\n");
+        printf("[TAKE] Player %d took %s at (%d,%d). New count: %d\n",
+               i, res_name, player->x, player->y, tile->resources[res_index]);
     } else {
         writing(client_fd, "ko\n");
     }

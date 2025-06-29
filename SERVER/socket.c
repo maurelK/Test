@@ -262,6 +262,7 @@ void handle_existing_connection(struct pollfd *ufds, int i, info_t *info)
 void handle_poll(struct pollfd *ufds, int server, info_t *info)
 {
     int ret;
+    static int tick_counter = 0;
 
     ufds[0].fd = server;
     ufds[0].events = POLLIN;
@@ -287,6 +288,12 @@ void handle_poll(struct pollfd *ufds, int server, info_t *info)
         }
         process_commands(info);
         decrease_life(info);
+
+        tick_counter++;
+        if (tick_counter >= 20) {
+            handle_resource_regeneration(&info->game);
+            tick_counter = 0;
+        }
     }
 }
 
