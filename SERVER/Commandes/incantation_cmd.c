@@ -82,10 +82,9 @@ void incantation_cmd(int client_fd, int i, char *buffer, info_t *info)
     player_t *player = &info->game.players[i];
     tile_t *tile = &info->game.map[player->y][player->x];
 
-    if (!can_incant(tile, player->level, info)) {
+    if (!can_incant(tile, player->level, info))
         writing(client_fd, "ko\n");
         return;
-    }
     consume_resources(tile, player->level);
     elevate_players(tile, player->level, info);
     dprintf(client_fd, "Elevation underway\n");

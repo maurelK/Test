@@ -61,6 +61,7 @@ void handle_resource_regeneration(game_t *game)
     if (resource_regen_counter >= 20) {
         regenerate_resources(game);
         resource_regen_counter = 0;
+        printf("Resources regenerated on the map.\n");
     }
 }
 
@@ -92,7 +93,7 @@ void handle_poll(struct pollfd *ufds, int server, info_t *info)
             }
         }
         process_commands(info);
-        decrease_life(info);
+      //  decrease_life(info);
 
         tick_counter++;
         if (tick_counter >= 20) {

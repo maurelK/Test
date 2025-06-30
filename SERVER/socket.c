@@ -248,12 +248,6 @@ void handle_existing_connection(struct pollfd *ufds, int i, info_t *info)
 
     // === Commande normale ===
     if (info->valid[player_id]) {
-        if (info->is_gui[player_id]) {
-            // Ignore or handle GUI commands here if needed
-            printf("Commande reçue du client %d (GUI client): %s\n", ufds[i].fd, buffer);
-            // For now, ignore unknown GUI commands
-            return;
-        }
         printf("Commande reçue du client %d (player %d): %s\n", ufds[i].fd, player_id, buffer);
         add_cmd(player_id, buffer, info->game.freq);
     } else {

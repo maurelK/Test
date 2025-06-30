@@ -34,11 +34,11 @@ static void init_player(player_t *p, info_t *info, int id, int socket)
     p->incantation_time = 0;
     p->is_incanting = 0;
     p->level = 1;
-    p->life_units = 1260; // Increased initial life units to 1260 for longer survival
+    p->life_units = 126;
     p->x = rand() % game->width;
     p->y = rand() % game->height;
     memset(p->inventory, 0, sizeof(p->inventory));
-    p->inventory[0] = 20; // Increased initial food inventory to 20
+    p->inventory[0] = 10;
     info->valid[id] = 1;
     info->data_socket[id] = socket;
 }
@@ -95,11 +95,6 @@ static void kill_player(info_t *info, int i)
     player_t *player = &info->game.players[i];
     tile_t *tile = &info->game.map[player->y][player->x];
 
-    if (info->is_gui[i]) {
-        // Do not kill GUI clients
-        return;
-    }
-
     dprintf(fd, "dead\n");
     close(fd);
     info->valid[i] = 0;
@@ -126,14 +121,13 @@ void decrease_life(info_t *info)
         if (!info->valid[i])
             continue;
         p = &info->game.players[i];
-        if (p->life_units > 0) {
+        if (p->life_units > 0)
             p->life_units--;
+        if (p->life_units > 0)
             continue;
-        }
         if (p->inventory[0] > 0) {
             p->inventory[0]--;
-            p->life_units = 1260; // Reset life units to 1260 after consuming food
-            printf("Player %d consumed food, life reset to 1260\n", i);
+            p->life_units = 126;
             continue;
         }
         kill_player(info, i);

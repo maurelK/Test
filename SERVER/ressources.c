@@ -5,7 +5,6 @@
 ** feef
 */
 
-
 #include "include/my.h"
 
 const char *resource_names[7] = {
@@ -23,17 +22,7 @@ int get_resource_index(const char *name)
 
 void handle_take(int client_fd, int i, char *buffer, info_t *info)
 {
-    char *arg = buffer + 5; // "Take " is 5 chars
-    if (!arg || *arg == '\0' || *arg == '\n' || *arg == '\r') {
-        writing(client_fd, "ko\n");
-        return;
-    }
-    char *res_name = strtok(arg, " \n\r");
-    if (res_name == NULL) {
-        writing(client_fd, "ko\n");
-        return;
-    }
-    
+    char *res_name = strtok(buffer + 5, "\n");
     int res_index = get_resource_index(res_name);
     player_t *player = &info->game.players[i];
     tile_t *tile = &info->game.map[player->y][player->x];
@@ -55,17 +44,7 @@ void handle_take(int client_fd, int i, char *buffer, info_t *info)
 
 void handle_set(int client_fd, int i, char *buffer, info_t *info)
 {
-    char *arg = buffer + 4;
-    if (!arg || *arg == '\0' || *arg == '\n' || *arg == '\r') {
-        writing(client_fd, "ko\n");
-        return;
-    }
-    char *res_name = strtok(arg, " \n\r");
-    if (res_name == NULL) {
-        writing(client_fd, "ko\n");
-        return;
-    }
-
+    char *res_name = strtok(buffer + 4, "\n");
     int res_index = get_resource_index(res_name);
     player_t *player = &info->game.players[i];
     tile_t *tile = &info->game.map[player->y][player->x];

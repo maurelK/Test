@@ -31,10 +31,8 @@ void execute_fork(int client_fd, int i, char *buffer, info_t *info)
     egg = &team->eggs[team->egg_count];
     egg_id = team->egg_count;
     (void)buffer;
-    if (team->egg_count >= CLIENTS || tile->egg_count >= CLIENTS) {
-        dprintf(client_fd, "ko\n");
+    if (team->egg_count >= CLIENTS || tile->egg_count >= CLIENTS)
         return;
-    }
     dprintf(1, "Player pos: x=%d y=%d\n", player->x, player->y);
     egg->x = player->x;
     egg->y = player->y;
