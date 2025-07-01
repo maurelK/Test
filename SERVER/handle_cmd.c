@@ -44,9 +44,10 @@ void queue_command(player_t *player, char *command, int freq, int cmd_index)
 
     new_cmd->command = strdup(commands[cmd_index].command);
     new_cmd->buffer = strdup(command);
-    new_cmd->exec_time = commands[cmd_index].exec_time;
+    new_cmd->exec_time = commands[cmd_index].exec_time;  // Store ticks, not time
     new_cmd->next = NULL;
 
+    // Add to player's command queue
     if (!player->command_queue) {
         player->command_queue = new_cmd;
     } else {
@@ -55,6 +56,7 @@ void queue_command(player_t *player, char *command, int freq, int cmd_index)
         curr->next = new_cmd;
     }
 }
+
 
 void add_cmd(int player_id, char *command, int freq, info_t *info)
 {
@@ -95,7 +97,7 @@ void process_commands(info_t *info)
         command_node_t *prev = NULL;
         
         while (curr) {
-            // Convert exec_time to ticks (based on frequency)
+            // Decrement remaining ticks
             curr->exec_time--;
             
             if (curr->exec_time <= 0) {

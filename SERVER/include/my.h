@@ -143,7 +143,13 @@ typedef struct coord_s {
     int y;
 } coord_t;
 
-//int parse_args(int ac, char **av, args_t *args);
+// Resource management
+void regenerate_resources(game_t *game);
+void dispatch_sources(game_t *game);  // If still used elsewhere
+
+// Time and command processing
+void process_commands(info_t *info);
+void decrease_life(info_t *info);
 void print_usage(void);
 int handle_game_arg2(char **argv, int *i, int argc, info_t *info);
 int handle_game_arg1(char **argv, int *i, int argc, info_t *info);

@@ -28,6 +28,7 @@ static int get_available_player_id(info_t *info)
 static void init_player(player_t *p, info_t *info, int id, int socket)
 {
     game_t *game = &info->game;
+        p->command_queue = NULL;  // Initialize command queue
 
     p->id = id;
     p->direction = rand() % 4;

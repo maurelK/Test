@@ -72,7 +72,7 @@ void regenerate_resources(game_t *game)
 // Process game logic each tick
 void process_game_tick(info_t *info)
 {
-    // Process all commands for all players
+    // Process all commands
     process_commands(info);
 
     // Handle player life
@@ -81,7 +81,7 @@ void process_game_tick(info_t *info)
     // Handle resource regeneration
     static int resource_regen_ticks = 0;
     if (++resource_regen_ticks >= 20) {
-        add_resources(&info->game);  // Your resource addition function
+        regenerate_resources(&info->game);  // Changed to actual function
         resource_regen_ticks = 0;
         
         // Notify GUI clients
