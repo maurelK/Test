@@ -96,9 +96,23 @@ static void kill_player(info_t *info, int i)
     tile_t *tile = &info->game.map[player->y][player->x];
 
     dprintf(fd, "dead\n");
+    // Flush and close socket properly
+    fsync(fd);
+    shutdown(fd, SHUT_RDWR);
     close(fd);
     info->valid[i] = 0;
     info->data_socket[i] = -1;
+
+    // Free any allocated command queue for player
+    command_node_t *cmd = player->command_queue;
+    while (cmd) {
+        command_node_t *next = cmd->next;
+        free(cmd->command);
+        free(cmd->buffer);
+        free(cmd);
+        cmd = next;
+    }
+    player->command_queue = NULL;
 
     // Remove player from tile
     for (int j = 0; j < tile->player_count; j++) {
@@ -121,15 +135,19 @@ void decrease_life(info_t *info)
         if (!info->valid[i])
             continue;
         p = &info->game.players[i];
-        if (p->life_units > 0)
+        if (p->life_units > 0) {
             p->life_units--;
+            printf("Player %d life decreased to %d\n", i, p->life_units);
+        }
         if (p->life_units > 0)
             continue;
         if (p->inventory[0] > 0) {
             p->inventory[0]--;
             p->life_units = 126;
+            printf("Player %d consumed food, life reset to %d\n", i, p->life_units);
             continue;
         }
+        printf("Player %d has no food and died of starvation\n", i);
         kill_player(info, i);
     }
 }

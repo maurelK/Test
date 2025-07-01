@@ -24,6 +24,13 @@
     #include <netinet/in.h>
     #define CLIENTS 500
 
+typedef struct command_node_s {
+    char *command;
+    char *buffer;
+    long long exec_time; // absolute time in ms
+    struct command_node_s *next;
+} command_node_t;
+
 typedef struct player_s {
     int id;
     int x;
@@ -35,6 +42,7 @@ typedef struct player_s {
     int team_id;
     int is_incanting;
     int incantation_time;
+    command_node_t *command_queue;
 } player_t;
 
 typedef struct egg_s {
@@ -77,6 +85,13 @@ typedef struct game_s {
     int max_clients;
 } game_t;
 
+typedef struct {
+    int player_id;
+    char *command;
+    char *buffer;
+    int remaining_time;
+} pendingcmd_t;
+
 typedef struct info {
     int to_close[CLIENTS];
     int valid[CLIENTS];
@@ -85,6 +100,7 @@ typedef struct info {
     int data_socket[CLIENTS];
     game_t game;
     int is_gui[CLIENTS];
+    pendingcmd_t pending_cmd[CLIENTS];
 }info_t;
 
 typedef struct {
@@ -93,12 +109,8 @@ typedef struct {
     int exec_time;
 } command_t;
 
-typedef struct {
-    int player_id;
-    char *command;
-    char *buffer;
-    int remaining_time;
-} pendingcmd_t;
+
+
 
 typedef struct {
     int port;
@@ -140,7 +152,7 @@ int parse_teams(char **argv, int *i, int argc, info_t *info);
 tile_t **allocate_map(int width, int height);
 void print_hex(const char *label, const char *str);
 void clean_strings(char *str);
-void add_cmd(int player_id, char *command, int freq);
+void add_cmd(int player_id, char *command, int freq, info_t *info);
 void process_commands(info_t *info);
 void dispatch_sources(game_t *game);
 int get_resource_index(const char *name);
@@ -189,4 +201,9 @@ void forward_cmd(int client_fd, int i, char *buffer, info_t *info);
 void left_cmd(int client_fd, int i, char *buffer, info_t *info);
 void right_cmd(int client_fd, int i, char *buffer, info_t *info);
 void handle_resource_regeneration(game_t *game);
+void execute_command(info_t *info, player_t *player, command_node_t *cmd);
+
+void send_all_bct(info_t *info, int gui_fd);
+void process_commands(info_t *info);
+void decrease_life(info_t *info);
 #endif

@@ -1,14 +1,18 @@
+#define _POSIX_C_SOURCE 200809L
 /*
 ** EPITECH PROJECT, 2024
 ** B-YEP-400-COT-4-1-zappy-evans.zime
 ** File description:
 ** handle_cmd.c
 */
-
 #include "include/my.h"
+#include <time.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
-pendingcmd_t pending_cmd[CLIENTS * 10];
-int pending_c = 0;
+extern info_t *global_info;  // Declare global info pointer
+
 const command_t commands[] = {
     {"Forward", forward_cmd, 7},
     {"Right", right_cmd, 7},
@@ -27,74 +31,92 @@ const command_t commands[] = {
 static void clean_cmd_string(char *dest, const char *src)
 {
     char *pos;
-
     strncpy(dest, src, 127);
     dest[127] = '\0';
-    pos = strchr(dest, '\n');
-    if (pos)
-        *pos = '\0';
-    pos = strchr(dest, '\r');
-    if (pos)
-        *pos = '\0';
+    if ((pos = strchr(dest, '\n'))) *pos = '\0';
+    if ((pos = strchr(dest, '\r'))) *pos = '\0';
 }
 
-void queue_command(int player_id, char *command, int freq, int cmd_index)
+void queue_command(player_t *player, char *command, int freq, int cmd_index)
 {
-    if (pending_c >= CLIENTS * 10)
-        return;
-    pending_cmd[pending_c].player_id = player_id;
-    pending_cmd[pending_c].command = strdup(commands[cmd_index].command);
-    pending_cmd[pending_c].buffer = strdup(command);
-    pending_cmd[pending_c].remaining_time =
-    commands[cmd_index].exec_time / freq;
-    pending_c++;
+    command_node_t *new_cmd = malloc(sizeof(command_node_t));
+    if (!new_cmd) return;
+
+    new_cmd->command = strdup(commands[cmd_index].command);
+    new_cmd->buffer = strdup(command);
+    new_cmd->exec_time = commands[cmd_index].exec_time;
+    new_cmd->next = NULL;
+
+    if (!player->command_queue) {
+        player->command_queue = new_cmd;
+    } else {
+        command_node_t *curr = player->command_queue;
+        while (curr->next) curr = curr->next;
+        curr->next = new_cmd;
+    }
 }
 
-void add_cmd(int player_id, char *command, int freq)
+void add_cmd(int player_id, char *command, int freq, info_t *info)
 {
     char cmd_clean[128];
-    int cmd_count = sizeof(commands) / sizeof(commands[0]);
-    int len;
-
     clean_cmd_string(cmd_clean, command);
-    for (int i = 0; i < cmd_count; i++) {
-        len = strlen(commands[i].command);
-        if (strncmp(cmd_clean, commands[i].command, len) == 0) {
-            queue_command(player_id, command, freq, i);
+    
+    for (size_t i = 0; i < sizeof(commands)/sizeof(commands[0]); i++) {
+        if (strncmp(cmd_clean, commands[i].command, strlen(commands[i].command)) == 0) {
+            queue_command(&info->game.players[player_id], command, freq, i);
             return;
         }
     }
-    printf("Commande inconnue: %s\n", cmd_clean);
+    printf("Unknown command: %s\n", cmd_clean);
 }
 
-static void execute_command(info_t *info, int index)
+void execute_command(info_t *info, player_t *player, command_node_t *cmd)
 {
-    for (size_t j = 0; j < sizeof(commands) / sizeof(commands[0]); j++) {
-        if (strncmp(pending_cmd[index].command,
-            commands[j].command, 4) == 0) {
+    for (size_t j = 0; j < sizeof(commands)/sizeof(commands[0]); j++) {
+        if (strcmp(cmd->command, commands[j].command) == 0) {
             commands[j].function(
-                info->data_socket[pending_cmd[index].player_id],
-                pending_cmd[index].player_id,
-                pending_cmd[index].buffer,
+                info->data_socket[player->id],
+                player->id,
+                cmd->buffer,
                 info
             );
             break;
         }
     }
-    free(pending_cmd[index].command);
-    free(pending_cmd[index].buffer);
-    for (int j = index; j < pending_c - 1; j++)
-        pending_cmd[j] = pending_cmd[j + 1];
-    pending_c--;
 }
 
 void process_commands(info_t *info)
 {
-    for (int i = 0; i < pending_c; i++) {
-        pending_cmd[i].remaining_time--;
-        if (pending_cmd[i].remaining_time <= 0) {
-            execute_command(info, i);
-            i--;
+    for (int i = 0; i < CLIENTS; i++) {
+        if (!info->valid[i]) continue;
+        
+        player_t *player = &info->game.players[i];
+        command_node_t *curr = player->command_queue;
+        command_node_t *prev = NULL;
+        
+        while (curr) {
+            // Convert exec_time to ticks (based on frequency)
+            curr->exec_time--;
+            
+            if (curr->exec_time <= 0) {
+                execute_command(info, player, curr);
+                
+                // Remove from queue
+                command_node_t *to_free = curr;
+                if (prev) {
+                    prev->next = curr->next;
+                    curr = curr->next;
+                } else {
+                    player->command_queue = curr->next;
+                    curr = player->command_queue;
+                }
+                free(to_free->command);
+                free(to_free->buffer);
+                free(to_free);
+            } else {
+                prev = curr;
+                curr = curr->next;
+            }
         }
     }
 }

@@ -68,6 +68,20 @@ void spawn_player_from_egg(player_t *player, team_t *team, game_t *game)
         player->x = egg->x;
         player->y = egg->y;
         dprintf(1, "ebo %d\n", game->egg_count);
+        // Remove egg from tile
+        tile_t *tile = &game->map[egg->y][egg->x];
+        for (int i = 0; i < tile->egg_count; i++) {
+            if (tile->egg_ids[i] == egg->id) {
+                // Shift egg ids left
+                for (int j = i; j < tile->egg_count - 1; j++) {
+                    tile->egg_ids[j] = tile->egg_ids[j + 1];
+                }
+                tile->egg_count--;
+                break;
+            }
+        }
+        // Remove egg from team eggs array by marking as hatched
+        egg->is_hatched = 1;
     } else {
         player->x = rand() % game->width;
         player->y = rand() % game->height;

@@ -249,7 +249,7 @@ void handle_existing_connection(struct pollfd *ufds, int i, info_t *info)
     // === Commande normale ===
     if (info->valid[player_id]) {
         printf("Commande reçue du client %d (player %d): %s\n", ufds[i].fd, player_id, buffer);
-        add_cmd(player_id, buffer, info->game.freq);
+        add_cmd(player_id, buffer, info->game.freq, info);
     } else {
         printf("Client %d: message inattendu avant auth: %s\n", ufds[i].fd, buffer);
         dprintf(ufds[i].fd, "ko\n");
@@ -272,14 +272,7 @@ void my_server(int port, char *path, info_t *info)
     handle_poll(ufds, server, info);
 }
 
-/*void handle_poll(struct pollfd *ufds, int server, info_t *info)
-{
-    ufds[0].fd = server;
-    ufds[0].events = POLLIN;
-    while (1) {
-        poll_react(ufds, server, info);
-    }
-}*/
+
 
 int count_active_fds(struct pollfd *ufds)
 {
@@ -380,11 +373,6 @@ if (info->to_close[i]) {
     }
 }
 
-/*void usage (void) 
-{
-    printf("USAGE: ./zappy_server -p port -x width -y height ");
-    printf("-n name1 name2 ... -c clientsNb -f freq");
-}*/
 
 void ressouces_initiation(game_t *game_tools, int i, int j)
 {
@@ -393,74 +381,42 @@ void ressouces_initiation(game_t *game_tools, int i, int j)
     }
 }
 
-tile_t **map_initiation(game_t *game_tools)
-{
-    game_tools->map = malloc(sizeof(tile_t *) * game_tools->height);
-    if (!game_tools->map)
-        return NULL;
-
-    for (int i = 0; i < game_tools->height; i++) {
-        game_tools->map[i] = malloc(sizeof(tile_t) * game_tools->width);
-        if (!game_tools->map[i])
-            return NULL;
-
-        for (int j = 0; j < game_tools->width; j++) {
-            ressouces_initiation(game_tools, i, j);
-            game_tools->map[i][j].player_count = 0;
-            game_tools->map[i][j].egg_count = 0;
-        }
-    }
-    return game_tools->map;
-}
-
-
 void dispatch_sources(game_t *game)
 {
-    float resources[7] = {0.5, 0.3, 0.15, 0.1, 0.1, 0.08, 0.05};
+
+    if (!game || !game->map || game->width <= 0 || game->height <= 0) 
+        return;  // Keep validation
+
+    const float densities[7] = {0.5, 0.3, 0.15, 0.1, 0.1, 0.08, 0.05};
     int total_tiles = game->width * game->height;
-    coord_t *coords = malloc(sizeof(coord_t) * total_tiles);
+    int *tile_indices = malloc(total_tiles * sizeof(int));
+    
+    if (!tile_indices) return;
 
-    if (!coords)
-        return;
+    // Single initialization
+    for (int i = 0; i < total_tiles; i++)
+        tile_indices[i] = i;
 
-    srand(time(NULL));
-
-    // Remplir coords[]
-    int idx = 0;
-    for (int y = 0; y < game->height; y++)
-        for (int x = 0; x < game->width; x++)
-            coords[idx++] = (coord_t){x, y};
-
-    // Pour chaque ressource :
-    for (int i = 0; i < 7; i++) {
-        int base = total_tiles / 7;
-        int extra = (int)(resources[i] * total_tiles) - base;
-
-        // Shuffle pour base
-        for (int s = total_tiles - 1; s > 0; s--) {
-            int j = rand() % (s + 1);
-            coord_t tmp = coords[s];
-            coords[s] = coords[j];
-            coords[j] = tmp;
-        }
-
-        // Placer au moins 1 sur base tuiles
-        for (int k = 0; k < base; k++) {
-            int x = coords[k].x;
-            int y = coords[k].y;
-            game->map[y][x].resources[i]++;
-        }
-
-        // Ajouter du surplus
-        for (int e = 0; e < extra; e++) {
-            int r = rand() % total_tiles;
-            int x = coords[r].x;
-            int y = coords[r].y;
-            game->map[y][x].resources[i]++;
-        }
+    // Single shuffle for all resources
+    for (int i = total_tiles - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        int tmp = tile_indices[i];
+        tile_indices[i] = tile_indices[j];
+        tile_indices[j] = tmp;
     }
 
-    // Debug
+    // Distribute all resources
+    for (int r = 0; r < 7; r++) {
+        int total = (int)(densities[r] * total_tiles);
+        if (total < 1) total = 1;
+        
+        for (int i = 0; i < total; i++) {
+            int idx = tile_indices[i % total_tiles];
+            int x = idx % game->width;
+            int y = idx / game->width;
+            game->map[y][x].resources[r]++;
+        }
+    }
     printf("Resource distribution on map:\n");
     for (int y = 0; y < game->height; y++) {
         for (int x = 0; x < game->width; x++) {
@@ -471,6 +427,41 @@ void dispatch_sources(game_t *game)
             printf("\n");
         }
     }
-
-    free(coords);
+    free(tile_indices);
 }
+      
+/*void dispatch_sources(game_t *game)
+{
+    // [Validation checks remain unchanged]
+
+    const float densities[7] = {0.5, 0.3, 0.15, 0.1, 0.1, 0.08, 0.05};
+    int total_tiles = game->width * game->height;
+
+    // Create and shuffle coordinate array ONCE
+    coord_t *coords = malloc(sizeof(coord_t) * total_tiles);
+    // [Fill coords array]
+
+    // Fisher-Yates shuffle (single shuffle)
+    for (int s = total_tiles - 1; s > 0; s--) {
+        int j = rand() % (s + 1);
+        coord_t tmp = coords[s];
+        coords[s] = coords[j];
+        coords[j] = tmp;
+    }
+
+    // Distribute resources
+    for (int i = 0; i < 7; i++) {
+        int total = (int)(densities[i] * total_tiles);
+        if (total < 1) total = 1;
+
+        // Cycle through shuffled coordinates
+        for (int t = 0; t < total; t++) {
+            int idx = t % total_tiles;  // Wrap around
+            int x = coords[idx].x;
+            int y = coords[idx].y;
+            game->map[y][x].resources[i]++;
+        }
+    }
+
+    // [Debug output and cleanup]
+}*/
