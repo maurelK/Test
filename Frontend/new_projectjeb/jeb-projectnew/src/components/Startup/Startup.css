@@ -1,0 +1,163 @@
+.app .startup-accueil {
+  background: linear-gradient(270deg, #000, #111, #000);
+  background-size: 400% 400%;
+  /*animation: backgroundScroll 15s linear infinite;*/
+
+  display: flex;
+  justify-content: center;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.app .startup-accueil::before {
+  content: "";
+  width: 100%;
+  height: 100px;
+  position: absolute;
+  bottom: -50px;
+  left: 0;
+  background-color: black;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.app .accueil {
+  max-width: 1366px;
+  width: 65%;
+  position: relative;
+  z-index: 1;
+}
+
+.app .accueil h1 {
+  color: white;
+  font-size: 2.5rem;
+  margin-top: 15px;
+}
+
+.app .accueil p {
+  color: white;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-top: 15px;
+}
+
+/* Bouton Créer Profil */
+.app button {
+  margin-top: 40px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #646591;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.app button:hover {
+  background-color: #646591cc;
+}
+
+/* Formulaire en grille */
+.app .form-container {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+}
+
+.app .form-container h2 {
+  margin-bottom: 20px;
+}
+
+.app .startup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.app .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.app .form-grid .full-width {
+  grid-column: span 2;
+}
+
+.app label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.app input,
+.app textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.app textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Bouton de validation dans le formulaire */
+.app button[type="submit"] {
+  padding: 12px;
+  background: #28a745;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.app button[type="submit"]:hover {
+  background: #218838;
+}
+
+/* Liste des startups */
+.app .startup_list {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.app .startup_card {
+  margin-top: 70px;
+  margin-left: 10px;
+  background: #646591;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  width: 250px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.app .startup_card:hover {
+  transform: translateY(-5px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app .accueil {
+    width: 90%;
+  }
+  
+  .app .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .app .startup_card {
+    width: 100%;
+    margin-left: 0;
+  }
+}

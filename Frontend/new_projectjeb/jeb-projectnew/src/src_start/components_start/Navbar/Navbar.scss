@@ -1,0 +1,90 @@
+.navbar {
+    max-width: 1366px;
+    max-height: 90px;
+    background-color: #1e1e1e;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 8px 20px;
+
+    .laptop {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 30px 10px;
+
+        .logo {
+            position: relative;
+            z-index: 10;
+            background-color: transparent;
+            margin-left: 60px;
+
+            &:before {
+                content: "";
+                height: 30px;
+                width: 30px;
+                position: absolute;
+                background-color: #646591;
+                z-index: -1;
+                border-radius: 50%;
+                left: -2px;
+            }
+        }
+
+        .links-conteneur {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            margin-left: 290px;
+            gap: 35px;
+
+            .link a {
+                color: #646591;
+                text-decoration: none;
+                padding: 8px 12px;
+                border-radius: 6px;
+
+                &.active {
+                    background-color: #444;
+                    font-weight: bold;
+                }
+                &:last-child {
+                    color: #fff;
+                    padding: 5px 10px;
+                    width: 6rem;
+                    font-weight: 500;
+                    text-align: center;
+                    margin-left: -13px;
+                }
+            }
+
+            li {
+                font-size: 15px;
+                opacity: 0.7;
+                cursor: pointer;
+
+                &:last-child {
+                    background-color: #646591;
+                    color: #fff;
+                    padding: 5px 10px;
+                    width: 6rem;
+                    font-weight: 500;
+                    text-align: center;
+                    border-radius: 5px;
+                    opacity: 1;
+                }
+            }
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            color: #646591;
+            //margin-bottom: 4;
+            margin-top: -23px;
+            margin-left: -40px;
+            display: flex;
+            cursor: pointer;
+        }
+    }
+}

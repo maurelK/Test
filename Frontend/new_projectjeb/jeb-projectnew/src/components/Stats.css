@@ -1,0 +1,30 @@
+.stat-number {
+  font-size: 3rem; /* 48px */
+  font-weight: 800;
+  display: block;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #FF6B35, #F7931E);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 0.875rem; /* 14px */
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-container {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .stat-item::before {
+    display: none;
+  }
+}
