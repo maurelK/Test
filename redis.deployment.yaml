@@ -2,56 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  namespace: bernstein
-  labels:
-    app: redis
-    component: cache
-    part-of: bernstein
+  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: redis
-      component: cache
   template:
     metadata:
       labels:
         app: redis
-        component: cache
     spec:
       restartPolicy: Always
       containers:
       - name: redis
-        image: redis:7-alpine
-        imagePullPolicy: IfNotPresent
-        args: ["redis-server", "/etc/redis/redis.conf"]
+        image: redis:5.0
         ports:
-        - name: redis
-          containerPort: 6379
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "128Mi"
-          limits:
-            cpu: "500m"
-            memory: "256Mi"
-        livenessProbe:
-          tcpSocket:
-            port: 6379
-          initialDelaySeconds: 10
-          periodSeconds: 10
-        readinessProbe:
-          exec:
-            command: ["redis-cli", "ping"]
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        volumeMounts:
-        - name: redis-config
-          mountPath: /etc/redis
-      volumes:
-      - name: redis-config
-        configMap:
-          name: redis-config
-          items:
-          - key: redis.conf
-            path: redis.conf
+        - containerPort: 6379

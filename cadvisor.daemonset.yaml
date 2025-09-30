@@ -3,8 +3,6 @@ kind: DaemonSet
 metadata:
   name: cadvisor
   namespace: kube-system
-  labels:
-    app: cadvisor
 spec:
   selector:
     matchLabels:
@@ -14,18 +12,12 @@ spec:
       labels:
         app: cadvisor
     spec:
+      restartPolicy: Always  # ← À ajouter
       containers:
       - name: cadvisor
         image: gcr.io/cadvisor/cadvisor:latest
         ports:
         - containerPort: 8080
-        resources:
-          requests:
-            cpu: 100m
-            memory: 200Mi
-          limits:
-            cpu: 200m
-            memory: 400Mi
         volumeMounts:
         - name: rootfs
           mountPath: /rootfs
