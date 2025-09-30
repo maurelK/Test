@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: bernstein
+  labels:
+    app: redis
+    component: cache
+    part-of: bernstein
+    managed-by: kubectl
+  annotations:
+    description: Base Redis configuration for the Bernstein project
+
+data:
+  redis.conf: |
+    # Network
+    bind 0.0.0.0
+    protected-mode no
+    port 6379
+
+    # Persistence (AOF for durability)
+    appendonly yes
+    appendfsync everysec
+
+    # Snapshotting (defaults kept, can be tuned)
+    save 900 1
+    save 300 10
+    save 60 10000
+
+    # General
+    daemonize no
+    tcp-keepalive 300
+    databases 16
