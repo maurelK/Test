@@ -31,10 +31,10 @@ spec:
         - containerPort: 80
         resources:
           limits:
-            memory: "128Mi"
+            memory: "128M"
         env:
         - name: REDIS_HOST
           valueFrom:
             configMapKeyRef:
-              name: redis-config
+              name: poll-config        # ← CHANGÉ : poll-config au lieu de redis-config
               key: REDIS_HOST

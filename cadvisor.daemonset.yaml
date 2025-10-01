@@ -12,7 +12,7 @@ spec:
       labels:
         app: cadvisor
     spec:
-      restartPolicy: Always  # ← À ajouter
+      restartPolicy: Always
       containers:
       - name: cadvisor
         image: gcr.io/cadvisor/cadvisor:latest
