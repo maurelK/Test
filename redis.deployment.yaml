@@ -1,21 +1,60 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis
+  name: result
   namespace: default
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: redis
+      app: result
   template:
     metadata:
       labels:
-        app: redis
+        app: result
     spec:
       restartPolicy: Always
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - result
+            topologyKey: kubernetes.io/hostname
       containers:
-      - name: redis
-        image: redis:5.0
+      - name: result
+        image: epitechcontent/t-dop-600-result:k8s
         ports:
-        - containerPort: 6379
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "128M"
+        env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: result-config
+              key: POSTGRES_HOST
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: result-config
+              key: POSTGRES_PORT
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: result-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD

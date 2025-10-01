@@ -36,5 +36,5 @@ spec:
         - name: REDIS_HOST
           valueFrom:
             configMapKeyRef:
-              name: redis-config
+              name: poll-config
               key: REDIS_HOST

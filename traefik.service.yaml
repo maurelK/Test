@@ -12,9 +12,7 @@ spec:
     protocol: TCP
     port: 80
     targetPort: 80
-    nodePort: 30021   # Si vous voulez conserver le nodePort, mais notez que pour LoadBalancer, le nodePort n'est pas nécessaire car le LoadBalancer route le trafic vers le port du service.
   - name: admin
     protocol: TCP
     port: 8080
     targetPort: 8080
-    nodePort: 30042

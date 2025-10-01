@@ -35,7 +35,6 @@ spec:
             configMapKeyRef:
               name: postgres-config
               key: POSTGRES_DB
-        # SUPPRIMEZ POSTGRES_HOST et POSTGRES_PORT - ils ne sont pas nécessaires pour PostgreSQL lui-même
         volumeMounts:
         - name: postgres-storage
           mountPath: /var/lib/postgresql/data
@@ -43,4 +42,3 @@ spec:
       - name: postgres-storage
         persistentVolumeClaim:
           claimName: postgres-pvc
-          
