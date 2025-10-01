@@ -3,8 +3,6 @@ kind: ConfigMap
 metadata:
   name: postgres-config
   namespace: default
-  labels:
-    app: postgres
 data:
   POSTGRES_DB: poll_db
   POSTGRES_HOST: postgres

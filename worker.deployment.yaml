@@ -24,22 +24,22 @@ spec:
         - name: REDIS_HOST
           valueFrom:
             configMapKeyRef:
-              name: worker-config      # ← CHANGÉ : worker-config au lieu de redis-config
+              name: redis-config
               key: REDIS_HOST
         - name: POSTGRES_HOST
           valueFrom:
             configMapKeyRef:
-              name: worker-config      # ← CHANGÉ : worker-config au lieu de postgres-config
+              name: postgres-config
               key: POSTGRES_HOST
         - name: POSTGRES_PORT
           valueFrom:
             configMapKeyRef:
-              name: worker-config      # ← CHANGÉ : worker-config au lieu de postgres-config
+              name: postgres-config
               key: POSTGRES_PORT
         - name: POSTGRES_DB
           valueFrom:
             configMapKeyRef:
-              name: worker-config      # ← CHANGÉ : worker-config au lieu de postgres-config
+              name: postgres-config
               key: POSTGRES_DB
         - name: POSTGRES_USER
           valueFrom:

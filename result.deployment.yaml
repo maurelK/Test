@@ -36,17 +36,17 @@ spec:
         - name: POSTGRES_HOST
           valueFrom:
             configMapKeyRef:
-              name: result-config      # ← CHANGÉ : result-config au lieu de postgres-config
+              name: postgres-config
               key: POSTGRES_HOST
         - name: POSTGRES_PORT
           valueFrom:
             configMapKeyRef:
-              name: result-config      # ← CHANGÉ : result-config au lieu de postgres-config
+              name: postgres-config
               key: POSTGRES_PORT
         - name: POSTGRES_DB
           valueFrom:
             configMapKeyRef:
-              name: result-config      # ← CHANGÉ : result-config au lieu de postgres-config
+              name: postgres-config
               key: POSTGRES_DB
         - name: POSTGRES_USER
           valueFrom:
