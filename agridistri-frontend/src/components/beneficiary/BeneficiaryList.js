@@ -13,31 +13,32 @@ import {
   Box,
   Alert,
   CircularProgress,
+  IconButton,
+  Button,
 } from '@mui/material';
+import { Edit, CreditCard, Visibility } from '@mui/icons-material';
 import api from '../../services/api';
 
-const BeneficiaryList = () => {
+const BeneficiaryList = ({ onCardProduction, onEditBeneficiary }) => {
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchBeneficiaries = async () => {
-      try {
-        const response = await api.get('/beneficiaries/');
-        // Gérer les différentes structures de réponse
-        const data = response.data.results || response.data || [];
-        setBeneficiaries(data);
-      } catch (error) {
-        console.error('Error fetching beneficiaries:', error);
-        setError('Erreur lors du chargement des bénéficiaires');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBeneficiaries();
   }, []);
+
+  const fetchBeneficiaries = async () => {
+    try {
+      const response = await api.get('/beneficiaries/');
+      setBeneficiaries(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error fetching beneficiaries:', error);
+      setError('Erreur lors du chargement des bénéficiaires');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -93,6 +94,7 @@ const BeneficiaryList = () => {
                 <TableCell><strong>Village</strong></TableCell>
                 <TableCell><strong>Téléphone</strong></TableCell>
                 <TableCell><strong>Statut</strong></TableCell>
+                <TableCell><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -114,7 +116,7 @@ const BeneficiaryList = () => {
                     />
                   </TableCell>
                   <TableCell>
-                    {beneficiary.village_name || beneficiary.village?.name || 'Non spécifié'}
+                    {beneficiary.village_name || 'Non spécifié'}
                   </TableCell>
                   <TableCell>
                     {beneficiary.phone || (
@@ -129,6 +131,31 @@ const BeneficiaryList = () => {
                       size="small"
                       color={getStatusColor(beneficiary.status)}
                     />
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => onEditBeneficiary(beneficiary)}
+                        color="primary"
+                      >
+                        <Edit />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => onCardProduction(beneficiary)}
+                        color="secondary"
+                      >
+                        <CreditCard />
+                      </IconButton>
+                      <Button 
+                        size="small" 
+                        variant="outlined"
+                        startIcon={<Visibility />}
+                      >
+                        Voir
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
