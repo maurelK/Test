@@ -31,6 +31,9 @@ spec:
         - name: docker
           mountPath: /var/lib/docker
           readOnly: true
+        - name: disk
+          mountPath: /dev/disk
+          readOnly: true
       volumes:
       - name: rootfs
         hostPath:
