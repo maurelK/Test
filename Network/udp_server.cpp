@@ -32,8 +32,8 @@ void UDPServer::demarrerReception()
     auto buffer = std::make_shared<std::vector<char>>(1024);
     
     m_socket.async_receive_from(
-        boost::asio::buffer(*buffer), m_endpointDistant,
-        [this, buffer](boost::system::error_code erreur, size_t taille) {
+        asio::buffer(*buffer), m_endpointDistant,
+        [this, buffer](asio::error_code erreur, size_t taille) {
             if (!erreur && taille >= sizeof(InputPacket)) {
                 InputPacket* input = reinterpret_cast<InputPacket*>(buffer->data());
                 
@@ -60,7 +60,7 @@ void UDPServer::envoyerSnapshot(const SnapshotPacket& snapshot)
 {
     for (const auto& client : m_clients) {
         try {
-            m_socket.send_to(boost::asio::buffer(&snapshot, sizeof(snapshot)), client);
+            m_socket.send_to(asio::buffer(&snapshot, sizeof(snapshot)), client);
         } catch (const std::exception& e) {
             std::cout << "Erreur envoi UDP: " << e.what() << std::endl;
         }

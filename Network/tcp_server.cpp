@@ -29,7 +29,7 @@ void TCPServer::demarrerEcoute()
     auto nouveauSocket = std::make_shared<tcp::socket>(m_contexteIO);
     
     m_accepteur.async_accept(*nouveauSocket,
-        [this, nouveauSocket](boost::system::error_code erreur) {
+        [this, nouveauSocket](asio::error_code erreur) {
             if (!erreur) {
                 gererNouvelleConnexion(nouveauSocket);
             }
@@ -70,8 +70,8 @@ void TCPServer::gererDeconnexion(std::shared_ptr<tcp::socket> socket)
 void TCPServer::demarrerLecture(std::shared_ptr<tcp::socket> socket) {
     auto buffer = std::make_shared<std::vector<char>>(1024);
     
-    socket->async_read_some(boost::asio::buffer(*buffer),
-        [this, socket, buffer](boost::system::error_code erreur, size_t taille) {
+    socket->async_read_some(asio::buffer(*buffer),
+        [this, socket, buffer](asio::error_code erreur, size_t taille) {
             if (!erreur) {
                 std::cout << "Message reçu (" << taille << " octets)" << std::endl;
                 if (taille < sizeof(PacketHeader)) {
@@ -182,13 +182,13 @@ void TCPServer::demarrerLecture(std::shared_ptr<tcp::socket> socket) {
 void TCPServer::envoyerATous(const std::vector<char>& message) {
     for (auto& client : m_clients) {
         if (client->is_open()) {
-            boost::asio::write(*client, boost::asio::buffer(message));
+            asio::write(*client, asio::buffer(message));
         }
     }
 }
 
 void TCPServer::envoyerAClient(std::shared_ptr<tcp::socket> socket, const std::vector<char>& message) {
     if (socket->is_open()) {
-        boost::asio::write(*socket, boost::asio::buffer(message));
+        asio::write(*socket, asio::buffer(message));
     }
 }

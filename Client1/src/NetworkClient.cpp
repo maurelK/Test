@@ -2,14 +2,12 @@
 #include <iostream>
 #include <cstring>
 #include <boost/asio.hpp>
-#include <optional>
 
 using boost::asio::ip::udp;
 using boost::asio::ip::tcp;
 
 NetworkClient::NetworkClient(const std::string& host, unsigned short port)
-    : m_socket(m_context, udp::endpoint(udp::v4(), 0))
-{
+    : m_socket(m_context, udp::endpoint(udp::v4(), 0)) {
     m_serverEndpoint = udp::endpoint(boost::asio::ip::make_address(host), port);
 }
 
@@ -19,15 +17,15 @@ NetworkClient::~NetworkClient() {
 
 bool NetworkClient::start() {
     try {
-        if (!m_socket.is_open())
+        if (!m_socket.is_open()) {
             m_socket.open(boost::asio::ip::udp::v4());
+        }
 
-        std::cout << "[Client] Connecté au serveur "
+        std::cout << "[Client] Connecté au serveur " 
                   << m_serverEndpoint.address().to_string()
                   << ":" << m_serverEndpoint.port() << std::endl;
-        std::cout << "[Client] Port local : " << m_socket.local_endpoint().port() << std::endl;
+        std::cout << "[Client] Port : " << m_socket.local_endpoint().port() << std::endl;
 
-        m_running = true;
         return true;
     } catch (std::exception& e) {
         std::cerr << "[Client] Erreur connexion UDP: " << e.what() << std::endl;
@@ -37,21 +35,11 @@ bool NetworkClient::start() {
 
 void NetworkClient::stop() {
     m_running = false;
-
     if (m_thread.joinable())
         m_thread.join();
-
-    if (m_tcpSocket && m_tcpSocket->is_open()) {
-        boost::system::error_code ec;
-        m_tcpSocket->close(ec);
-    }
-
-    if (m_socket.is_open()) {
-        boost::system::error_code ec;
-        m_socket.close(ec);
-    }
-
-    std::cout << "[Client] Arrêt du client réseau." << std::endl;
+    if (m_socket.is_open())
+        m_socket.close();
+    std::cout << "[Client] arret." << std::endl;
 }
 
 bool NetworkClient::sendLogin(const std::string& username) {
@@ -76,80 +64,20 @@ bool NetworkClient::sendLogin(const std::string& username) {
 
         if (ack.success) {
             m_playerId = ack.player_id;
-            std::cout << "[Client] Login ACK reçu - PlayerID: " << m_playerId << std::endl;
+            std::cout << "[Client]  Login ACK reçu - PlayerID: " << m_playerId << std::endl;
             return true;
         } else {
-            std::cerr << "[Client] Login échoué (ACK invalide)\n";
+            std::cerr << "[Client]  ACK reçu mais ....?'\n";
         }
+
     } catch (std::exception& e) {
         std::cerr << "[Client] Erreur TCP login: " << e.what() << std::endl;
     }
     return false;
 }
 
-bool NetworkClient::joinLobby(uint32_t lobbyId) {
-    try {
-        if (!m_tcpSocket || !m_tcpSocket->is_open()) {
-            std::cerr << "[Client] TCP non connecté.\n";
-            return false;
-        }
-
-        JoinLobbyPacket packet{};
-        packet.header.type = PacketType::JOIN_LOBBY;
-        packet.header.size = sizeof(JoinLobbyPacket);
-        packet.lobby_id = lobbyId;
-
-        boost::asio::write(*m_tcpSocket, boost::asio::buffer(&packet, sizeof(packet)));
-        std::cout << "[Client] Rejoint le lobby ID: " << lobbyId << std::endl;
-
-        AckJoinLobbyPacket ack{};
-        boost::asio::read(*m_tcpSocket, boost::asio::buffer(&ack, sizeof(ack)));
-
-        if (ack.success) {
-            std::cout << "[Client] JoinLobby réussi (Lobby " << ack.lobby_id << ")\n";
-            return true;
-        } else {
-            std::cerr << "[Client] JoinLobby échoué.\n";
-        }
-    } catch (std::exception& e) {
-        std::cerr << "[Client] Erreur JoinLobby: " << e.what() << std::endl;
-    }
-    return false;
-}
-
-std::optional<PacketType> NetworkClient::listenForServerEvents() {
-    if (!m_tcpSocket || !m_tcpSocket->is_open())
-        return std::nullopt;
-
-    try {
-        boost::system::error_code ec;
-        size_t available = m_tcpSocket->available(ec);
-        if (ec || available < sizeof(PacketHeader))
-            return std::nullopt;
-
-        PacketHeader header;
-        size_t bytes = boost::asio::read(*m_tcpSocket, boost::asio::buffer(&header, sizeof(header)), ec);
-        if (ec || bytes < sizeof(PacketHeader))
-            return std::nullopt;
-
-        switch (header.type) {
-            case PacketType::GAME_START:
-                std::cout << "[Client] GAME_START reçu du serveur.\n";
-            
-                return PacketType::GAME_START;
-
-            default:
-                std::cout << "[Client] Paquet inattendu type: " << (int)header.type << "\n";
-                break;
-        }
-    } catch (std::exception& e) {
-        std::cerr << "[Client] Erreur lecture TCP: " << e.what() << std::endl;
-    }
-    return std::nullopt;
-}
-
 bool NetworkClient::pollSnapshot(SnapshotPacket& snapshot) {
-    if (!m_socket.is_open())
+    if (!m_socket.is_open()) 
         return false;
 
     boost::system::error_code ec;

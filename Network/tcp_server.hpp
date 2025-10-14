@@ -1,12 +1,12 @@
 #pragma once
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include <vector>
 #include <memory>
 #include <map>
 #include "LobbyManager.hpp"
 
-using boost::asio::ip::tcp;
+using asio::ip::tcp;
 
 class TCPServer {
 public:
@@ -30,7 +30,7 @@ private:
     void gererDeconnexion(std::shared_ptr<tcp::socket> socket);
 
     unsigned short m_port;
-    boost::asio::io_context m_contexteIO;
+    asio::io_context m_contexteIO;
     tcp::acceptor m_accepteur;
     std::vector<std::shared_ptr<tcp::socket>> m_clients;
     std::map<std::shared_ptr<tcp::socket>, uint32_t> m_socketToPlayerId;

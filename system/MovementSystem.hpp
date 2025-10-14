@@ -1,29 +1,24 @@
-#ifndef MOVEMENT_SYSTEM_HPP
-#define MOVEMENT_SYSTEM_HPP
+/*
+** EPITECH PROJECT, 2025
+** effe
+** File description:
+** fefe
+*/
 
+
+#pragma once
 #include "../rtype_engine/System.hpp"
-#include "../rtype_engine/Orchestror.hpp"
+#include "../rtype_engine/Components.hpp"
+#include "../rtype_engine/Component_storage.hpp"
 
 class MovementSystem : public System {
-private:
-    Orchestror& orchestr;
-
 public:
-    MovementSystem(Orchestror& o) : orchestr(o) {}
+    MovementSystem(ComponentArray<Position>& pos, ComponentArray<Velocity>& vel)
+        : positions(pos), velocities(vel) {}
 
-    void update(float dt) override {
-        for (auto entity : entities) {
-            if (orchestr.hasComponent<Position>(entity) && 
-                orchestr.hasComponent<Velocity>(entity)) {
-                
-                auto& pos = orchestr.getComponent<Position>(entity);
-                auto& vel = orchestr.getComponent<Velocity>(entity);
-                
-                pos.x += vel.dx * dt;
-                pos.y += vel.dy * dt;
-            }
-        }
-    }
+    void update(float dt) override;
+
+private:
+    ComponentArray<Position>& positions;
+    ComponentArray<Velocity>& velocities;
 };
-
-#endif

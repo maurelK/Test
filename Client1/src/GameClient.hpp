@@ -1,72 +1,52 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <cstring>
+#include <map>
+#include <cstdint>
 #include <string>
 #include <unordered_map>
-#include <vector>
 #include "Menu.hpp"
-#include "GameRenderer.hpp"
-#include "WindowManager.hpp"
-#include "game/Player.hpp"
-#include "game/Enemy.hpp"
-#include "game/Bullet.hpp"
-#include "game/PowerUp.hpp"
+#include "Background.hpp"
+#include "Logo.hpp"
 #include "NetworkClient.hpp"
-#include "../Network/protocol.hpp"
+#include "../rtype_engine/Orchestror.hpp"
+#include "InputSystem.hpp"
+#include <SFML/Graphics.hpp>
+#include "game/RenderSystem.hpp"
 
-enum class LobbyState;
-enum class GameMode;
-
-struct NetworkEntityVisual {
-    float x, y;
+struct EntityVisual {
+    float x;
+    float y;
 };
 
 class GameClient {
 public:
-    explicit GameClient(const std::string& username);
+    GameClient(const std::string& username);
     ~GameClient();
+    bool init();
+    void shutdown();
 
-    // === POINT D’ENTRÉE PRINCIPAL ===
-    void runClient();
+    void sendInput(float& moveX, float& moveY, bool& shoot);
+    void handleSnapshot(const struct SnapshotPacket& snapshot);
+    void render();
+    void run();
+    void runMenu();
 
-    // === MODES DE JEU ===
-    void runLocalGame();      // Mode solo
-    void runLobby();          // Mode multijoueur → lobby puis partie réseau
-    void runMultiplayerGame();// Partie réseau
-
+    const std::map<uint32_t, EntityVisual>& getEntities() const { return worldEntities; }
 private:
-    // === INITIALISATION ===
-    bool initNetworked();
-    LobbyState runLobbyScreen();
-
-    // === ATTRIBUTS ===
+    Orchestror ecs;
+    std::shared_ptr<InputSystem> inputSystem; 
+    std::shared_ptr<RenderSystem> renderSystem;
+    sf::RenderWindow gameWindow;
+    Entity playerEntity;
     std::string username;
-    sf::RenderWindow window;
+    uint32_t playerId;
+    std::map<uint32_t, EntityVisual> worldEntities;
 
-    Player player;
-    std::vector<Bullet> bullets;
-    std::vector<Enemy> enemies;
-    std::vector<PowerUp> powerUps;
 
-    GameRenderer renderer;
-    NetworkClient net;
+    Menu* menu;
+    bool inMenu;
 
-    sf::Clock frameClock;
-    sf::Clock bulletCooldownClock;
-    sf::Clock enemySpawnClock;
-    sf::Clock powerUpSpawnClock;
+    NetworkClient m_network;
 
-    int playerId = 0;
-
-    std::unordered_map<int, NetworkEntityVisual> worldEntities;
-
-    // === MÉTHODES INTERNES ===
-    void updateNetworked(float dt);
-    void renderNetworked();
-    void handleSnapshot(const SnapshotPacket& snapshot);
-
-    void spawnEnemy();
-    void spawnPowerUp();
-    void applyBulletLogic(float dt);
-    void handleCollisions();
 };

@@ -9,7 +9,11 @@
 #define COMPONENTS_HPP
 
 #include "base.hpp"
+
+// Only include SFML for client builds
+#ifndef RTYPE_SERVER
 #include <SFML/Graphics.hpp>
+#endif
 
 struct Position {
     float x = 0.f;
@@ -49,9 +53,11 @@ struct Power_Up{
     int type;
 };
 
+#ifndef RTYPE_SERVER
 struct Sprite{
     sf::Sprite sprite;
 };
+#endif
 
 struct Player {
     int id;

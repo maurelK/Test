@@ -56,7 +56,7 @@ void NetworkManager::sendSnapshot(const SnapshotPacket& snapshot) {
 }
 
 uint32_t NetworkManager::getConnectedPlayersCount() const {
-    return 1;
+    return m_serveurUDP.getClientCount();
 }
 
 

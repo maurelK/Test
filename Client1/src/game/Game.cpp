@@ -1,10 +1,9 @@
 #include "Game.hpp"
 #include <iostream>
 
-Game::Game(GameModeType mode) 
+Game::Game() 
     : window(sf::VideoMode(1280, 720), "R-TYPE - GAME"), 
       state(GameState::Playing),
-      gameMode(mode),
       player(100.f, 360.f),
       score(0), lives(3), level(1), enemiesKilled(0) {
     

@@ -1,30 +1,33 @@
 #include "GameClient.hpp"
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 int main() {
-    std::cout << "=== R-TYPE CLIENT ===" << std::endl;
-    std::cout << "[INFO] Initialisation du client..." << std::endl;
+    std::cout << "[CLIENT] Lancement du client R-Type..." << std::endl;
 
-    try {
-        // Nom du joueur (temporaire, peut venir d’un écran d’entrée plus tard)
-        std::string username = "Player1";
+    bool connected = false;
+    int attempts = 0;
 
-        // Création du client
-        GameClient client(username);
+    while (!connected && attempts < 10) {
+        std::cout << "[CLIENT] Tentative de connexion au serveur... (" << attempts + 1 << ")\n";
+        GameClient client("Pavel");
 
-        // Lancement du menu principal (mode selection)
-        client.runClient();
-
-        std::cout << "[INFO] Fermeture du client proprement." << std::endl;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "[ERREUR FATALE] Exception : " << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
-    catch (...) {
-        std::cerr << "[ERREUR FATALE] Exception inconnue." << std::endl;
-        return EXIT_FAILURE;
+        if (client.init()) {
+            connected = true;
+            std::cout << "[CLIENT] Connecté au serveur avec succès !\n";
+            client.run();
+        } else {
+            std::cerr << "[CLIENT] Serveur indisponible, nouvelle tentative dans 2s...\n";
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            attempts++;
+        }
     }
 
-    return EXIT_SUCCESS;
+    if (!connected) {
+        std::cerr << "[CLIENT] Impfsible de se connecter au serveur après 10 tentatives.\n";
+        return 1;
+    }
+
+    return 0;
 }

@@ -1,0 +1,1 @@
+. "/home/alberic/G-CPP-500-COT-5-1-rtype-23/conanbuildenv-release-x86_64.sh"

@@ -45,16 +45,10 @@ enum class GameState {
     Playing, LevelTransition, GameOver
 };
 
-enum class GameModeType {
-    Solo,
-    Multiplayer
-};
-
 class Game {
 private:
     sf::RenderWindow window;
     GameState state;
-    GameModeType gameMode;
     
     Player player;
     std::vector<Enemy> enemies;
@@ -87,10 +81,8 @@ private:
     void createParticles(float x, float y, sf::Color color, int count = 10);
 
 public:
-    Game(GameModeType mode = GameModeType::Solo);
+    Game();
     void run();
-    int getFinalScore() const { return score; }
-    bool isVictory() const { return state != GameState::GameOver; }
 };
 
 #endif

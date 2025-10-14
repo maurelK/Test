@@ -1,11 +1,11 @@
 #pragma once
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include "concurent_queue.hpp"
 #include "protocol.hpp"
 #include <vector>
 
-using boost::asio::ip::udp;
+using asio::ip::udp;
 
 class UDPServer {
 public:
@@ -14,12 +14,13 @@ public:
     void demarrer();
     void arreter();
     void envoyerSnapshot(const SnapshotPacket& snapshot);
+    size_t getClientCount() const { return m_clients.size(); }
 
 private:
     void demarrerReception();
 
     unsigned short m_port;
-    boost::asio::io_context m_contexteIO;
+    asio::io_context m_contexteIO;
     udp::socket m_socket;
     udp::endpoint m_endpointDistant;
     

@@ -1,0 +1,74 @@
+[
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/main_server.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/main_server.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/main_server.cpp",
+  "output": "CMakeFiles/server.dir/main_server.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/system/GameServer.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/system/GameServer.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/system/GameServer.cpp",
+  "output": "CMakeFiles/server.dir/system/GameServer.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/system/MovementSystem.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/system/MovementSystem.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/system/MovementSystem.cpp",
+  "output": "CMakeFiles/server.dir/system/MovementSystem.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/system/CollisionSystem.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/system/CollisionSystem.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/system/CollisionSystem.cpp",
+  "output": "CMakeFiles/server.dir/system/CollisionSystem.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/system/HealthSystem.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/system/HealthSystem.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/system/HealthSystem.cpp",
+  "output": "CMakeFiles/server.dir/system/HealthSystem.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/system/SpawnSystem.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/system/SpawnSystem.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/system/SpawnSystem.cpp",
+  "output": "CMakeFiles/server.dir/system/SpawnSystem.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/system/ProjectileSystem.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/system/ProjectileSystem.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/system/ProjectileSystem.cpp",
+  "output": "CMakeFiles/server.dir/system/ProjectileSystem.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/system/EnemySystem.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/system/EnemySystem.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/system/EnemySystem.cpp",
+  "output": "CMakeFiles/server.dir/system/EnemySystem.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/Network/Networkmanager.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/Network/Networkmanager.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network/Networkmanager.cpp",
+  "output": "CMakeFiles/server.dir/Network/Networkmanager.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/Network/tcp_server.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/Network/tcp_server.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network/tcp_server.cpp",
+  "output": "CMakeFiles/server.dir/Network/tcp_server.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/Network/udp_server.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/Network/udp_server.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network/udp_server.cpp",
+  "output": "CMakeFiles/server.dir/Network/udp_server.cpp.o"
+},
+{
+  "directory": "/home/alberic/G-CPP-500-COT-5-1-rtype-23",
+  "command": "/usr/bin/c++ -DASIO_STANDALONE -DRTYPE_SERVER -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/system -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/rtype_engine -I/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network -I/home/alberic/G-CPP-500-COT-5-1-rtype-23 -isystem /home/alberic/.conan2/p/asioe46abfff5a44a/p/include -m64 -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/server.dir/Network/LobbyManager.cpp.o -c /home/alberic/G-CPP-500-COT-5-1-rtype-23/Network/LobbyManager.cpp",
+  "file": "/home/alberic/G-CPP-500-COT-5-1-rtype-23/Network/LobbyManager.cpp",
+  "output": "CMakeFiles/server.dir/Network/LobbyManager.cpp.o"
+}
+]

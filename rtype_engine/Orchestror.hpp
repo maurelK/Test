@@ -49,14 +49,14 @@ public:
         return componentTypes[type];
     }
 
-    // Version pour rvalues (move)
     template<typename T>
-    void addComponent(Entity entity, T&& component) {
-        getComponentStorage<T>()->insertData(entity, std::move(component));
-        updateEntitySignature<T>(entity, true);
+    void addComponent(Entity entity, T component) {
+        getComponentStorage<T>()->insertData(entity, component);
+        Signature signature = entityManager->getSignature(entity);
+        signature.set(getComponentType<T>(), true);
+        entityManager->setSignature(entity, signature);
+        systemManager->entitySignatureChanged(entity, signature);
     }
-
-
 
     template<typename T>
     void removeComponent(Entity entity) {
@@ -65,13 +65,6 @@ public:
         signature.set(getComponentType<T>(), false);
         entityManager->setSignature(entity, signature);
         systemManager->entitySignatureChanged(entity, signature);
-    }
-    size_t getEntityCount() const {
-        return entityManager->getLivingEntityCount();
-    }
-
-    const std::vector<Entity>& getLivingEntities() const {
-        return entityManager->getLivingEntities();
     }
 
     template<typename T>
@@ -99,7 +92,6 @@ public:
     }
 
 private:
-
     template<typename T>
     std::shared_ptr<ComponentStorage<T>> getComponentStorage() {
         auto type = std::type_index(typeid(T));
@@ -108,12 +100,5 @@ private:
             return std::static_pointer_cast<ComponentStorage<T>>(it->second);
         }
         return nullptr;
-    }
-    template<typename T>
-    void updateEntitySignature(Entity entity, bool hasComponent) {
-        Signature signature = entityManager->getSignature(entity);
-        signature.set(getComponentType<T>(), hasComponent);
-        entityManager->setSignature(entity, signature);
-        systemManager->entitySignatureChanged(entity, signature);
     }
 };
