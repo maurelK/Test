@@ -1,33 +1,27 @@
-/*
-** EPITECH PROJECT, 2025
-** fefe
-** File description:
-** fe
-*/
-
 #ifndef SPAWN_SYSTEM_HPP
 #define SPAWN_SYSTEM_HPP
 
 #include "../rtype_engine/System.hpp"
-#include "../rtype_engine/Component_storage.hpp"
-#include "../rtype_engine/EntityManager.hpp"
-#include "../rtype_engine/Components.hpp"
-
+#include "../rtype_engine/Orchestror.hpp"
 
 class SpawnSystem : public System {
 private:
-    EntityManager& entityManager;
-    ComponentStorage<Position>& positions;
-    ComponentStorage<Velocity>& velocities;
-    ComponentStorage<Health>& healths;
+    Orchestror& orchestr;
 
 public:
-    SpawnSystem(EntityManager& em, ComponentStorage<Position>& p,
-                ComponentStorage<Velocity>& v, ComponentStorage<Health>& h)
-        : entityManager(em), positions(p), velocities(v), healths(h) {}
+    SpawnSystem(Orchestror& o) : orchestr(o) {}
 
-    void update(float dt) override;
-    Entity spawnEnemy(float x, float y);
+    void update(float dt) override {
+        // Logique de spawn automatique peut être ajoutée ici
+    }
+
+    Entity spawnEnemy(float x, float y) {
+        Entity enemy = orchestr.createEntity();
+        orchestr.addComponent(enemy, Position{x, y});
+        orchestr.addComponent(enemy, Velocity{-80.f, 0.f});
+        orchestr.addComponent(enemy, Health{100});
+        return enemy;
+    }
 };
 
 #endif

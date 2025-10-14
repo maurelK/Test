@@ -21,10 +21,6 @@ public:
                 
                 pos.x += vel.dx * dt;
                 pos.y += vel.dy * dt;
-                
-                // Debug
-                // std::cout << "[Movement] Entity " << entity 
-                //           << " moved to (" << pos.x << ", " << pos.y << ")\n";
             }
         }
     }

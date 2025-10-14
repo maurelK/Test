@@ -40,7 +40,7 @@ public:
         size_t newIndex = size;
         entityToIndex[entity] = newIndex;
         indexToEntity[newIndex] = entity;
-        components[newIndex] = std::move(component);
+        components[newIndex] = std::move(component); // MOVE
         ++size;
     }
 
