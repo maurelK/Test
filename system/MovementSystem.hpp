@@ -1,28 +1,33 @@
-/*
-** EPITECH PROJECT, 2025
-** effe
-** File description:
-** fefe
-*/
-
 #ifndef MOVEMENT_SYSTEM_HPP
 #define MOVEMENT_SYSTEM_HPP
 
 #include "../rtype_engine/System.hpp"
-#include "../rtype_engine/Component_storage.hpp"
-#include "../rtype_engine/Components.hpp"
-
+#include "../rtype_engine/Orchestror.hpp"
 
 class MovementSystem : public System {
 private:
-    ComponentStorage<Position>& positions;
-    ComponentStorage<Velocity>& velocities;
+    Orchestror& orchestr;
 
 public:
-    MovementSystem(ComponentStorage<Position>& p, ComponentStorage<Velocity>& v)
-        : positions(p), velocities(v) {}
+    MovementSystem(Orchestror& o) : orchestr(o) {}
 
-    void update(float dt) override;
+    void update(float dt) override {
+        for (auto entity : entities) {
+            if (orchestr.hasComponent<Position>(entity) && 
+                orchestr.hasComponent<Velocity>(entity)) {
+                
+                auto& pos = orchestr.getComponent<Position>(entity);
+                auto& vel = orchestr.getComponent<Velocity>(entity);
+                
+                pos.x += vel.dx * dt;
+                pos.y += vel.dy * dt;
+                
+                // Debug
+                // std::cout << "[Movement] Entity " << entity 
+                //           << " moved to (" << pos.x << ", " << pos.y << ")\n";
+            }
+        }
+    }
 };
 
 #endif

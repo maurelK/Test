@@ -1,24 +1,25 @@
-/*
-** EPITECH PROJECT, 2025
-** ef
-** File description:
-** fe
-*/
-
 #ifndef HEALTH_SYSTEM_HPP
 #define HEALTH_SYSTEM_HPP
 
 #include "../rtype_engine/System.hpp"
-#include "../rtype_engine/Component_storage.hpp"
-#include "../rtype_engine/Components.hpp"
+#include "../rtype_engine/Orchestror.hpp"
 
 class HealthSystem : public System {
 private:
-    ComponentStorage<Health>& healths;
+    Orchestror& orchestr;
 
 public:
-    HealthSystem(ComponentStorage<Health>& h) : healths(h) {}
-    void update(float dt) override;
+    HealthSystem(Orchestror& o) : orchestr(o) {}
+
+    void update(float dt) override {
+        for (auto entity : entities) {
+            if (orchestr.hasComponent<Health>(entity)) {
+                auto& health = orchestr.getComponent<Health>(entity);
+                // Logique de santé (régénération, dégâts over time, etc.)
+                // health.hp -= 1; // Exemple
+            }
+        }
+    }
 };
 
 #endif

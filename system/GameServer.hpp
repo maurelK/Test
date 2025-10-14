@@ -1,22 +1,7 @@
-/*
-** EPITECH PROJECT, 2025
-** fe
-** File description:
-** fe
-*/
-
 #ifndef GAMESERVER_HPP
 #define GAMESERVER_HPP
 
-#include "../rtype_engine/EntityManager.hpp"
-//#include "../Client1/.clang-format"
-#include "../rtype_engine/Components.hpp"
-#include "../rtype_engine/SystemManager.hpp"
-#include "MovementSystem.hpp"
-#include "HealthSystem.hpp"
-#include "SpawnSystem.hpp"
-#include "CollisionSystem.hpp"
-#include "ProjectileSystem.hpp"
+#include "../rtype_engine/Orchestror.hpp"
 #include "../Network/protocol.hpp"
 #include "../Network/Networkmanager.hpp"
 
@@ -24,33 +9,37 @@
 #include <memory>
 #include <vector>
 
-struct Snapshot {
-    Position pos;
-    Velocity vel;
-    Health hp;
-    bool operator!=(const Snapshot& other) const {
-        return pos != other.pos || vel != other.vel || hp != other.hp;
-    }
-};
+// Supprimer cette structure, on utilisera directement les composants
+// struct Snapshot {
+//     Position pos;
+//     Velocity vel;
+//     Health hp;
+//     bool operator!=(const Snapshot& other) const {
+//         return pos != other.pos || vel != other.vel || hp != other.hp;
+//     }
+// };
 
 class GameServer {
 private:
+    std::unique_ptr<Orchestror> orchestr;
+    
+    // SUPPRIMER les ComponentStorage manuels!
+    // ComponentStorage<Position> positions;  ← À SUPPRIMER
+    // ComponentStorage<Velocity> velocities; ← À SUPPRIMER  
+    // ComponentStorage<Health> healths;      ← À SUPPRIMER
+    // ComponentStorage<Projectile> projectiles; ← À SUPPRIMER
 
-    EntityManager entityManager;
-    ComponentStorage<Position> positions;
-    ComponentStorage<Velocity> velocities;
-    ComponentStorage<Health> healths;
-    ComponentStorage<Projectile> projectiles;
+    // SUPPRIMER SystemManager manuel
+    // SystemManager systemManager; ← À SUPPRIMER
 
-    SystemManager systemManager;
-
+    // Garder les systèmes mais ils utiliseront Orchestror
     std::shared_ptr<MovementSystem> moveSys;
     std::shared_ptr<HealthSystem> healthSys;
     std::shared_ptr<SpawnSystem> spawnSys;
     std::shared_ptr<CollisionSystem> collisionSys;
     std::shared_ptr<ProjectileSystem> projectileSys;
 
-    std::unordered_map<Entity, Snapshot> lastSnapshots;
+    std::unordered_map<Entity, EntityData> lastSnapshots; // Stocker EntityData directement
     uint64_t tick = 0;
 
 public:

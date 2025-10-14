@@ -1,78 +1,72 @@
-/*
-** EPITECH PROJECT, 2025
-** re
-** File description:
-** et
-*/
+#ifndef PROJECTILE_SYSTEM_HPP
+#define PROJECTILE_SYSTEM_HPP
 
-#include "ProjectileSystem.hpp"
-#include <iostream>
+#include "../rtype_engine/System.hpp"
+#include "../rtype_engine/Orchestror.hpp"
 
-Entity ProjectileSystem::spawnProjectile(Entity owner, float x, float y, float dx, float dy, int damage, float life) {
-    Entity p = entityManager.createEntity();
-    positions.insertData(p, {x, y});
-    velocities.insertData(p, {dx, dy});
-    projectiles.insertData(p, {owner, damage, life});
+class ProjectileSystem : public System {
+private:
+    Orchestror& orchestr;
 
-    addEntity(p);
-    std::cout << "[ProjectileSystem] Projectile spawned at (" << x << "," << y << ")\n";
-    return p;
-}
+public:
+    ProjectileSystem(Orchestror& o) : orchestr(o) {}
 
-void ProjectileSystem::update(float dt) {
-    std::vector<Entity> toRemove;
-
-    // On copie entities pour éviter les problèmes si des entités sont ajoutées en cours de boucle
-    auto currentEntities = entities;
-
-    for (auto e : currentEntities) {
-        // Vérification que toutes les données existent
-        if (!positions.hasData(e) || !velocities.hasData(e) || !projectiles.hasData(e))
-            continue;
-
-        auto& pos = positions.getData(e);
-        auto& vel = velocities.getData(e);
-        auto& proj = projectiles.getData(e);
-
-        pos.x += vel.dx * dt;
-        pos.y += vel.dy * dt;
-
-        proj.life -= dt;
-        if (proj.life <= 0) {
-            toRemove.push_back(e);
-            continue;
-        }
-
-        // On fait une copie de la liste des entités vivantes pour éviter les problèmes
-        auto livingEntities = entityManager.getLivingEntities();
-        for (auto target : livingEntities) {
-            if (target == proj.owner) continue;
-            if (!positions.hasData(target) || !healths.hasData(target)) continue;
-
-            auto& targetPos = positions.getData(target);
-            auto& targetHealth = healths.getData(target);
-
-            float dx = pos.x - targetPos.x;
-            float dy = pos.y - targetPos.y;
-            float dist2 = dx*dx + dy*dy;
-            const float collisionRadius2 = 4.0f;
-
-            if (dist2 <= collisionRadius2) {
-                targetHealth.hp -= proj.damage;
-                toRemove.push_back(e);
-                std::cout << "[ProjectileSystem] Projectile " << e << " hit Entity " << target
-                          << " for " << proj.damage << " damage\n";
-                break;
+    void update(float dt) override {
+        std::vector<Entity> toRemove;
+        
+        for (auto entity : entities) {
+            if (!orchestr.hasComponent<Position>(entity) ||
+                !orchestr.hasComponent<Velocity>(entity) ||
+                !orchestr.hasComponent<Projectile>(entity)) {
+                continue;
+            }
+            
+            auto& pos = orchestr.getComponent<Position>(entity);
+            auto& vel = orchestr.getComponent<Velocity>(entity);
+            auto& proj = orchestr.getComponent<Projectile>(entity);
+            
+            // Mettre à jour la position
+            pos.x += vel.dx * dt;
+            pos.y += vel.dy * dt;
+            
+            // Diminuer la durée de vie
+            proj.life -= dt;
+            if (proj.life <= 0) {
+                toRemove.push_back(entity);
+                continue;
+            }
+            
+            // Vérifier les collisions
+            for (auto target : orchestr.getLivingEntities()) {
+                if (target == proj.owner || target == entity) continue;
+                
+                if (orchestr.hasComponent<Position>(target) && 
+                    orchestr.hasComponent<Health>(target)) {
+                    
+                    auto& targetPos = orchestr.getComponent<Position>(target);
+                    auto& targetHealth = orchestr.getComponent<Health>(target);
+                    
+                    float dx = pos.x - targetPos.x;
+                    float dy = pos.y - targetPos.y;
+                    float dist2 = dx * dx + dy * dy;
+                    const float collisionRadius2 = 100.0f; // Ajuster selon les besoins
+                    
+                    if (dist2 <= collisionRadius2) {
+                        targetHealth.hp -= proj.damage;
+                        toRemove.push_back(entity);
+                        std::cout << "[Projectile] Hit! Entity " << target 
+                                  << " took " << proj.damage << " damage\n";
+                        break;
+                    }
+                }
             }
         }
+        
+        // Supprimer les projectiles expirés
+        for (auto entity : toRemove) {
+            orchestr.destroyEntity(entity);
+        }
     }
+};
 
-    // Suppression sécurisée
-    for (auto e : toRemove) {
-        if (positions.hasData(e)) positions.entityDestroyed(e);
-        if (velocities.hasData(e)) velocities.entityDestroyed(e);
-        if (projectiles.hasData(e)) projectiles.entityDestroyed(e);
-        entityManager.destroyEntity(e);
-        removeEntity(e);
-    }
-}
+#endif
