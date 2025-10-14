@@ -8,10 +8,10 @@
 #ifndef GAMESERVER_HPP
 #define GAMESERVER_HPP
 
-#include "EntityManager.hpp"
-#include "Component_storage.hpp"
-#include "Components.hpp"
-#include "SystemManager.hpp"
+#include "../rtype_engine/EntityManager.hpp"
+//#include "../Client1/.clang-format"
+#include "../rtype_engine/Components.hpp"
+#include "../rtype_engine/SystemManager.hpp"
 #include "MovementSystem.hpp"
 #include "HealthSystem.hpp"
 #include "SpawnSystem.hpp"

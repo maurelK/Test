@@ -45,7 +45,7 @@ struct enemy {
     int type;
 };
 
-struct PowerUp{
+struct Power_Up{
     int type;
 };
 

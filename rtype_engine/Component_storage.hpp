@@ -14,7 +14,7 @@ public:
 };
 
 template<typename T>
-class ComponentStorage : public IComponentStorage  {
+class ComponentStorage : public IComponentStorage {
 private:
     std::array<T, MAX_ENTITIES> componentArray;
     std::unordered_map<Entity, size_t> entityToIndex;

@@ -8,10 +8,10 @@
 #ifndef SPAWN_SYSTEM_HPP
 #define SPAWN_SYSTEM_HPP
 
-#include "System.hpp"
-#include "Component_storage.hpp"
-#include "EntityManager.hpp"
-#include "Components.hpp"
+#include "../rtype_engine/System.hpp"
+#include "../rtype_engine/Component_storage.hpp"
+#include "../rtype_engine/EntityManager.hpp"
+#include "../rtype_engine/Components.hpp"
 
 
 class SpawnSystem : public System {

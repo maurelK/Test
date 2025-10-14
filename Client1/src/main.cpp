@@ -1,19 +1,30 @@
 #include "GameClient.hpp"
 #include <iostream>
-#include <thread>
-#include <chrono>
 
 int main() {
-    std::cout << "[Client] Lancement du jeu..." << std::endl;
+    std::cout << "=== R-TYPE CLIENT ===" << std::endl;
+    std::cout << "[INFO] Initialisation du client..." << std::endl;
 
-    GameClient client("Pavel");
-    if (!client.init())
-        return 1;
+    try {
+        // Nom du joueur (temporaire, peut venir d’un écran d’entrée plus tard)
+        std::string username = "Player1";
 
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+        // Création du client
+        GameClient client(username);
 
-    client.run();
+        // Lancement du menu principal (mode selection)
+        client.runClient();
 
-    std::cout << "[Client] Fin du prgmme" << std::endl;
-    return 0;
+        std::cout << "[INFO] Fermeture du client proprement." << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "[ERREUR FATALE] Exception : " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch (...) {
+        std::cerr << "[ERREUR FATALE] Exception inconnue." << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }

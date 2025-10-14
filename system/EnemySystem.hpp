@@ -9,9 +9,9 @@
 #ifndef ENEMYSYSTEM_HPP
 #define ENEMYSYSTEM_HPP
 
-#include "EntityManager.hpp"
-#include "Component_storage.hpp"
-#include "Components.hpp"
+#include "../rtype_engine/EntityManager.hpp"
+#include "../rtype_engine/Component_storage.hpp"
+#include "../rtype_engine/Components.hpp"
 #include <random>
 
 class EnemySystem {

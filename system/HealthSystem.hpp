@@ -8,9 +8,9 @@
 #ifndef HEALTH_SYSTEM_HPP
 #define HEALTH_SYSTEM_HPP
 
-#include "System.hpp"
-#include "Component_storage.hpp"
-#include "Components.hpp"
+#include "../rtype_engine/System.hpp"
+#include "../rtype_engine/Component_storage.hpp"
+#include "../rtype_engine/Components.hpp"
 
 class HealthSystem : public System {
 private:

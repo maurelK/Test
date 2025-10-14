@@ -1,243 +1,282 @@
 #include "GameClient.hpp"
-#include "TestGame.hpp"
-#include "../Network/protocol.hpp"
 #include <iostream>
-#include <thread>
-#include <chrono>
-#include <SFML/Window.hpp>
-#include <SFML/Graphics.hpp>
-#include <vector>
+#include <algorithm>
+#include "game/Game.hpp"
+#include "ModeSelection.hpp"
+#include "Lobby.hpp"
 
 GameClient::GameClient(const std::string& user)
-    : username(user), playerId(1),menu(nullptr), inMenu(true),
-    m_network("127.0.0.1", 9091) {}
-
-GameClient::~GameClient() {
-    if (menu) {
-        delete menu;
-        menu = nullptr;
-    }
-}
-
-bool GameClient::init() {
-    std::cout << "[Client] Initialisation pour l'utilisateur: " << username << "\n";
-    if (!m_network.start()) {
-        std::cerr << "[Client] Erreur: impossible de démarrer le réseau\n";
-        return false;
-    }
-    return true;
-}
-
-void GameClient::shutdown() {
-    std::cout << "[Client] Arrêt du client...\n";
-    m_network.stop();
-}
-
-
-void GameClient::sendInput(float& moveX, float& moveY, bool &shoot) {
-    moveX = 0.f;
-    moveY = 0.f;
-    shoot = false;
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-        moveX = -1.f;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-        moveX = 1.f;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-        moveY = -1.f;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-        moveY = 1.f;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-        shoot = true;
-
-    std::cout << "[Client] Input simulé: move(" << moveX << "," << moveY 
-              << ") shoot=" << shoot << std::endl;
-}
-
-void GameClient::handleSnapshot(const SnapshotPacket& snapshot) {
-     worldEntities.clear();
-
-    for (int i = 0; i < snapshot.num_entities; i++) {
-        auto e = snapshot.entities[i];
-        worldEntities[e.id] = {e.x, e.y};
-    }
-    std::cout << "[Client] Snapshot reçu: " << snapshot.num_entities << " entités" << std::endl;
-}
-
-void GameClient::render() {
-    std::cout << "[Client] Rendu des entités:\n";
-    for (auto& [id, ent] : worldEntities) {
-        std::cout << " -> Entité " << id << " (" << ent.x << "," << ent.y << ")" << std::endl;
-    }
-}
-
-void GameClient::runMenu() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "R-Type - Menu Principal");
+: username(user)
+, window(sf::VideoMode(800, 600), "R-Type Client", sf::Style::Close)
+, player(200.f, 360.f)
+, net("127.0.0.1", 9091)
+{
     window.setFramerateLimit(60);
-    
-    menu = new Menu(window);
-    
-    Logo logo(window);
-    std::vector<Star> stars;
-    createStars(stars, 100, window);
-    std::vector<Particle> particles;
-    
-    sf::Clock clock;
-    sf::Clock particleClock;
-    
-    std::cout << "[Client] Menu lancé - Utilisez les flèches Haut/Bas pour naviguer, Entrée pour sélectionner\n";
-    
-    while (window.isOpen() && inMenu) {
-        float deltaTime = clock.restart().asSeconds();
-        
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-                inMenu = false;
-                return;
-            }
-            
-            if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Up) {
-                    menu->navigateUp();
-                    std::cout << "[Menu] Navigation: Haut (bouton " << menu->selectedButtonIndex << ")\n";
-                }
-                else if (event.key.code == sf::Keyboard::Down) {
-                    menu->navigateDown();
-                    std::cout << "[Menu] Navigation: Bas (bouton " << menu->selectedButtonIndex << ")\n";
-                }
-                else if (event.key.code == sf::Keyboard::Return || event.key.code == sf::Keyboard::Space) {
-                    MenuState newState = menu->selectCurrentButton();
-                    std::cout << "[Menu] Sélection validée\n";
-                    
-                    if (newState == MenuState::NewGame) {
-                        std::cout << "[Menu] Lancement d'une nouvelle partie...\n";
-                        inMenu = false;
-                        window.close();
-                        return;
-                    }
-                    else if (newState == MenuState::Quit) {
-                        std::cout << "[Menu] Fermeture du jeu...\n";
-                        window.close();
-                        inMenu = false;
-                        return;
-                    }
-                    else if (newState == MenuState::Continue) {
-                        std::cout << "[Menu] Continuer (non implémenté)\n";
-                    }
-                    else if (newState == MenuState::Options) {
-                        std::cout << "[Menu] Options (non implémenté)\n";
-                    }
-                    else if (newState == MenuState::HighScore) {
-                        std::cout << "[Menu] Meilleurs scores (non implémenté)\n";
-                    }
-                    else if (newState == MenuState::Credits) {
-                        std::cout << "[Menu] Crédits (non implémenté)\n";
-                    }
-                }
-                else if (event.key.code == sf::Keyboard::Escape) {
-                    std::cout << "[Menu] Échap pressé - Fermeture\n";
-                    window.close();
-                    inMenu = false;
-                    return;
-                }
-            }
-            
-            if (event.type == sf::Event::MouseButtonPressed) {
-                if (event.mouseButton.button == sf::Mouse::Left) {
-                    sf::Vector2f mousePos(static_cast<float>(event.mouseButton.x), 
-                                         static_cast<float>(event.mouseButton.y));
-                    MenuState newState = menu->handleClick(mousePos);
-                    
-                    if (newState == MenuState::NewGame) {
-                        std::cout << "[Menu] Nouvelle partie (souris)\n";
-                        inMenu = false;
-                        window.close();
-                        return;
-                    }
-                    else if (newState == MenuState::Quit) {
-                        std::cout << "[Menu] Quitter (souris)\n";
-                        window.close();
-                        inMenu = false;
-                        return;
-                    }
-                }
+    renderer.initBackground(100, window.getSize().x, window.getSize().y);
+}
+
+GameClient::~GameClient() {}
+
+void GameClient::runClient() {
+    std::cout << "[Client] Démarrage du client avec menu principal\n";
+
+    Menu mainMenu(window);
+
+    while (window.isOpen()) {
+        MenuState menuResult = mainMenu.run(window);
+
+        if (menuResult == MenuState::Quit) {
+            std::cout << "[Client] Fermeture du jeu.\n";
+            window.close();
+            break;
+        }
+
+        if (menuResult == MenuState::NewGame) {
+
+            ModeSelection modeSelection(window);
+            GameMode mode = modeSelection.run();
+
+            if (mode == GameMode::Solo) {
+                std::cout << "[Client] Mode solo choisi\n";
+                runLocalGame();
+            } 
+            else if (mode == GameMode::Multiplayer) {
+                std::cout << "[Client] Mode multijoueur choisi\n";
+                runLobby();
             }
         }
-        
-        sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
-        sf::Vector2f mousePos = window.mapPixelToCoords(mousePixelPos);
-        menu->update(mousePos);
-        
-        logo.update(deltaTime);
-        for (auto& star : stars) {
-            star.update(deltaTime);
-        }
-        updateParticles(particles, particleClock, deltaTime);
-        
-        window.clear(sf::Color(10, 10, 30));
-        
-        drawGrid(window, gridOffsetX, gridOffsetY);
-        for (const auto& star : stars) {
-            star.draw(window);
-        }
-        for (const auto& particle : particles) {
-            particle.draw(window);
-        }
-        
-        logo.draw(window);
-        menu->draw(window);
-        
-        window.display();
     }
 }
 
-void GameClient::run() {
-    runMenu();
 
-    if (!inMenu && menu && menu->state != MenuState::NewGame) {
-        std::cout << "[Client] Retour au menu ou fermeture\n";
+void GameClient::runLocalGame() {
+    std::cout << "[Client] Lancement du mode solo (Benaya)\n";
+    Game soloGame(GameModeType::Solo);
+    soloGame.run();
+}
+
+void GameClient::runLobby() {
+    std::cout << "[Client] Ouverture du lobby multijoueur\n";
+
+    LobbyState result = runLobbyScreen();
+
+    if (result == LobbyState::Back) {
+        std::cout << "[Client] Retour au menu de sélection\n";
         return;
     }
 
-    std::cout << "[Client] Connexion réseau et démarrage du jeu...\n";
+    if (result == LobbyState::GameStart) {
+        std::cout << "[Client] Le jeu multijoueur démarre !\n";
 
-    sf::RenderWindow window(sf::VideoMode(800, 600), "R-Type Client - Jeu");
-    window.setFramerateLimit(60);
+        if (!initNetworked()) {
+            std::cerr << "[Client] Erreur lors de l'initialisation réseau UDP.\n";
+            return;
+        }
+
+        runMultiplayerGame();
+    }
+}
+LobbyState GameClient::runLobbyScreen() {
+    sf::Clock clock;
+    Lobby lobby(window);
+    LobbyState state = LobbyState::Idle;
+
+    bool startedNetwork = false;
 
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
+
+            if (event.type == sf::Event::TextEntered)
+                lobby.handleTextInput(event.text.unicode);
+
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::BackSpace)
+                    lobby.handleBackspace();
+            }
+
+            if (event.type == sf::Event::MouseButtonPressed &&
+                event.mouseButton.button == sf::Mouse::Left) {
+                sf::Vector2f mousePos = window.mapPixelToCoords(
+                    {event.mouseButton.x, event.mouseButton.y});
+                lobby.handleClick(mousePos);
+
+                if (lobby.getState() == LobbyState::Connecting && !startedNetwork) {
+                    startedNetwork = true;
+                    lobby.runNetwork(net);
+                }
+            }
         }
 
-        float moveX, moveY;
-        bool shoot;
-        sendInput(moveX, moveY, shoot);
+        float dt = clock.restart().asSeconds();
+        sf::Vector2i mousePixelPos = sf::Mouse::getPosition(window);
+        sf::Vector2f mousePos = window.mapPixelToCoords(mousePixelPos);
 
-        InputPacket input{};
-        input.header.type = PacketType::INPUT;
-        input.header.size = sizeof(InputPacket);
-        input.player_id = playerId;
-        input.move_x = moveX;
-        input.move_y = moveY;
-        input.shoot = shoot;
+        lobby.update(mousePos, dt);
 
-        m_network.sendInput(input);
-
-        SnapshotPacket snap{};
-        if (m_network.pollSnapshot(snap)) {
-            handleSnapshot(snap);
-        }
-
-        window.clear();
-        render();
+        window.clear(sf::Color(10, 10, 30));
+        lobby.draw(window);
         window.display();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
+        state = lobby.getState();
+
+        if (state == LobbyState::Back)
+            return LobbyState::Back;
+
+        if (state == LobbyState::GameStart)
+            return LobbyState::GameStart;
+
+        if (state == LobbyState::Error)
+            return LobbyState::Back;
     }
 
-    shutdown();
+    return LobbyState::Back;
+}
+
+bool GameClient::initNetworked() {
+    if (!net.start()) {
+        std::cerr << "[Client] Erreur: impossible de démarrer la connexion UDP.\n";
+        return false;
+    }
+
+    std::cout << "[Client] Initialisation réseau terminée.\n";
+    return true;
+}
+
+void GameClient::runMultiplayerGame() {
+    std::cout << "[Client] Multiplayer game started.\n";
+
+    while (window.isOpen()) {
+        sf::Event ev;
+        while (window.pollEvent(ev)) {
+            if (ev.type == sf::Event::Closed)
+                window.close();
+            if (ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Escape)
+                window.close();
+        }
+
+        float dt = frameClock.restart().asSeconds();
+        updateNetworked(dt);
+        renderNetworked();
+    }
+}
+
+void GameClient::updateNetworked(float dt) {
+    renderer.updateBackground(dt);
+
+    float mx = 0.f, my = 0.f;
+    bool shoot = false;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))    my -= 1.f;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))  my += 1.f;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))  mx -= 1.f;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) mx += 1.f;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+        if (bulletCooldownClock.getElapsedTime().asMilliseconds() > 130) {
+            shoot = true;
+            bulletCooldownClock.restart();
+        }
+    }
+
+    InputPacket input{};
+    input.header.type = PacketType::INPUT;
+    input.header.size = sizeof(InputPacket);
+    input.player_id = playerId;
+    input.move_x = mx;
+    input.move_y = my;
+    input.shoot  = shoot;
+    net.sendInput(input);
+
+    SnapshotPacket snap{};
+    if (net.pollSnapshot(snap)) {
+        handleSnapshot(snap);
+    }
+
+    player.update(dt);
+    if (shoot) bullets.emplace_back(player.shoot());
+    applyBulletLogic(dt);
+
+    if (enemySpawnClock.getElapsedTime().asSeconds() > 1.6f) {
+        spawnEnemy();
+        enemySpawnClock.restart();
+    }
+    for (auto& e : enemies) e.update(dt);
+
+    if (powerUpSpawnClock.getElapsedTime().asSeconds() > 2.5f) {
+        spawnPowerUp();
+        powerUpSpawnClock.restart();
+    }
+    for (auto& p : powerUps) p.update(dt);
+
+    handleCollisions();
+
+    enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
+        [](const Enemy& e){ return e.isDead() || e.getPosition().x < -80.f; }),
+        enemies.end());
+
+    powerUps.erase(std::remove_if(powerUps.begin(), powerUps.end(),
+        [](const PowerUp& p){ return p.isOutOfBounds(); }),
+        powerUps.end());
+}
+
+void GameClient::renderNetworked() {
+    window.clear(sf::Color(10, 10, 30));
+    renderer.drawBackground(window);
+
+    for (const auto& [id, vis] : worldEntities) {
+        sf::CircleShape dot(6.f);
+        dot.setOrigin(6.f, 6.f);
+        dot.setPosition(vis.x, vis.y);
+        dot.setFillColor(sf::Color(255, 200, 0));
+        window.draw(dot);
+    }
+
+    for (auto& b : bullets) b.draw(window);
+    for (auto& e : enemies) e.draw(window);
+    for (auto& p : powerUps) p.draw(window);
+    player.draw(window);
+
+    window.display();
+}
+
+
+void GameClient::handleSnapshot(const SnapshotPacket& snapshot) {
+    worldEntities.clear();
+    for (int i = 0; i < snapshot.num_entities; i++) {
+        auto e = snapshot.entities[i];
+        worldEntities[e.id] = { e.x, e.y };
+    }
+}
+
+void GameClient::spawnEnemy() {
+    float y = 50.f + static_cast<float>(rand() % 500);
+    int level = 1 + (rand() % 3);
+    enemies.emplace_back(850.f, y, level);
+}
+
+void GameClient::spawnPowerUp() {
+    float y = 50.f + static_cast<float>(rand() % 500);
+    PowerUpType type = static_cast<PowerUpType>(rand() % 3);
+    powerUps.emplace_back(850.f, y, type);
+}
+
+void GameClient::applyBulletLogic(float dt) {
+    for (auto& b : bullets) b.update(dt);
+    bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
+        [&](const Bullet& B){ return B.isOutOfBounds(static_cast<float>(window.getSize().x)); }),
+        bullets.end());
+}
+
+void GameClient::handleCollisions() {
+    for (auto& b : bullets) {
+        sf::FloatRect bb = b.getBounds();
+        for (auto& e : enemies) {
+            if (bb.intersects(e.getBounds())) {
+                e.takeDamage(1);
+            }
+        }
+    }
 }

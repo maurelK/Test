@@ -3,6 +3,7 @@
 ** R-Type GameServer Implementation
 */
 
+
 #include "GameServer.hpp"
 #include <iostream>
 #include <thread>
@@ -58,7 +59,10 @@ void GameServer::sendSnapshots() {
     snap.tick = tick++;
     snap.num_entities = entities.size();
 
-    std::memcpy(snap.entities, entities.data(), sizeof(EntityData) * entities.size());
+    size_t count = std::min(entities.size(), static_cast<size_t>(M_ENTITIES));
+    snap.num_entities = count;
+
+    std::memcpy(snap.entities, entities.data(), sizeof(EntityData) * count);
     NetworkManager::getInstance().sendSnapshot(snap);
        // bool changed = false;
 
@@ -83,8 +87,6 @@ void GameServer::sendSnapshots() {
                  //         << " | Position(" << pos.x << "," << pos.y << ")"
                    //       << " | Velocity(" << vel.dx << "," << vel.dy << ")"
                     //      << " | HP: " << hp.hp << "\n";
-
-                // Ici : envoyer le snapshot via ton NetworkManager
            // }
         //}
         // Vérification des projectiles

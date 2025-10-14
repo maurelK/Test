@@ -22,7 +22,11 @@ Entity ProjectileSystem::spawnProjectile(Entity owner, float x, float y, float d
 void ProjectileSystem::update(float dt) {
     std::vector<Entity> toRemove;
 
-    for (auto e : entities) {
+    // On copie entities pour éviter les problèmes si des entités sont ajoutées en cours de boucle
+    auto currentEntities = entities;
+
+    for (auto e : currentEntities) {
+        // Vérification que toutes les données existent
         if (!positions.hasData(e) || !velocities.hasData(e) || !projectiles.hasData(e))
             continue;
 
@@ -38,7 +42,10 @@ void ProjectileSystem::update(float dt) {
             toRemove.push_back(e);
             continue;
         }
-        for (auto target : entityManager.getLivingEntities()) {
+
+        // On fait une copie de la liste des entités vivantes pour éviter les problèmes
+        auto livingEntities = entityManager.getLivingEntities();
+        for (auto target : livingEntities) {
             if (target == proj.owner) continue;
             if (!positions.hasData(target) || !healths.hasData(target)) continue;
 
@@ -60,10 +67,11 @@ void ProjectileSystem::update(float dt) {
         }
     }
 
+    // Suppression sécurisée
     for (auto e : toRemove) {
-        positions.entityDestroyed(e);
-        velocities.entityDestroyed(e);
-        projectiles.entityDestroyed(e);
+        if (positions.hasData(e)) positions.entityDestroyed(e);
+        if (velocities.hasData(e)) velocities.entityDestroyed(e);
+        if (projectiles.hasData(e)) projectiles.entityDestroyed(e);
         entityManager.destroyEntity(e);
         removeEntity(e);
     }

@@ -8,10 +8,10 @@
 #ifndef PROJECTILE_SYSTEM_HPP
 #define PROJECTILE_SYSTEM_HPP
 
-#include "EntityManager.hpp"
-#include "Component_storage.hpp"
-#include "Components.hpp"
-#include "System.hpp"
+#include "../rtype_engine/EntityManager.hpp"
+#include "../rtype_engine/Component_storage.hpp"
+#include "../rtype_engine/Components.hpp"
+#include "../rtype_engine/System.hpp"
 #include <vector>
 
 class ProjectileSystem : public System {

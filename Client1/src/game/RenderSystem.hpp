@@ -1,5 +1,5 @@
 #pragma once
-#include "Gameplaycomponents.hpp"
+#include "../rtype_engine/Components.hpp"
 #include "System.hpp"
 #include "Orchestror.hpp"
 #include <SFML/Graphics.hpp>

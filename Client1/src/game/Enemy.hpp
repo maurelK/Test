@@ -2,39 +2,38 @@
 #define ENEMY_HPP
 
 #include <SFML/Graphics.hpp>
+#include "TextureManager.hpp"
+
+enum class EnemyType {
+    Type1 = 1,
+    Type2 = 2,
+    Type3 = 3
+};
 
 class Enemy {
 private:
-    sf::RectangleShape shape;    // Ancien système (inutilisé)
-    sf::CircleShape circle;      // Fallback
     sf::Sprite sprite;
-    sf::Texture texture;
+    sf::CircleShape fallback;
+    EnemyType type;
     float speed;
-    int hp;
-    int maxHp;
-    int type;
-    int points;
-    bool shoots;
-    bool usingTexture = false;
     float animationTime;
-    int currentFrame;
-    int frameWidth;
-    int frameHeight;
-    
-    // Pour l'effet de dégâts
-    float damageFlashTime = 0.f;
-    sf::Color originalColor;
-    
+    bool alive;
+    bool useSprite;
+    bool shoots;
+    int points;
+
 public:
-    Enemy(float x, float y, int level);
+    Enemy(float x, float y, int typeId = 1);
+
     void update(float deltaTime);
-    void draw(sf::RenderTarget& target);
-    void takeDamage(int damage);
-    bool isDead() const;
-    bool canShoot() const;
-    int getPoints() const;
-    sf::FloatRect getBounds() const;
+    void draw(sf::RenderTarget& target) const;
+    void takeDamage(int dmg);
+    bool isDead() const { return !alive; }
+    bool canShoot() const { return shoots; }
+    int getPoints() const { return points; }
+
     sf::Vector2f getPosition() const;
+    sf::FloatRect getBounds() const;
 };
 
 #endif

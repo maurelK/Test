@@ -8,9 +8,8 @@ NetworkManager& NetworkManager::getInstance() {
 }
 
 NetworkManager::NetworkManager() 
-   : m_serveurTCP(9090)
-   , m_serveurUDP(9091, m_inputQueue)
-
+    : m_serveurTCP(9090)
+    , m_serveurUDP(9091, m_inputQueue)
 {}
 
 bool NetworkManager::initialize(uint16_t tcp_port, uint16_t udp_port) {
@@ -58,4 +57,21 @@ void NetworkManager::sendSnapshot(const SnapshotPacket& snapshot) {
 
 uint32_t NetworkManager::getConnectedPlayersCount() const {
     return 1;
+}
+
+
+uint32_t NetworkManager::login(const std::string& username) {
+    return m_lobbyManager.login(username);
+}
+
+std::vector<Lobby> NetworkManager::getLobbyList() {
+    return m_lobbyManager.getLobbyList();
+}
+
+std::pair<bool, uint32_t> NetworkManager::joinLobby(uint32_t player_id, uint32_t lobby_id) {
+    return m_lobbyManager.joinLobby(player_id, lobby_id);
+}
+
+uint32_t NetworkManager::createLobby(uint8_t max_players) {
+    return m_lobbyManager.createLobby(max_players);
 }

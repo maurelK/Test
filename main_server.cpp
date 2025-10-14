@@ -5,15 +5,12 @@
 ** server
 */
 
-
-#include "rtype_engine/GameServer.hpp"
+#include "system/GameServer.hpp"
 #include "Network/Networkmanager.hpp"
 #include "Network/protocol.hpp"
 #include <iostream>
 #include <thread>
 #include <chrono>
-
-#include "rtype_engine/GameServer.hpp"
 #include "Network/Networkmanager.hpp"
 #include <iostream>
 #include <thread>

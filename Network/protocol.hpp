@@ -1,9 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <iostream>
-#include <vector>
-
 
 #pragma pack(push, 1)
 
@@ -13,7 +10,8 @@ enum class PacketType : uint8_t {
     CHAT_MESSAGE,
     LOBBY_LIST,
     INPUT,
-    SNAPSHOT
+    SNAPSHOT,
+    GAME_START
 };
 
 struct PacketHeader {
@@ -55,7 +53,7 @@ struct InputPacket {
     bool shoot;
 };
 
-#define MAX_ENTITIES 100
+#define M_ENTITIES 100
 
 struct EntityData {
     uint32_t id;
@@ -67,7 +65,42 @@ struct SnapshotPacket {
     PacketHeader header;
     uint32_t tick;
     uint16_t num_entities;
-    EntityData entities[MAX_ENTITIES];
+    EntityData entities[M_ENTITIES];
+};
+
+struct AckLoginPacket {
+    static constexpr PacketType Type = PacketType::LOGIN;
+    PacketHeader header;
+    bool success;
+    uint32_t player_id;
+};
+
+struct LobbyInfo {
+    uint32_t lobby_id;
+    uint8_t player_count;
+    uint8_t max_players;
+};
+
+#define M_LOBBIES 10
+
+struct LobbyListResponsePacket {
+    static constexpr PacketType Type = PacketType::LOBBY_LIST;
+    PacketHeader header;
+    uint8_t num_lobbies;
+    LobbyInfo lobbies[M_LOBBIES];
+};
+
+struct AckJoinLobbyPacket {
+    static constexpr PacketType Type = PacketType::JOIN_LOBBY;
+    PacketHeader header;
+    bool success;
+    uint32_t lobby_id;
+};
+
+struct GameStartPacket {
+    static constexpr PacketType Type = PacketType::GAME_START;
+    PacketHeader header;
+    uint32_t lobby_id;
 };
 
 #pragma pack(pop)

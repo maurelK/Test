@@ -1,43 +1,72 @@
 #pragma once
 
-#include <cstring>
-#include <map>
-#include <cstdint>
+#include <SFML/Graphics.hpp>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include "Menu.hpp"
-#include "Background.hpp"
-#include "Logo.hpp"
+#include "GameRenderer.hpp"
+#include "WindowManager.hpp"
+#include "game/Player.hpp"
+#include "game/Enemy.hpp"
+#include "game/Bullet.hpp"
+#include "game/PowerUp.hpp"
 #include "NetworkClient.hpp"
+#include "../Network/protocol.hpp"
 
-struct EntityVisual {
-    float x;
-    float y;
+enum class LobbyState;
+enum class GameMode;
+
+struct NetworkEntityVisual {
+    float x, y;
 };
 
 class GameClient {
 public:
-    GameClient(const std::string& username);
+    explicit GameClient(const std::string& username);
     ~GameClient();
-    bool init();
-    void shutdown();
 
-    void sendInput(float& moveX, float& moveY, bool& shoot);
-    void handleSnapshot(const struct SnapshotPacket& snapshot);
-    void render();
-    void run();
-    void runMenu();
+    // === POINT D’ENTRÉE PRINCIPAL ===
+    void runClient();
 
-    const std::map<uint32_t, EntityVisual>& getEntities() const { return worldEntities; }
+    // === MODES DE JEU ===
+    void runLocalGame();      // Mode solo
+    void runLobby();          // Mode multijoueur → lobby puis partie réseau
+    void runMultiplayerGame();// Partie réseau
+
 private:
+    // === INITIALISATION ===
+    bool initNetworked();
+    LobbyState runLobbyScreen();
+
+    // === ATTRIBUTS ===
     std::string username;
-    uint32_t playerId;
-    std::map<uint32_t, EntityVisual> worldEntities;
+    sf::RenderWindow window;
 
+    Player player;
+    std::vector<Bullet> bullets;
+    std::vector<Enemy> enemies;
+    std::vector<PowerUp> powerUps;
 
-    Menu* menu;
-    bool inMenu;
+    GameRenderer renderer;
+    NetworkClient net;
 
-    NetworkClient m_network;
+    sf::Clock frameClock;
+    sf::Clock bulletCooldownClock;
+    sf::Clock enemySpawnClock;
+    sf::Clock powerUpSpawnClock;
 
+    int playerId = 0;
+
+    std::unordered_map<int, NetworkEntityVisual> worldEntities;
+
+    // === MÉTHODES INTERNES ===
+    void updateNetworked(float dt);
+    void renderNetworked();
+    void handleSnapshot(const SnapshotPacket& snapshot);
+
+    void spawnEnemy();
+    void spawnPowerUp();
+    void applyBulletLogic(float dt);
+    void handleCollisions();
 };

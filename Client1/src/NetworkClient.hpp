@@ -1,37 +1,47 @@
 #pragma once
-
+#include "protocol.hpp"
+#include <boost/asio.hpp>
 #include <atomic>
 #include <thread>
-#include  "protocol.hpp"
+#include <string>
+#include <memory>
 #include <mutex>
 #include <queue>
-#include <boost/asio.hpp>
+#include <optional>
 
 using boost::asio::ip::udp;
-
+using boost::asio::ip::tcp;
 
 class NetworkClient {
 public:
-    NetworkClient(const std::string & host, unsigned short port);
+    NetworkClient(const std::string& host, unsigned short port);
     ~NetworkClient();
 
     bool start();
     void stop();
 
-    void sendInput(const InputPacket & input);
+    //  TCP
+    bool sendLogin(const std::string& username);
+    bool joinLobby(uint32_t lobbyId);
+    std::optional<PacketType> listenForServerEvents();
 
-bool pollSnapshot(SnapshotPacket& snapshot);
+    // UDP
+    void sendInput(const InputPacket& input);
+    bool pollSnapshot(SnapshotPacket& snapshot);
+
+    uint32_t getPlayerId() const { return m_playerId; }
 
 private:
-     void receiveLoop();
-
     boost::asio::io_context m_context;
+
+    // UDP
     udp::socket m_socket;
     udp::endpoint m_serverEndpoint;
 
-    std::thread m_thread;
-    std::atomic<bool> m_running{false};
+    // TCP
+    std::unique_ptr<tcp::socket> m_tcpSocket;
 
-    std::queue<SnapshotPacket> m_snapshots;
-    std::mutex m_mutex;
+    std::atomic<bool> m_running{false};
+    std::thread m_thread;
+    uint32_t m_playerId = 0;
 };
