@@ -1,9 +1,0 @@
-/* src/App.css */
-.App {
-  text-align: center;
-}
-
-/* Supprimez tout fond vert potentiel */
-.App {
-  background-color: transparent;
-}
