@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 #include <array>
-#include <cstdint>
 
 class AesCipher {
 public:
@@ -55,6 +54,9 @@ private:
     void SubBytes(uint8_t state[4][4]);
     u_int32_t RotWord(u_int32_t word);
     void ShiftRows(uint8_t state[4][4]);
+    uint32_t RCon(int round);
+    
+    void Key_Expansion(u_int8_t key[16], uint32_t round_key[44]);
     //std::vector<unsigned char> pad_data(
     //    const std::vector<unsigned char>& data,
     //    size_t target_size);

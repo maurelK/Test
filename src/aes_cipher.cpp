@@ -1,5 +1,5 @@
 #include "aes_cipher.hpp"
-#include <cstdint>
+#include "utils.hpp"
 
 AesCipher::AesCipher(const std::string &key)
 {
@@ -59,3 +59,44 @@ void AesCipher::ShiftRows(uint8_t state[4][4])
     for (int i = 3; i > 0; --i) state[3][i] = state[3][i-1];
     state[3][0] = temp;
 }
+
+u_int8_t multiplication_by_galois(u_int8_t bytes)
+{
+    uint8_t overflow = bytes & 0x80;
+    
+    bytes <<= 1;
+    if ( overflow & 0x80) {
+        bytes ^= 0x1B;
+    }
+    return bytes;
+}
+
+
+uint32_t AesCipher::RCon(int round)
+{
+    uint8_t rc = 1;
+    if (round == 1) return 0x01000000;
+    
+
+    for (int i = 1; i < round; ++i) {
+        rc = multiplication_by_galois(rc);
+    }
+    return rc;
+}
+
+void AesCipher::Key_Expansion(u_int8_t key[16], uint32_t round_key[44])
+{
+    for (int i = 0; i < 4; i++) {
+        round_key[i] = (key[i * 4] <<24 | key[i * 4 + 1] << 16
+            | key[i * 4 + 2] << 8 | key[i * 4 + 3]);
+    }
+    
+    for (int i = 4; i < 44; ++i) {
+        uint32_t temp = round_key[i - 1];
+        if (i % 4 == 0) {
+            temp = SubWord(RotWord(temp)) ^ RCon(i / 4);
+        }
+        round_key[i] = round_key[i - 4] ^ temp;
+    }
+}
+
