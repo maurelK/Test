@@ -11,6 +11,7 @@
 #include "rsa_cipher.hpp"
 #include "pgp_cipher.hpp"
 #include "utils.hpp"
+#include "aes_cipher.hpp"
 #include <iostream>
 
 void handle_xor_cipher(const Arguments& args)
@@ -27,6 +28,24 @@ void handle_xor_cipher(const Arguments& args)
         result = args.block_mode ?
             xor_cipher.decipher_block(message) :
             xor_cipher.decipher_stream(message);
+    }
+    std::cout << result << std::endl;
+}
+
+void handle_aes_cipher(const Arguments& args)
+{
+    AesCipher aes_cipher(args.key);
+    std::string message = Utils::read_stdin();
+    std::string result;
+    
+    if (args.mode == "-c") {
+        result = args.block_mode ? 
+            aes_cipher.cipher_block(message) :
+            aes_cipher.cipher_stream(message);
+    } else {
+        result = args.block_mode ?
+            aes_cipher.decipher_block(message) :
+            aes_cipher.decipher_stream(message);
     }
     std::cout << result << std::endl;
 }
@@ -86,6 +105,8 @@ void process_crypto_system(const Arguments& args)
 {
     if (args.crypto_system == "xor") {
         handle_xor_cipher(args);
+    } else if (args.crypto_system == "aes") {
+        handle_aes_cipher(args);
     } else if (args.crypto_system == "rsa") {
         if (args.mode == "-g")
             handle_rsa_generate(args);
