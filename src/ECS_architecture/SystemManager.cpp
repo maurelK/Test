@@ -2,14 +2,17 @@
 #include "SystemManager.hpp"
 
 template <typename T, typename... Args>
-std::shared_ptr<T> SystemManager::registerSystem(Args &&...args)
-{
-    return std::shared_ptr<T>();
+std::shared_ptr<T> SystemManager::registerSystem(Args&&... args) {
+    auto type = std::type_index(typeid(T));
+    auto system = std::make_shared<T>(std::forward<Args>(args)...);
+    systems[type] = system;
+    return system;
 }
 
-template <typename T>
-void SystemManager::setSignature(Signature signature)
-{
+template<typename T>
+void SystemManager::setSignature(Signature signature) {
+    auto type = std::type_index(typeid(T));
+    systemSignatures[type] = signature;
 }
 
 template <typename T>

@@ -17,9 +17,15 @@ private:
     ComponentType nextComponentType = 0;
 
 public:
-    void init() {
+    void init()
+    {
         entityManager = std::make_unique<EntityManager>();
         systemManager = std::make_unique<SystemManager>();
+    }
+
+    void start()
+    {
+        systemManager->update(0.0f);
     }
 
     Entity createEntity() {
@@ -102,3 +108,4 @@ private:
         return nullptr;
     }
 };
+
