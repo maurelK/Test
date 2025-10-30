@@ -4,11 +4,12 @@
 
 
 class System {
-public:
+protected:
     std::unordered_set<Entity> entities;
+public:
     virtual ~System() = default;
     virtual void update(float dt) = 0;
-    
+
     void addEntity(Entity entity) { entities.insert(entity); }
     void removeEntity(Entity entity) { entities.erase(entity); }
     bool hasEntity(Entity entity) const { return entities.find(entity) != entities.end(); }

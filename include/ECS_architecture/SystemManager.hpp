@@ -1,7 +1,14 @@
+/*
+** EPITECH PROJECT, 2025
+** SystemManager
+** File description:
+** Handle OUr System
+*/
+
+
 #ifndef SYSTEM_MANAGER_HPP
 #define SYSTEM_MANAGER_HPP
 
-#pragma once
 #include "base.hpp"
 #include "System.hpp"
 #include <memory>

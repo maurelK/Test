@@ -2,7 +2,7 @@
 #include "Component_Manager.hpp"
 
 template <typename T>
-inline void ComponentStorage<T>::insertData(Entity entity, T component)
+void ComponentStorage<T>::insertData(Entity entity, T component)
 {
     if (entityToIndex.find(entity) != entityToIndex.end()) return;
     size_t newIndex = size;
@@ -36,21 +36,4 @@ template <typename T>
 bool ComponentStorage<T>::hasData(Entity entity) const
 {
     return entityToIndex.find(entity) != entityToIndex.end();
-}
-
-template <typename T>
-void ComponentStorage<T>::entityDestroyed(Entity entity)
-{
-    if (hasData(entity)) removeData(entity);
-
-}
-
-template <typename T>
-std::vector<Entity> ComponentStorage<T>::getAllEntities() const
-{
-    std::vector<Entity> entities;
-    for (const auto& pair : entityToIndex) {
-        entities.push_back(pair.first);
-    }
-    return entities;
 }

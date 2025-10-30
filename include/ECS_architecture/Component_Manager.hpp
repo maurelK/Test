@@ -26,8 +26,6 @@ public:
     void removeData(Entity entity);
     const T& getData(Entity entity) const;
     bool hasData(Entity entity) const;
-    void entityDestroyed(Entity entity);
-    std::vector<Entity> getAllEntities() const;
 };
 
 #endif

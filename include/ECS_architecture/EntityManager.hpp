@@ -20,6 +20,4 @@ public:
     void destroyEntity(Entity entity);
     void setSignature(Entity entity, Signature signature);
     Signature getSignature(Entity entity);
-    const std::vector<Entity>& getLivingEntities() const;
-    uint32_t getLivingEntityCount() const;
 };

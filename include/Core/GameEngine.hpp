@@ -1,20 +1,66 @@
 /*
 ** EPITECH PROJECT, 2025
-** R-TYPE
+** GameEngine
 ** File description:
-** Param to our games"
+** The core of the Game Engine
 */
 
-#include "../ECS_architecture/Orchestror.hpp"
+#ifndef GAME_ENGINE_HPP
+#define GAME_ENGINE_HPP
 
-class GameState {
+#include "EngineConfig.hpp"
+#include <memory>
+#include "SceneManager.hpp"
+#include "../ECS_architecture/Orchestror.hpp"
+#include "../Resources/ResourceManager.hpp"
+
+
+class GameEngine {
+public:
+    enum class State { UNINITIALIZED, INITIALIZED, RUNNING, PAUSED, STOPPED };
+    
 private:
+    State currentState;
     Orchestror orchestrator;
+    std::unique_ptr<ResourceManager> resourceManager;
+    std::unique_ptr<SceneManager> sceneManager;
+    
+    // Configuration partie 
+    EngineConfig config;
     
 public:
-    void init();
-    void update(float dt);
+    GameEngine();
+    ~GameEngine();
+    
+    // Cycle de vie
+    bool initialize(const EngineConfig& config);
+    void run();
+    void pause();
+    void resume();
+    void shutdown();
+    
+    // Gestion des scènes
+    void pushScene(std::unique_ptr<Scene> scene);
+    void popScene();
+    
+    // Accès aux sous-systèmes
+    Orchestror& getECS()
+    {
+        return orchestrator;
+    }
+    ResourceManager& getResourceManager()
+    {
+        return *resourceManager;
+    }
+    SceneManager& getSceneManager(){
+        return *sceneManager;
+    }
+    
+private:
+    void mainLoop();
+    void processEvents();
+    void update(float deltaTime);
     void render();
-    void cleanup();
 };
 
+#endif

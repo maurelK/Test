@@ -39,13 +39,3 @@ Signature EntityManager::getSignature(Entity entity)
 {
     return signatures[entity];
 }
-
-const std::vector<Entity> &EntityManager::getLivingEntities() const
-{
-    return livingEntities;
-}
-
-uint32_t EntityManager::getLivingEntityCount() const
-{
-    return livingEntityCount;
-}
