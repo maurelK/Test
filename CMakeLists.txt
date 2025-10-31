@@ -24,7 +24,7 @@ add_library(rtype_engine STATIC
     
     # RESSOURCES GÉNÉRIQUES
     include/Resources/ResourceManager.hpp
-    src/Resources/ResourceManager.cpp
+    #src/Resources/ResourceManager.cpp
 )
 
 # Lier seulement les dépendances GÉNÉRIQUES

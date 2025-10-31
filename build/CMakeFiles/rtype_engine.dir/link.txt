@@ -1,0 +1,2 @@
+/usr/bin/ar qc librtype_engine.a CMakeFiles/rtype_engine.dir/src/Core/GameEngine.cpp.o CMakeFiles/rtype_engine.dir/src/ECS_architecture/EntityManager.cpp.o
+/usr/bin/ranlib librtype_engine.a

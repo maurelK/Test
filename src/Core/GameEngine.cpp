@@ -1,6 +1,5 @@
-#include "GameEngine.hpp"
+#include "../../include/Core/GameEngine.hpp"
 
-#include "GameEngine.hpp"
 #include <SFML/Graphics.hpp>
 
 GameEngine::GameEngine() 
