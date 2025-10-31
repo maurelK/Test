@@ -16,8 +16,8 @@ add_library(rtype_engine STATIC
     # ECS GÉNÉRIQUE
     include/ECS_architecture/base.hpp
     include/ECS_architecture/EntityManager.hpp
-    include/ECS_architecture/ComponentManager.hpp
-    include/ECS_architecture/System.hpp
+    include/ECS_architecture/Component_Manager.hpp
+    #include/ECS_architecture/System.hpp
     include/ECS_architecture/SystemManager.hpp
     include/ECS_architecture/Orchestror.hpp
     src/ECS_architecture/EntityManager.cpp
@@ -36,10 +36,10 @@ target_link_libraries(rtype_engine
 
 # 🧪 EXÉCUTABLE DE TEST DU ENGINE SEUL
 add_executable(engine_standalone_test
-    tests/test_engine_standalone.cpp
+    tests/engine_test.cpp
 )
 target_link_libraries(engine_standalone_test rtype_engine)
 
-# 📁 INSTALLATION (pour usage par R-Type)
+# INSTALLATION (pour usage par R-Type)
 install(TARGETS rtype_engine DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include/rtype_engine)

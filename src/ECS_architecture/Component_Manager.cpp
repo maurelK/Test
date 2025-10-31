@@ -1,4 +1,4 @@
-#include "../../include/ECS_architecture/Component_Manager.hpp"
+/*#include "../../include/ECS_architecture/Component_Manager.hpp"
 #include "Component_Manager.hpp"
 
 template <typename T>
@@ -37,3 +37,4 @@ bool ComponentStorage<T>::hasData(Entity entity) const
 {
     return entityToIndex.find(entity) != entityToIndex.end();
 }
+*/
