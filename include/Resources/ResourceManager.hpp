@@ -4,44 +4,30 @@
 ** File description:
 ** Gestion des Ressources
 */
+/*
+** EPITECH PROJECT, 2025
+** ResourceManager.hpp
+** File description:
+** Gestion des Ressources (sans audio)
+*/
 
 #ifndef RESOURCES_MANAGER
 #define RESOURCES_MANAGER
+
 #include <algorithm>
 #include <unordered_map>
 #include <memory>
 #include <string>
 #include <iomanip>
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
+// #include <SFML/Audio.hpp>  // ⭐ RETIRÉ - pas disponible
 #include <iostream>
-#include <iostream>
-/*class ResourceManager
-{
-private:
-    std::unordered_map<std::string, std::shared_ptr<sf::Texture>> textures;
-    std::unordered_map<std::string, std::shared_ptr<sf::SoundBuffer>> sounds;
-    std::unordered_map<std::string, std::shared_ptr<sf::Font>> fonts;
-
-public:
-    template<typename T>
-    std::shared_ptr<T> load(const std::string& path);
-    
-    template<typename T>
-    std::shared_ptr<T> get(const std::string& id);
-
-    template<typename T>
-    void unload(const std::string& id);
-
-    void clear();
-};*/
-
 
 class ResourceManager
 {
 private:
     std::unordered_map<std::string, std::shared_ptr<sf::Texture>> textures;
-    std::unordered_map<std::string, std::shared_ptr<sf::SoundBuffer>> sounds;
+    // std::unordered_map<std::string, std::shared_ptr<sf::SoundBuffer>> sounds; // ⭐ RETIRÉ
     std::unordered_map<std::string, std::shared_ptr<sf::Font>> fonts;
 
 public:
@@ -73,7 +59,7 @@ public:
 private:
     // Méthodes internes spécialisées
     std::shared_ptr<sf::Texture> loadTexture(const std::string& path);
-    std::shared_ptr<sf::SoundBuffer> loadSound(const std::string& path);
+    // std::shared_ptr<sf::SoundBuffer> loadSound(const std::string& path); // ⭐ RETIRÉ
     std::shared_ptr<sf::Font> loadFont(const std::string& path);
 };
 
@@ -83,9 +69,11 @@ template<typename T>
 std::shared_ptr<T> ResourceManager::load(const std::string& path) {
     if constexpr (std::is_same_v<T, sf::Texture>) {
         return loadTexture(path);
-    } else if constexpr (std::is_same_v<T, sf::SoundBuffer>) {
-        return loadSound(path);
-    } else if constexpr (std::is_same_v<T, sf::Font>) {
+    } 
+    // else if constexpr (std::is_same_v<T, sf::SoundBuffer>) { // ⭐ RETIRÉ
+    //     return loadSound(path);
+    // } 
+    else if constexpr (std::is_same_v<T, sf::Font>) {
         return loadFont(path);
     } else {
         static_assert(sizeof(T) == 0, "Unsupported resource type");
@@ -98,10 +86,12 @@ std::shared_ptr<T> ResourceManager::get(const std::string& id) {
     if constexpr (std::is_same_v<T, sf::Texture>) {
         auto it = textures.find(id);
         return (it != textures.end()) ? it->second : nullptr;
-    } else if constexpr (std::is_same_v<T, sf::SoundBuffer>) {
-        auto it = sounds.find(id);
-        return (it != sounds.end()) ? it->second : nullptr;
-    } else if constexpr (std::is_same_v<T, sf::Font>) {
+    } 
+    // else if constexpr (std::is_same_v<T, sf::SoundBuffer>) { // ⭐ RETIRÉ
+    //     auto it = sounds.find(id);
+    //     return (it != sounds.end()) ? it->second : nullptr;
+    // } 
+    else if constexpr (std::is_same_v<T, sf::Font>) {
         auto it = fonts.find(id);
         return (it != fonts.end()) ? it->second : nullptr;
     } else {
@@ -114,9 +104,11 @@ template<typename T>
 bool ResourceManager::isLoaded(const std::string& id) const {
     if constexpr (std::is_same_v<T, sf::Texture>) {
         return textures.find(id) != textures.end();
-    } else if constexpr (std::is_same_v<T, sf::SoundBuffer>) {
-        return sounds.find(id) != sounds.end();
-    } else if constexpr (std::is_same_v<T, sf::Font>) {
+    } 
+    // else if constexpr (std::is_same_v<T, sf::SoundBuffer>) { // ⭐ RETIRÉ
+    //     return sounds.find(id) != sounds.end();
+    // } 
+    else if constexpr (std::is_same_v<T, sf::Font>) {
         return fonts.find(id) != fonts.end();
     } else {
         static_assert(sizeof(T) == 0, "Unsupported resource type");
@@ -128,9 +120,11 @@ template<typename T>
 void ResourceManager::unload(const std::string& id) {
     if constexpr (std::is_same_v<T, sf::Texture>) {
         textures.erase(id);
-    } else if constexpr (std::is_same_v<T, sf::SoundBuffer>) {
-        sounds.erase(id);
-    } else if constexpr (std::is_same_v<T, sf::Font>) {
+    } 
+    // else if constexpr (std::is_same_v<T, sf::SoundBuffer>) { // ⭐ RETIRÉ
+    //     sounds.erase(id);
+    // } 
+    else if constexpr (std::is_same_v<T, sf::Font>) {
         fonts.erase(id);
     } else {
         static_assert(sizeof(T) == 0, "Unsupported resource type");
@@ -159,6 +153,8 @@ inline std::shared_ptr<sf::Texture> ResourceManager::loadTexture(const std::stri
     return texture;
 }
 
+// ⭐ RETIRÉ - pas d'audio
+/*
 inline std::shared_ptr<sf::SoundBuffer> ResourceManager::loadSound(const std::string& path) {
     auto it = sounds.find(path);
     if (it != sounds.end()) {
@@ -174,6 +170,7 @@ inline std::shared_ptr<sf::SoundBuffer> ResourceManager::loadSound(const std::st
     sounds[path] = soundBuffer;
     return soundBuffer;
 }
+*/
 
 inline std::shared_ptr<sf::Font> ResourceManager::loadFont(const std::string& path) {
     auto it = fonts.find(path);
@@ -193,20 +190,22 @@ inline std::shared_ptr<sf::Font> ResourceManager::loadFont(const std::string& pa
 
 inline void ResourceManager::clear() {
     textures.clear();
-    sounds.clear();
+    // sounds.clear(); // ⭐ RETIRÉ
     fonts.clear();
 }
 
 inline void ResourceManager::garbageCollect() {
     // Textures
     for (auto it = textures.begin(); it != textures.end(); ) {
-        if (it->second.use_count() == 1) { // Seul le cache référence cette texture
+        if (it->second.use_count() == 1) {
             it = textures.erase(it);
         } else {
             ++it;
         }
     }
     
+    // ⭐ RETIRÉ - pas d'audio
+    /*
     // Sons
     for (auto it = sounds.begin(); it != sounds.end(); ) {
         if (it->second.use_count() == 1) {
@@ -215,6 +214,7 @@ inline void ResourceManager::garbageCollect() {
             ++it;
         }
     }
+    */
     
     // Fonts
     for (auto it = fonts.begin(); it != fonts.end(); ) {

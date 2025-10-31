@@ -2,8 +2,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(RTypeEngine)
 
-# Dépendances EXTERNES seulement
-find_package(SFML 2.5 COMPONENTS System Network Graphics Window Audio)
+# Dépendances EXTERNES seulement - SANS TOUTES LES COMPOSANTES SFML
+# find_package(SFML 2.5 COMPONENTS System REQUIRED)
 
 # 📦 BIBLIOTHÈQUE DU ENGINE
 add_library(rtype_engine STATIC
@@ -17,22 +17,23 @@ add_library(rtype_engine STATIC
     include/ECS_architecture/base.hpp
     include/ECS_architecture/EntityManager.hpp
     include/ECS_architecture/Component_Manager.hpp
-    #include/ECS_architecture/System.hpp
+    include/ECS_architecture/System.hpp
     include/ECS_architecture/SystemManager.hpp
     include/ECS_architecture/Orchestror.hpp
     src/ECS_architecture/EntityManager.cpp
     
     # RESSOURCES GÉNÉRIQUES
     include/Resources/ResourceManager.hpp
-    #src/Resources/ResourceManager.cpp
 )
 
-# Lier seulement les dépendances GÉNÉRIQUES
-target_link_libraries(rtype_engine 
-    sfml-system
-    sfml-network  # Pour le mode SERVEUR
-    # Note: sfml-graphics/window/audio seulement si Mode::CLIENT
-)
+# Lier seulement les dépendances disponibles
+# target_link_libraries(rtype_engine
+#     sfml-system
+#     # sfml-network     # ⭐ RETIRÉ - pas disponible
+#     # sfml-graphics    # ⭐ RETIRÉ - pas disponible
+#     # sfml-window      # ⭐ RETIRÉ - pas disponible
+#     # sfml-audio       # ⭐ RETIRÉ - pas disponible
+# )
 
 # 🧪 EXÉCUTABLE DE TEST DU ENGINE SEUL
 add_executable(engine_standalone_test

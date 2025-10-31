@@ -1,7 +1,4 @@
 #include "../../include/Core/GameEngine.hpp"
-
-#include <SFML/Graphics.hpp>
-
 GameEngine::GameEngine() 
     : currentMode(Mode::STANDALONE)
     , resourceManager(std::make_unique<ResourceManager>())
@@ -21,11 +18,17 @@ bool GameEngine::initialize(Mode mode, const EngineConfig& engineConfig) {
     
     // Mode client = initialiser SFML
     if (mode == Mode::CLIENT) {
-        initClientMode();
+        if (!initClientMode()) {
+            return false;
+        }
     }
     // Mode serveur = headless
     else if (mode == Mode::SERVER) {
         initServerMode();
+    }
+    // Mode standalone = pas de SFML
+    else if (mode == Mode::STANDALONE) {
+        // Rien à initialiser pour SFML
     }
     
     return true;
@@ -36,7 +39,9 @@ void GameEngine::run() {
 }
 
 void GameEngine::stop() {
-    // À implémenter
+    if (window) {
+        window->close();
+    }
 }
 
 void GameEngine::mainLoop() {
@@ -50,8 +55,10 @@ void GameEngine::mainLoop() {
         update(deltaTime);
         render();
         
-        // Condition d'arrêt temporaire
-        if (deltaTime > 1.0f) { // Juste pour le test
+        // Condition d'arrêt temporaire pour le test
+        static int frameCount = 0;
+        frameCount++;
+        if (frameCount > 60) { // S'arrête après ~1 seconde à 60 FPS
             running = false;
         }
     }
@@ -82,16 +89,31 @@ void GameEngine::render() {
     if (currentMode == Mode::CLIENT && window) {
         window->clear(sf::Color::Black);
         // Rendu des scènes...
+        sceneManager->render();
         window->display();
+    }
+    // Mode standalone = pas de rendu
+    else if (currentMode == Mode::STANDALONE) {
+        // Juste un log pour le test
+        static int renderCount = 0;
+        if (renderCount++ % 60 == 0) {
+            std::cout << "Standalone mode - no rendering" << std::endl;
+        }
     }
 }
 
-void GameEngine::initClientMode() {
-    window = std::make_unique<sf::RenderWindow>(
-        sf::VideoMode(config.window.width, config.window.height),
-        config.window.title
-    );
-    window->setFramerateLimit(config.window.fpsLimit);
+bool GameEngine::initClientMode() {
+    try {
+        window = std::make_unique<sf::RenderWindow>(
+            sf::VideoMode(config.window.width, config.window.height),
+            config.window.title
+        );
+        window->setFramerateLimit(config.window.fpsLimit);
+        return true;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to initialize SFML window: " << e.what() << std::endl;
+        return false;
+    }
 }
 
 void GameEngine::initServerMode() {

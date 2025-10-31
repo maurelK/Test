@@ -2,11 +2,12 @@
 ** EPITECH PROJECT, 2025
 ** EngineConfig
 ** File description:
-** Basic Engine Configuration
+** Basic Engine Configuration (sans audio)
 */
 #include <algorithm>
 #include <iomanip>
 #include <string>
+
 struct EngineConfig {
     struct WindowConfig {
         std::string title;
@@ -22,11 +23,14 @@ struct EngineConfig {
         uint32_t positionIterations;
     } physics;
     
+    // ⭐ RETIRÉ - pas d'audio
+    /*
     struct AudioConfig {
         float masterVolume;
         float musicVolume;
         float sfxVolume;
     } audio;
+    */
     
     struct ECSConfig {
         uint32_t maxEntities;

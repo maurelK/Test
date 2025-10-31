@@ -1,15 +1,17 @@
 /*
 ** EPITECH PROJECT, 2025
-** Geestion des Assets
+** Gestion des Assets (sans audio)
 ** File description:
 ** Assets
 */
 
 #include <memory>
+#include <SFML/Graphics.hpp>
+// #include <SFML/Audio.hpp> // ⭐ RETIRÉ
 
 class AssetFactory {
 public:
-    static std::shared_ptr<ITexture> createTexture(const std::string& path);
-    static std::shared_ptr<ISoundBuffer> createSound(const std::string& path);
-    static std::shared_ptr<IFont> createFont(const std::string& path);
+    static std::shared_ptr<sf::Texture> createTexture(const std::string& path);
+    // static std::shared_ptr<sf::SoundBuffer> createSound(const std::string& path); // ⭐ RETIRÉ
+    static std::shared_ptr<sf::Font> createFont(const std::string& path);
 };

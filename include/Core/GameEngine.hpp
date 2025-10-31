@@ -54,7 +54,7 @@ private:
     void update(float deltaTime);
     void render();
     
-    void initClientMode();
+    bool initClientMode();
     void initServerMode();
 };
 

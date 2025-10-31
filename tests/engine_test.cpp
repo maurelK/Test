@@ -2,7 +2,8 @@
 ** Test de compilation du engine seul
 */
 
-#include "../include/Core/GameEngine.hpp"  // Chemin corrigé
+#include "../include/Core/GameEngine.hpp"
+#include "TestScene.hpp"  // ⭐ AJOUTER
 #include <iostream>
 
 // Composants de test GÉNÉRIQUES
@@ -15,7 +16,12 @@ struct TestComponent {
 class TestSystem : public System {
 public:
     void update(float dt) override {
-        std::cout << "TestSystem update: " << dt << std::endl;
+        static int callCount = 0;
+        callCount++;
+        if (callCount % 60 == 0) {
+            std::cout << "⚙️ TestSystem update #" << callCount 
+                      << " (dt: " << dt << ")" << std::endl;
+        }
     }
 };
 
@@ -46,13 +52,22 @@ int main() {
     testSig.set(engine.getECS().getComponentType<TestComponent>());
     engine.getECS().setSystemSignature<TestSystem>(testSig);
     
+    // Créer des entités de test
     Entity testEntity = engine.getECS().createEntity();
-    engine.getECS().addComponent<TestComponent>(testEntity, {"Test", 42});
+    engine.getECS().addComponent<TestComponent>(testEntity, {"TestEntity", 42});
     
-    std::cout << "✅ ENGINE COMPILE ET FONCTIONNE SEUL !" << std::endl;
+    Entity testEntity2 = engine.getECS().createEntity();
+    engine.getECS().addComponent<TestComponent>(testEntity2, {"TestEntity2", 1337});
     
-    // Boucle de test (courte)
+    // Ajouter une scène de test
+    engine.getScenes().pushScene(std::make_unique<TestScene>());
+    
+    std::cout << "✅ ENGINE COMPILÉ - LANCEMENT DU TEST..." << std::endl;
+    std::cout << "Entities créées: " << testEntity << ", " << testEntity2 << std::endl;
+    
+    // Boucle de test
     engine.run();
     
+    std::cout << "🎉 TEST TERMINÉ AVEC SUCCÈS !" << std::endl;
     return 0;
 }

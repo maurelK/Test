@@ -7,8 +7,10 @@
 
 #ifndef SCENE_MANAGER_HPP
 #define SCENE_MANAGER_HPP
+
 #include <memory>
 #include <vector>
+#include <iostream>  // ⭐ AJOUTER pour std::cout
 
 class Scene {
 public:
@@ -18,28 +20,6 @@ public:
     virtual void update(float deltaTime) = 0;
     virtual void render() = 0;
 };
-
-/*class SceneManager {
-    std::vector<std::unique_ptr<Scene>> sceneStack;
-    
-public:
-    void SceneManager::pushScene(std::unique_ptr<Scene> scene) {
-        if (!sceneStack.empty()) {
-            sceneStack.back()->onExit();
-        }
-        sceneStack.push_back(std::move(scene));
-        sceneStack.back()->onEnter();
-    }
-
-    void SceneManager::update(float deltaTime) {
-        if (!sceneStack.empty()) {
-            sceneStack.back()->update(deltaTime);
-        }
-    }
-};
-*/
-
-
 
 class SceneManager {
     std::vector<std::unique_ptr<Scene>> sceneStack;
