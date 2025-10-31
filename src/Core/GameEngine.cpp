@@ -1,7 +1,7 @@
 #include "GameEngine.hpp"
 
 
-GameEngine::GameEngine() 
+/*GameEngine::GameEngine() 
     : currentState(State::UNINITIALIZED)
     , resourceManager(std::make_unique<ResourceManager>())
     , sceneManager(std::make_unique<SceneManager>()) {
@@ -52,4 +52,4 @@ void GameEngine::update(float deltaTime) {
 void GameEngine::render() {
     //  Rendu SFML
     //sceneManager->render();
-}
+}*/

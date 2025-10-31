@@ -14,56 +14,48 @@
 #include "../ECS_architecture/Orchestror.hpp"
 #include "../Resources/ResourceManager.hpp"
 
-
 class GameEngine {
 public:
-    enum class State { UNINITIALIZED, INITIALIZED, RUNNING, PAUSED, STOPPED };
-    enum class Mode { SERVER, CLIENT, STANDALONE };
+    enum class Mode { 
+        STANDALONE,  // Test/development
+        CLIENT,      // Avec rendu
+        SERVER       // Headless
+    };
 
 private:
-    State currentState;
+    Mode currentMode;
+    EngineConfig config;
     Orchestror orchestrator;
     std::unique_ptr<ResourceManager> resourceManager;
     std::unique_ptr<SceneManager> sceneManager;
     
-    // La Configuration partie 
-    EngineConfig config;
-    Mode currentMode;
-    
+    // SFML - seulement si Mode::CLIENT
+    std::unique_ptr<sf::RenderWindow> window;
+
 public:
     GameEngine();
     ~GameEngine();
     
-    // Cycle de vie
     bool initialize(Mode mode, const EngineConfig& config);
     void run();
-    void pause();
-    void resume();
-    void shutdown();
+    void stop();
     
-    // Gestion des scènes
-    void pushScene(std::unique_ptr<Scene> scene);
-    void popScene();
+    Orchestror& getECS() { return orchestrator; }
+    ResourceManager& getResources() { return *resourceManager; }
+    SceneManager& getScenes() { return *sceneManager; }
     
-    // Accès aux sous-systèmes
-    Orchestror& getECS()
-    {
-        return orchestrator;
+    sf::RenderWindow* getWindow() { 
+        return (currentMode == Mode::CLIENT) ? window.get() : nullptr; 
     }
-    ResourceManager& getResourceManager()
-    {
-        return *resourceManager;
-    }
-    SceneManager& getSceneManager(){
-        return *sceneManager;
-    }
-    
 
 private:
     void mainLoop();
     void processEvents();
     void update(float deltaTime);
     void render();
+    
+    void initClientMode();
+    void initServerMode();
 };
 
 #endif
