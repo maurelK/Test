@@ -23,7 +23,7 @@ struct EngineConfig {
         uint32_t positionIterations;
     } physics;
     
-    // ⭐ RETIRÉ - pas d'audio
+    //  RETIRÉ - pas d'audio pour le moment
     /*
     struct AudioConfig {
         float masterVolume;

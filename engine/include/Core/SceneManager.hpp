@@ -10,7 +10,7 @@
 
 #include <memory>
 #include <vector>
-#include <iostream>  // ⭐ AJOUTER pour std::cout
+#include <iostream>
 
 class Scene {
 public:

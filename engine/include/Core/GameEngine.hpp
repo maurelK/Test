@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** GameEngine
 ** File description:
-** The core of the Game Engine
+** The core of the Game Engine (sans SFML)
 */
 
 #ifndef GAME_ENGINE_HPP
@@ -10,6 +10,7 @@
 
 #include "EngineConfig.hpp"
 #include <memory>
+#include <chrono>  // Je dois venir mettre sfml clock ici les gars A  REMPLACE SFML Clock
 #include "SceneManager.hpp"
 #include "../ECS_architecture/Orchestror.hpp"
 #include "../Resources/ResourceManager.hpp"
@@ -18,7 +19,7 @@ class GameEngine {
 public:
     enum class Mode { 
         STANDALONE,  // Test/development
-        CLIENT,      // Avec rendu
+        CLIENT,      // Avec rendu (plus tard)
         SERVER       // Headless
     };
 
@@ -28,9 +29,7 @@ private:
     Orchestror orchestrator;
     std::unique_ptr<ResourceManager> resourceManager;
     std::unique_ptr<SceneManager> sceneManager;
-    
-    // SFML - seulement si Mode::CLIENT
-    std::unique_ptr<sf::RenderWindow> window;
+    // std::unique_ptr<sf::RenderWindow> window;
 
 public:
     GameEngine();
@@ -43,10 +42,7 @@ public:
     Orchestror& getECS() { return orchestrator; }
     ResourceManager& getResources() { return *resourceManager; }
     SceneManager& getScenes() { return *sceneManager; }
-    
-    sf::RenderWindow* getWindow() { 
-        return (currentMode == Mode::CLIENT) ? window.get() : nullptr; 
-    }
+    // sf::RenderWindow* getWindow() { return nullptr; }
 
 private:
     void mainLoop();

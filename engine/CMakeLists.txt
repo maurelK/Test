@@ -5,7 +5,7 @@ project(RTypeEngine)
 # Dépendances EXTERNES seulement - SANS TOUTES LES COMPOSANTES SFML
 # find_package(SFML 2.5 COMPONENTS System REQUIRED)
 
-# 📦 BIBLIOTHÈQUE DU ENGINE
+#  BIBLIOTHÈQUE DU ENGINE
 add_library(rtype_engine STATIC
     # CORE GÉNÉRIQUE
     include/Core/GameEngine.hpp
@@ -29,10 +29,10 @@ add_library(rtype_engine STATIC
 # Lier seulement les dépendances disponibles
 # target_link_libraries(rtype_engine
 #     sfml-system
-#     # sfml-network     # ⭐ RETIRÉ - pas disponible
-#     # sfml-graphics    # ⭐ RETIRÉ - pas disponible
-#     # sfml-window      # ⭐ RETIRÉ - pas disponible
-#     # sfml-audio       # ⭐ RETIRÉ - pas disponible
+#     # sfml-network 
+#     # sfml-graphics
+#     # sfml-window
+#     # sfml-audio
 # )
 
 # 🧪 EXÉCUTABLE DE TEST DU ENGINE SEUL
