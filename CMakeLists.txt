@@ -14,13 +14,13 @@ add_library(rtype_engine STATIC
     src/Core/GameEngine.cpp
     
     # ECS GÉNÉRIQUE
-    include/ECS/base.hpp
-    include/ECS/EntityManager.hpp
-    include/ECS/ComponentManager.hpp
-    include/ECS/System.hpp
-    include/ECS/SystemManager.hpp
-    include/ECS/Orchestror.hpp
-    src/ECS/EntityManager.cpp
+    include/ECS_architecture/base.hpp
+    include/ECS_architecture/EntityManager.hpp
+    include/ECS_architecture/ComponentManager.hpp
+    include/ECS_architecture/System.hpp
+    include/ECS_architecture/SystemManager.hpp
+    include/ECS_architecture/Orchestror.hpp
+    src/ECS_architecture/EntityManager.cpp
     
     # RESSOURCES GÉNÉRIQUES
     include/Resources/ResourceManager.hpp

@@ -17,24 +17,45 @@
 #include <typeindex>
 #include "Component_Manager.hpp"
 
-
-class SystemManager {
-private:
-    std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
-    std::unordered_map<std::type_index, Signature> systemSignatures;
-
-
+class SceneManager {
+    std::vector<std::unique_ptr<Scene>> sceneStack;
+    
 public:
-    template<typename T, typename... Args>
-    std::shared_ptr<T> registerSystem(Args&&... args);
+    void pushScene(std::unique_ptr<Scene> scene) {
+        if (!sceneStack.empty()) {
+            sceneStack.back()->onExit();
+        }
+        sceneStack.push_back(std::move(scene));
+        sceneStack.back()->onEnter();
+    }
 
-    template<typename T>
-    void setSignature(Signature signature);
-    void entityDestroyed(Entity entity);
-    void entitySignatureChanged(Entity entity, const Signature& signature);
-    void update(float dt);
-    template<typename T>
-    std::shared_ptr<T> getSystem();
+    void popScene() {
+        if (!sceneStack.empty()) {
+            sceneStack.back()->onExit();
+            sceneStack.pop_back();
+        }
+        if (!sceneStack.empty()) {
+            sceneStack.back()->onEnter();
+        }
+    }
+
+    void changeScene(std::unique_ptr<Scene> scene) {
+        while (!sceneStack.empty()) {
+            popScene();
+        }
+        pushScene(std::move(scene));
+    }
+
+    void update(float deltaTime) {
+        if (!sceneStack.empty()) {
+            sceneStack.back()->update(deltaTime);
+        }
+    }
+
+    void render() {
+        if (!sceneStack.empty()) {
+            sceneStack.back()->render();
+        }
+    }
 };
-
 #endif
