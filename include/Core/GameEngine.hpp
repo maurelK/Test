@@ -18,22 +18,24 @@
 class GameEngine {
 public:
     enum class State { UNINITIALIZED, INITIALIZED, RUNNING, PAUSED, STOPPED };
-    
+    enum class Mode { SERVER, CLIENT, STANDALONE };
+
 private:
     State currentState;
     Orchestror orchestrator;
     std::unique_ptr<ResourceManager> resourceManager;
     std::unique_ptr<SceneManager> sceneManager;
     
-    // Configuration partie 
+    // La Configuration partie 
     EngineConfig config;
+    Mode currentMode;
     
 public:
     GameEngine();
     ~GameEngine();
     
     // Cycle de vie
-    bool initialize(const EngineConfig& config);
+    bool initialize(Mode mode, const EngineConfig& config);
     void run();
     void pause();
     void resume();
@@ -56,6 +58,7 @@ public:
         return *sceneManager;
     }
     
+
 private:
     void mainLoop();
     void processEvents();

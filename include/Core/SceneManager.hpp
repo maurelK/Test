@@ -23,12 +23,19 @@ class SceneManager {
     std::vector<std::unique_ptr<Scene>> sceneStack;
     
 public:
-    void pushScene(std::unique_ptr<Scene> scene);
-    void popScene();
-    void changeScene(std::unique_ptr<Scene> scene);
-    
-    void update(float deltaTime);
-    void render();
+    void SceneManager::pushScene(std::unique_ptr<Scene> scene) {
+        if (!sceneStack.empty()) {
+            sceneStack.back()->onExit();
+        }
+        sceneStack.push_back(std::move(scene));
+        sceneStack.back()->onEnter();
+    }
+
+    void SceneManager::update(float deltaTime) {
+        if (!sceneStack.empty()) {
+            sceneStack.back()->update(deltaTime);
+        }
+    }
 };
 
 #endif
