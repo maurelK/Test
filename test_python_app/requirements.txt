@@ -1,0 +1,2 @@
+# Exemple : dépendances du projet
+# requests==2.31.0

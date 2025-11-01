@@ -1,0 +1,18 @@
+# images/python/Dockerfile.standalone
+
+# 1️⃣ On part de l'image de base Whanos pour Python
+FROM whanos-python:base
+
+# 2️⃣ On copie tout le contenu du contexte (app + requirements.txt)
+COPY . /app
+
+# 3️⃣ On définit le répertoire de travail
+WORKDIR /app
+
+# 4️⃣ On installe les dépendances si le fichier requirements.txt existe
+RUN if [ -f requirements.txt ]; then \
+        pip install --no-cache-dir -r requirements.txt; \
+    fi
+
+# 5️⃣ Commande pour lancer l'application
+CMD ["python", "-m", "app"]

@@ -1,0 +1,10 @@
+FROM whanos-java:base
+
+COPY . /app
+WORKDIR /app/app
+
+# Compiler le projet Maven
+RUN if [ -f pom.xml ]; then mvn package; fi
+
+# Lancer le JAR généré automatiquement
+CMD ["sh", "-c", "java -jar target/*.jar"]
