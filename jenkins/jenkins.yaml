@@ -1,0 +1,62 @@
+jenkins:
+  systemMessage: "Whanos - Automated Deployment Infrastructure"
+  numExecutors: 2
+  mode: NORMAL
+  
+  # Désactiver l'inscription
+  disableRememberMe: false
+  
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${JENKINS_ADMIN_PASSWORD:-admin}"
+          name: "Admin"
+          properties:
+            - "apiToken"
+            - "mailer"
+  
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Administer:admin"
+        - "Overall/Read:authenticated"
+  
+  # Configuration des credentials pour Git privé
+  credentials:
+    system:
+      domainCredentials:
+        - credentials:
+            - usernamePassword:
+                scope: GLOBAL
+                id: "git-credentials"
+                username: "${GIT_USERNAME}"
+                password: "${GIT_PASSWORD}"
+                description: "Git credentials for private repositories"
+            - string:
+                scope: GLOBAL
+                id: "docker-registry-url"
+                secret: "${DOCKER_REGISTRY_URL:-localhost:5000}"
+                description: "Docker Registry URL"
+            - usernamePassword:
+                scope: GLOBAL
+                id: "docker-registry-credentials"
+                username: "${DOCKER_REGISTRY_USERNAME}"
+                password: "${DOCKER_REGISTRY_PASSWORD}"
+                description: "Docker Registry credentials"
+
+unclassified:
+  location:
+    url: "${JENKINS_URL:-http://localhost:8080/}"
+    adminAddress: "admin@whanos.local"
+
+jobs:
+  - script: >
+      folder('Whanos base images') {
+        description('Folder containing all Whanos base images build jobs')
+      }
+  - script: >
+      folder('Projects') {
+        description('Folder containing all linked project jobs')
+      }

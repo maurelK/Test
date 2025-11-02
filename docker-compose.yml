@@ -1,0 +1,39 @@
+# docker-compose.yml (VERSION CORRIGÉE)
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: whanos-jenkins
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker  # ✅ AJOUTÉ
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    networks:
+      - whanos-network
+
+  registry:
+    image: registry:2
+    container_name: whanos-registry
+    ports:
+      - "5000:5000"
+    environment:
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/data
+    volumes:
+      - registry_data:/data
+    networks:
+      - whanos-network
+
+volumes:
+  jenkins_data:
+  registry_data:
+
+networks:
+  whanos-network:
+    driver: bridge
