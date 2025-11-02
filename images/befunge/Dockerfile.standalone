@@ -1,6 +1,0 @@
-FROM whanos-befunge:base
-
-COPY . /app
-WORKDIR /app
-
-CMD ["befunge", "app/main.bf"]
