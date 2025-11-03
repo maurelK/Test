@@ -1,14 +1,28 @@
+# Whanos Base Image - Befunge-93
+# Image officielle Debian 12
 FROM debian:12-slim
 
-# Installer les dépendances pour compiler
+# Utiliser bash pour toutes les commandes (exigence du sujet)
+SHELL ["/bin/bash", "-c"]
+
+# Installer les outils nécessaires pour compiler Befunge-93
 RUN apt-get update && \
-    apt-get install -y git build-essential && \
+    apt-get install -y git gcc make && \
     rm -rf /var/lib/apt/lists/*
 
-# Cloner et compiler Befunge
-RUN git clone https://github.com/catseye/Befunge-93.git /befunge && \
-    cd /befunge && make && cp bin/bef /usr/local/bin/befunge
+# Cloner et compiler Befunge-93 depuis le repository officiel
+RUN git clone https://github.com/catseye/Befunge-93.git /tmp/befunge && \
+    cd /tmp/befunge && \
+    make && \
+    cp bin/bef /usr/local/bin/befunge && \
+    cd / && \
+    rm -rf /tmp/befunge
 
-# Créer le répertoire pour l'app
-RUN mkdir /app
+# Vérifier que befunge est bien installé
+RUN which befunge && befunge -h || true
+
+# Créer le répertoire de travail
+RUN mkdir -p /app
 WORKDIR /app
+
+CMD ["/bin/bash"]

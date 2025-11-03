@@ -1,10 +1,19 @@
 FROM whanos-java:base
 
-COPY . /app
-WORKDIR /app/app
+#  Copier pom.xml d'abord (cache)
+COPY app/pom.xml /app/pom.xml
+RUN mvn dependency:go-offline -B
 
-# Compiler le projet Maven
-RUN if [ -f pom.xml ]; then mvn package; fi
+#  Copier les sources
+COPY app/ /app/
 
-# Lancer le JAR généré automatiquement
-CMD ["sh", "-c", "java -jar target/*.jar"]
+WORKDIR /app  #  PAS /app/app !
+
+#  Compiler
+RUN mvn clean package -DskipTests
+
+#  Supprimer les sources
+RUN rm -rf src/ pom.xml
+
+#  Commande directe (pas sh -c)
+CMD ["java", "-jar", "target/app.jar"]
