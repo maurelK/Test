@@ -1,0 +1,9 @@
+# images/java/Dockerfile.base
+FROM eclipse-temurin:21-jdk-jammy
+
+# Créer le répertoire de travail
+RUN mkdir /app
+WORKDIR /app
+
+# Par défaut, lancer un shell
+CMD ["/bin/bash"]
