@@ -1,0 +1,20 @@
+
+
+FROM whanos-javascript:base
+
+
+SHELL ["/bin/bash", "-c"]
+
+
+WORKDIR /app
+
+COPY whanos_example_apps/js-hello-world/app ./app
+COPY whanos_example_apps/js-hello-world/package.json ./package.json
+
+
+RUN if [ -f package.json ]; then npm install --production; fi
+
+
+RUN npm cache clean --force
+
+CMD ["node", "./app/app.js"]

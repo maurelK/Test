@@ -1,0 +1,10 @@
+
+FROM node:20-slim
+
+SHELL ["/bin/bash", "-c"]
+
+RUN mkdir -p /app
+
+WORKDIR /app
+
+CMD ["/bin/bash"]

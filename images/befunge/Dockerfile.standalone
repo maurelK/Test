@@ -1,0 +1,6 @@
+FROM whanos-befunge:base
+SHELL ["/bin/bash", "-c"]
+WORKDIR /app
+COPY . .
+
+CMD ["bash", "-c", "befunge app/main.bf"]

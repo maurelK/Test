@@ -1,0 +1,7 @@
+FROM whanos-c:base
+SHELL ["/bin/bash", "-c"]
+WORKDIR /app
+COPY . .
+# Compile only if Makefile exists
+RUN if [ -f Makefile ]; then make; fi
+CMD ["./compiled-app"]

@@ -1,0 +1,17 @@
+# images/java/Dockerfile.standalone
+
+FROM whanos-java:base
+
+SHELL ["/bin/bash", "-c"]
+
+WORKDIR /app
+
+# Copier uniquement ce qui est nécessaire
+COPY app/pom.xml ./pom.xml
+COPY app/src ./src
+
+# Installer les dépendances et compiler
+RUN if [ -f pom.xml ]; then mvn package; fi
+
+# Exécution
+CMD ["java", "-jar", "target/app.jar"]
