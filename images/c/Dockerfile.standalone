@@ -1,7 +1,14 @@
-FROM whanos-c:base
-SHELL ["/bin/bash", "-c"]
+FROM gcc:13.2
+
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y make && rm -rf /var/lib/apt/lists/*
+
 COPY . .
-# Compile only if Makefile exists
-RUN if [ -f Makefile ]; then make; fi
+
+RUN make
+
+RUN find . -type f ! -name 'compiled-app' -delete && \
+    find . -type d -empty -delete
+
 CMD ["./compiled-app"]

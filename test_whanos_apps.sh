@@ -52,9 +52,9 @@ test_app() {
         return 1
     fi
     
-    # Build l'image
+    # Build l'image - ✅ CORRECTION: Utiliser Dockerfile.standalone !
     echo -e "${YELLOW}[1/2]${NC} Building image..."
-    if ! docker build -t $image_name -f images/$lang/Dockerfile.base $app_dir 2>&1 | tail -1; then
+    if ! docker build -t $image_name -f images/$lang/Dockerfile.standalone $app_dir; then
         echo -e "${RED}✗ Build failed${NC}"
         return 1
     fi
@@ -67,9 +67,9 @@ test_app() {
     
     # Pour JS et Python qui tournent en continu, timeout de 2 secondes
     if [[ "$lang" == "javascript" ]] || [[ "$lang" == "python" ]]; then
-        timeout 2 docker run --rm $image_name || true
+        timeout 2 docker run --rm $image_name 2>&1 || true
     else
-        docker run --rm $image_name
+        docker run --rm $image_name 2>&1
     fi
     
     echo "─────────────────────────────────────────────"

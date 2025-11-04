@@ -46,8 +46,9 @@ for lang in "${LANGUAGES[@]}"; do
         continue
     fi
     
-    if [ ! -f "images/$lang/Dockerfile.base" ]; then
-        echo -e "${RED}ERROR: images/$lang/Dockerfile.base not found${NC}"
+    # ✅ CORRECTION: Vérifier Dockerfile.standalone
+    if [ ! -f "images/$lang/Dockerfile.standalone" ]; then
+        echo -e "${RED}ERROR: images/$lang/Dockerfile.standalone not found${NC}"
         FAIL_COUNT=$((FAIL_COUNT + 1))
         continue
     fi
@@ -56,7 +57,7 @@ for lang in "${LANGUAGES[@]}"; do
     
     # Build base image
     echo -e "${YELLOW}[1/2]${NC} Building base image: whanos-$lang:base"
-    if docker build -t whanos-$lang:base -f Dockerfile.base ../.. 2>&1 | grep -q "ERROR"; then
+    if ! docker build -t whanos-$lang:base -f Dockerfile.base ../.. 2>&1 | tail -5; then
         echo -e "${RED}✗ Failed to build whanos-$lang:base${NC}"
         FAIL_COUNT=$((FAIL_COUNT + 1))
         cd ../..
@@ -64,9 +65,9 @@ for lang in "${LANGUAGES[@]}"; do
     fi
     echo -e "${GREEN}✓ whanos-$lang:base built successfully${NC}"
     
-    # Build standalone image
+    # Build standalone image - ✅ CORRECTION: Utiliser Dockerfile.standalone !
     echo -e "${YELLOW}[2/2]${NC} Building standalone image: whanos-$lang"
-    if docker build -t whanos-$lang -f Dockerfile.base ../.. 2>&1 | grep -q "ERROR"; then
+    if ! docker build -t whanos-$lang -f Dockerfile.standalone ../.. 2>&1 | tail -5; then
         echo -e "${RED}✗ Failed to build whanos-$lang${NC}"
         FAIL_COUNT=$((FAIL_COUNT + 1))
         cd ../..

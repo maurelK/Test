@@ -1,14 +1,17 @@
-
 FROM whanos-python:base
 
 SHELL ["/bin/bash", "-c"]
 
 WORKDIR /app
 
-COPY . .
+# Copier requirements.txt d'abord
+COPY requirements.txt* ./
 
 RUN if [ -f requirements.txt ]; then \
         pip install --no-cache-dir -r requirements.txt; \
     fi
+
+# Copier l'app
+COPY app ./app
 
 CMD ["python", "-m", "app"]

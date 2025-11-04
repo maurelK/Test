@@ -1,6 +1,9 @@
 FROM whanos-befunge:base
-SHELL ["/bin/bash", "-c"]
-WORKDIR /app
-COPY . .
 
-CMD ["bash", "-c", "befunge app/main.bf"]
+# Copier le fichier main.bf
+COPY app/main.bf /app/main.bf
+
+WORKDIR /app
+
+# ✅ On est déjà dans /app, donc "main.bf" et non "app/main.bf"
+CMD ["befunge", "main.bf"]
