@@ -1,6 +1,6 @@
 <div align="center">
 
-#  A-REA - Planning Complet du Projet
+#  AREA - Planning Complet du Projet
 
 </div>
 <div align="center">
@@ -293,7 +293,7 @@ Testing: Jest + Supertest (Backend) / Flutter Test (Frontend)
           └────────────────────────────────┘
 ```
 
-### Flux d'authentification OAuth2
+#### Flux d'authentification OAuth2
 ```
 ┌─────────────┐
 │   Flutter   │ User clicks "Login with Google"
@@ -343,7 +343,7 @@ Testing: Jest + Supertest (Backend) / Flutter Test (Frontend)
 └──────────────────────────────────────────────┘
 ```
 
-### Diagramme de séquence : Création d'une AREA
+##### Diagramme de séquence : Création d'une AREA
 ```
 User          Flutter         NestJS          ActionsServ    ReactionsServ    AreasServ      Database
  │               │               │                  │              │              │              │
@@ -392,7 +392,7 @@ User          Flutter         NestJS          ActionsServ    ReactionsServ    Ar
  │<──────────────┤ [AREA created]│                  │              │              │              │
  │               │               │                  │              │              │              │
 ```
-## Composants Clés
+###### Composants Clés
 
 **ServiceRegistry:**
 - Route vers services implémentant interface `IService`
@@ -409,16 +409,126 @@ User          Flutter         NestJS          ActionsServ    ReactionsServ    Ar
 - Auto-refresh avant expiration
 
 ---
+Conversation ouverte. 2 messages. 1 message non lu.
+
+Aller au contenu
+Utiliser Gmail avec un lecteur d'écran
+1 sur 2 934
+kjhg
+Boîte de réception
+
+Maurel KOUASSI
+Pièces jointes
+21:48 (il y a 1 heure)
+ 
+
+Maurel KOUASSI <maurelk65@gmail.com>
+Pièces jointes
+23:16 (il y a 1 minute)
+À moi
+
+
+
+---------- Forwarded message ---------
+De : Maurel KOUASSI <maurelk65@gmail.com>
+Date: dim. 23 nov. 2025 à 21:48
+Subject: kjhg
+To: Maurel KOUASSI <maurelk65@gmail.com>
+
+
+
+
+ 2 pièces jointes
+  •  Analysé par Gmail
+# Documentation des Routes de l'Application
+
+Ce document recense toutes les routes utilisées dans l'application, aussi bien côté Frontend (Web) que Backend (API).
+
+## 🌐 Frontend (Web)
+
+Les routes frontend correspondent aux pages accessibles via le navigateur.
+
+| Route | Description | Fichier Source |
+| :--- | :--- | :--- |
+| `/` | Redirection automatique vers `/landing`. | `src/app/page.tsx` |
+| `/landing` | Page d'accueil (Landing Page). Présentation de l'application. | `src/app/landing/page.tsx` |
+| `/login` | Page de connexion. | `src/app/(auth)/login/page.tsx` |
+| `/register` | Page d'inscription. | `src/app/(auth)/register/page.tsx` |
+| `/auth/oauth-callback` | Page de callback pour l'authentification OAuth (Google, etc.). Gère le retour après connexion via un tiers. | `src/app/auth/oauth-callback/page.tsx` |
+| `/dashboard` | Tableau de bord utilisateur. Affiche les statistiques et un aperçu. | `src/app/dashboard/page.tsx` |
+| `/services` | Page de gestion des services connectés (Spotify, GitHub, etc.). | `src/app/services/page.tsx` |
+| `/areas` | Liste des AREA (automatisations) créées par l'utilisateur. | `src/app/areas/page.tsx` |
+| `/areas/create` | Page de création d'une nouvelle AREA. | `src/app/areas/create/page.tsx` |
+| `/settings` | Page des paramètres utilisateur. | `src/app/settings/page.tsx` |
+
+---
+
+####### ⚙️ Backend (API)
+
+Les routes backend sont les points d'entrée de l'API REST, utilisées par le frontend pour interagir avec les données.
+
+###  App (Général)
+| Méthode | Route | Description | Contrôleur |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | Retourne un message de bienvenue ("Hello World"). | `AppController` |
+| `GET` | `/health` | Vérification de l'état du serveur (Health Check). | `AppController` |
+
+###  About
+| Méthode | Route | Description | Contrôleur |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/about.json` | Retourne la liste des services, actions et réactions disponibles (format spécifié par le sujet). | `AboutController` |
+
+###  Auth (Authentification)
+| Méthode | Route | Description | Contrôleur |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/auth/validate` | Valide un token JWT standard. | `AuthController` |
+| `POST` | `/auth/oauth/validate` | Valide un code/token OAuth. | `AuthController` |
+| `GET` | `/auth/user-by-email` | (Dev) Récupère un utilisateur par email. | `AuthController` |
+| `GET` | `/auth/users` | (Dev) Liste tous les utilisateurs. | `AuthController` |
+
+###  Areas (Automatisations)
+*Toutes ces routes nécessitent une authentification (Bearer Token).*
+
+| Méthode | Route | Description | Contrôleur |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/areas` | Créer une nouvelle AREA. | `AreasController` |
+| `GET` | `/areas` | Lister toutes les AREA de l'utilisateur. | `AreasController` |
+| `GET` | `/areas/:id` | Récupérer les détails d'une AREA spécifique. | `AreasController` |
+| `PATCH` | `/areas/:id` | Mettre à jour une AREA. | `AreasController` |
+| `DELETE` | `/areas/:id` | Supprimer une AREA. | `AreasController` |
+| `POST` | `/areas/:id/toggle` | Activer/Désactiver une AREA. | `AreasController` |
+| `POST` | `/areas/:id/execute` | Exécuter manuellement une AREA. | `AreasController` |
+| `GET` | `/areas/triggers` | Lister les déclencheurs (triggers) disponibles. | `AreasController` |
+| `GET` | `/areas/actions` | Lister les actions/réactions disponibles. | `AreasController` |
+
+###  Services
+*Toutes ces routes nécessitent une authentification (Bearer Token).*
+
+| Méthode | Route | Description | Contrôleur |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/services` | Lister tous les services supportés. | `ServicesController` |
+| `POST` | `/services/:serviceId/connect` | Connecter un service (stocker les tokens). | `ServicesController` |
+| `POST` | `/services/:serviceId/disconnect` | Déconnecter un service. | `ServicesController` |
+| `GET` | `/services/connected` | Lister les services actuellement connectés par l'utilisateur. | `ServicesController` |
+
+###  Dashboard
+*Toutes ces routes nécessitent une authentification (Bearer Token).*
+
+| Méthode | Route | Description | Contrôleur |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/dashboard/stats` | Récupérer les statistiques pour le tableau de bord. | `DashboardController` |
+ROUTES.md
+Affichage de ROUTES.md en cours...
 
 # 4. Base de Données
 
-# 📊 Architecture Base de Données - ACTION-REACTION
+#  Architecture Base de Données - ACTION-REACTION
 
 > Modèle Logique Universel (MLU) et Description Complète
 
 ---
 
-## 🗺️ Diagramme MLU (Modèle Logique Universel)
+##  Diagramme MLU (Modèle Logique Universel)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -1533,6 +1643,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
