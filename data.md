@@ -730,17 +730,18 @@ docker-compose up
 
 <div align="center">
 
-**📄 Dernière mise à jour:** 24 Novembre 2025  
-**📝 Version:** 2.1 - Flutter Web + Étude Comparative  
-**👥 Équipe:** Maurel · Chrisnaud · James · Germain · Isaac
+** Dernière mise à jour:** 24 Novembre 2025  
+** Version:** 2.1 - Flutter Web + Étude Comparative  
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/team/area)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?logo=supabase)](https://app.supabase.com)
 [![Docs](https://img.shields.io/badge/API-Documentation-blue?logo=swagger)](http://localhost:8080/api/docs)
 > **Équipe:** [Maurel KOUASSI](maurel.kouassi@epitech.eu), [Chrisnaud AGOSSOU](chrisnaud.agossou@epitech.eu), [James GBETCHEDJI](james.gbetchedji), [Germain DANDJI](germain.dandji@epitech.eu), [Isaac TOFFA](isaac.tofa@epitech.eu)
+> 
 **EPITECH**
 
 </div>
+
 
 
 
