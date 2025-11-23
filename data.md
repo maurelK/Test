@@ -1,7 +1,7 @@
 # 🚀 ACTION-REACTION - Planning Complet du Projet
 
 > **Plateforme d'Automatisation de Services** | EPITECH T-WEB-600  
-> **Équipe:** Maurel, Chrisnaud, James, Germain, Isaac
+> **Équipe:** [Maurel KOUASSI](maurel.kouassi@epitech.eu), [Chrisnaud AGOSSOU](chrisnaud.agossou@epitech.eu), [James GBETCHEDJI](james.gbetchedji), [Germain DANDJI](germain.dandji@epitech.eu), [Isaac TOFFA](isaac.tofa@epitech.eu)
 
 <div align="center">
 
@@ -304,6 +304,9 @@ CREATE INDEX idx_areastate
 ```
 
 ## Migrations
+<div align="center">
+[Prisma](https://img.shields.io/badge/Prisma-ORM-success?color=3ECF8E&logo=prisma&logoColor=white)
+</div>
 
 **Outil:** Prisma Migrate  
 **Stratégie:** Zero-downtime (add column → deploy → remove old)  
@@ -725,3 +728,4 @@ docker-compose up
 **EPITECH**
 
 </div>
+
