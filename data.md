@@ -56,12 +56,12 @@
 Plateforme d'automatisation de services (type IFTTT/Zapier) développée dans le cadre du module Application Development d'Epitech.
 
 ## Objectifs
-- ✅ API REST (NestJS + PostgreSQL)
-- ✅ Client Web (Flutter Web)
-- ✅ Client Mobile (Flutter - APK Android)
-- ✅ Authentification OAuth2 + JWT
-- ✅ Intégrations de services (5+ services)
-- ✅ Système de hooks automatisé
+-  API REST (NestJS + PostgreSQL)
+-  Client Web (Flutter Web)
+-  Client Mobile (Flutter - APK Android)
+-  Authentification OAuth2 + JWT
+-  Intégrations de services (5+ services)
+-  Système de hooks automatisé
 
 ## Exigences Projet (EPITECH T-WEB-600)
 
@@ -100,12 +100,12 @@ Storage: shared_preferences / flutter_secure_storage
 ```
 
 **Avantages Flutter Web + Mobile:**
-- ✅ **Code partagé**: 90%+ du code entre web et mobile
-- ✅ **Maintenance simplifiée**: Un seul codebase
-- ✅ **Cohérence UI/UX**: Design identique toutes plateformes
-- ✅ **Vélocité développement**: Pas besoin d'apprendre React en plus
-- ✅ **Hot Reload**: Développement rapide web et mobile
-- ✅ **Performance**: Compilation native (Web Assembly + AOT)
+-  **Code partagé**: 90%+ du code entre web et mobile
+-  **Maintenance simplifiée**: Un seul codebase
+-  **Cohérence UI/UX**: Design identique toutes plateformes
+-  **Vélocité développement**: Pas besoin d'apprendre React en plus
+-  **Hot Reload**: Développement rapide web et mobile
+-  **Performance**: Compilation native (Web Assembly + AOT)
 
 ### DevOps
 ```yaml
@@ -132,7 +132,7 @@ Testing: Jest + Supertest (Backend) / Flutter Test (Frontend)
 
 **Score Final:** NestJS 8/10 | Express 6/10 | Fastify 7/10
 
-**Verdict: NestJS** ✅
+**Verdict: NestJS** 
 - Architecture modulaire parfaite pour service-based system
 - TypeScript first-class citizen
 - Patterns clairs (controllers, services, modules)
@@ -154,7 +154,7 @@ Testing: Jest + Supertest (Backend) / Flutter Test (Frontend)
 
 **Score Final:** Flutter 9/10 | React Native 7/10 | Native 6/10
 
-**Verdict: Flutter** ✅
+**Verdict: Flutter** 
 - **Avantage majeur**: Un seul codebase pour Web + Mobile
 - Performance native excellente
 - UI moderne out-of-the-box
@@ -176,7 +176,7 @@ Testing: Jest + Supertest (Backend) / Flutter Test (Frontend)
 
 **Score Final:** PostgreSQL 9/10 | MongoDB 7/10 | MySQL 6/10
 
-**Verdict: PostgreSQL (Supabase)** ✅
+**Verdict: PostgreSQL (Supabase)** 
 - Relations users ↔ areas ↔ services essentielles pour notre modèle
 - JSONB parfait pour stocker action/reaction configs dynamiques
 - Supabase = PostgreSQL + Auth OAuth2 + Storage gratuit
@@ -195,7 +195,7 @@ Testing: Jest + Supertest (Backend) / Flutter Test (Frontend)
 
 **Score Final:** Passport.js 8/10 | Auth0 7/10 | NextAuth 5/10
 
-**Verdict: Passport.js** ✅
+**Verdict: Passport.js** 
 - Gratuit, flexible, intégration NestJS parfaite
 - Contrôle total sur le flow OAuth
 - Stratégies pour tous nos providers (Google, Facebook, GitHub)
@@ -213,7 +213,7 @@ Testing: Jest + Supertest (Backend) / Flutter Test (Frontend)
 
 **Score Final:** Provider 8/10 | Riverpod 9/10 | Bloc 7/10 | GetX 7/10
 
-**Verdict: Provider avec migration Riverpod possible** ✅
+**Verdict: Provider avec migration Riverpod possible** 
 - Recommandé officiellement par Flutter team
 - Simple pour démarrer rapidement
 - Suffisant pour scope projet
@@ -872,6 +872,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
