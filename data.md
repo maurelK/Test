@@ -260,7 +260,132 @@ Testing: Jest + Supertest (Backend) / Flutter Test (Frontend)
 │ user_services│area_state│audit_logs   │
 └───────────────────────────────────────┘
 ```
+### Services externes intégrés
+```
+┌───────────────────────────────────────────────────────┐
+│              EXTERNAL SERVICES                        │
+│  ════════════════════════════════════════════════════ │
+│                                                       │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐       │
+│  │  Google    │  │ Facebook   │  │  GitHub    │       │
+│  │  • Gmail   │  │ • Graph API│  │  • Repos   │       │
+│  │  • Drive   │  │ • Pages    │  │  • Issues  │       │
+│  │  • Calendar│  │            │  │  • Stars   │       │
+│  └──────┬─────┘  └───────┬────┘  └────────┬───┘       │
+└─────────┼────────────────┼────────────────┼───────────┘
+          │                │                │
+          │   OAuth 2.0    │                │
+          └────────────────┴────────────────┘
+                           │
+                           ▼
+          ┌────────────────────────────────┐
+          │  NestJS (Backend uniquement)   │
+          │  • Gère OAuth flow             │
+          │  • Stocke access tokens        │
+          │  • Fait les appels API         │
+          │  • Gère rate limiting          │
+          └────────────────────────────────┘
+```
 
+### Flux d'authentification OAuth2
+```
+┌─────────────┐
+│   Flutter   │ User clicks "Login with Google"
+└──────┬──────┘
+       │
+       │ 1. GET http://localhost:8080/auth/google
+       │
+       ▼
+┌──────────────────────────────────────────────┐
+│  NestJS: GoogleStrategy intercepte           │
+│  Redirige vers Google OAuth consent screen   │
+└──────┬───────────────────────────────────────┘
+       │
+       │ 2. Browser opens Google login
+       │
+       ▼
+┌──────────────────────────────────────────────┐
+│  User logs in on Google                      │
+│  User accepts permissions                    │
+└──────┬───────────────────────────────────────┘
+       │
+       │ 3. Google redirects to callback
+       │    with authorization code
+       │
+       ▼
+┌──────────────────────────────────────────────┐
+│  GET /auth/google/callback?code=ABC123       │
+│                                              │
+│  NestJS GoogleStrategy:                      │
+│  • Exchange code for access_token            │
+│  • Get user profile from Google              │
+│  • Call authService.loginWithOAuth()         │
+│    ├── Find or create user in DB             │
+│    ├── Store OAuth tokens                    │
+│    └── Generate JWT                          │
+│                                              │
+│  • Redirect to client with JWT               │
+└──────┬───────────────────────────────────────┘
+       │
+       │ 4. Redirect http://localhost:8081/auth/success?token=JWT_TOKEN
+       │
+       ▼
+┌──────────────────────────────────────────────┐
+│  Flutter extracts JWT from URL               │
+│  Stores JWT in secure storage                │
+│  Navigates to dashboard                      │
+└──────────────────────────────────────────────┘
+```
+
+### Diagramme de séquence : Création d'une AREA
+```
+User          Flutter         NestJS          ActionsServ    ReactionsServ    AreasServ      Database
+ │               │               │                  │              │              │              │
+ │ Click "Create AREA"           │                  │              │              │              │
+ ├──────────────>│               │                  │              │              │              │
+ │               │               │                  │              │              │              │
+ │               │ Select Action │                  │              │              │              │
+ │               ├──────────────>│                  │              │              │              │
+ │               │               │ GET /actions     │              │              │              │
+ │               │               ├─────────────────>│              │              │              │
+ │               │               │                  │ Query actions│              │              │
+ │               │               │                  ├─────────────────────────────>│              │
+ │               │               │                  │<─────────────────────────────┤              │
+ │               │<──────────────┤<─────────────────┤              │              │              │
+ │               │ [List actions]│                  │              │              │              │
+ │               │               │                  │              │              │              │
+ │               │ Select REAction                  │              │              │              │
+ │               ├──────────────>│                  │              │              │              │
+ │               │               │ GET /reactions   │              │              │              │
+ │               │               ├───────────────────────────────>│              │              │
+ │               │               │                  │              │ Query reactions             │
+ │               │               │                  │              ├─────────────────────────────>│
+ │               │               │                  │              │<─────────────────────────────┤
+ │               │<──────────────┤<──────────────────────────────┤              │              │
+ │               │ [List reactions]                 │              │              │              │
+ │               │               │                  │              │              │              │
+ │               │ Submit AREA   │                  │              │              │              │
+ │               ├──────────────>│ POST /areas      │              │              │              │
+ │               │               ├──────────────────────────────────────────────>│              │
+ │               │               │                  │              │              │ Validate     │
+ │               │               │                  │<──────────────────────────┤              │
+ │               │               │                  │ Check action │              │              │
+ │               │               │                  ├──────>       │              │              │
+ │               │               │                  │<──────       │              │              │
+ │               │               │                  │              │<──────────────────────────┤
+ │               │               │                  │              │ Check reaction            │
+ │               │               │                  │              ├──────>                    │
+ │               │               │                  │              │<──────                    │
+ │               │               │                  │              │              │ Create AREA │
+ │               │               │                  │              │              ├────────────>│
+ │               │               │                  │              │              │<────────────┤
+ │               │               │                  │              │              │ Create Hook │
+ │               │               │                  │              │              ├────────────>│
+ │               │               │                  │              │              │<────────────┤
+ │               │<─────────────────────────────────────────────────────────────┤              │
+ │<──────────────┤ [AREA created]│                  │              │              │              │
+ │               │               │                  │              │              │              │
+```
 ## Composants Clés
 
 **ServiceRegistry:**
@@ -741,6 +866,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
