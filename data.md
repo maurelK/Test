@@ -71,7 +71,7 @@ Plateforme d'automatisation de services (type IFTTT/Zapier) développée dans le
 | Actions (NBA) | ≥ 3 × X | 13 | 9 (69%) |
 | REActions (NBR) | ≥ 3 × X | 9 | 6 (67%) |
 
-**Conformité MVP:** 🟡 65% (Cible Défense 2: 70%)
+**Conformité MVP:**  65% (Cible Défense 2: 70%)
 
 ---
 
@@ -444,9 +444,9 @@ User          Flutter         NestJS          ActionsServ    ReactionsServ    Ar
          ┌────────────▼────────┐  ┌─────────▼──────────┐  ┌───────▼──────────────┐
          │  service_connections│  │      areas         │  │    activities        │
          ├─────────────────────┤  ├────────────────────┤  ├──────────────────────┤
-         │ 🔑 id               │  │ 🔑 id              │  │ 🔑 id                │ uuid PK
-         │ 🔗 user_id          │──│ 🔗 user_id         │──│ 🔗 user_id           │ uuid FK → users
-         │    service_id       │  │    name            │  │ 🔗 area_id           │ uuid FK → areas
+         │ 🔑 id               │  │ 🔑 id             │  │ 🔑 id               │ uuid PK
+         │ 🔗 user_id         │──│ 🔗 user_id        │──│ 🔗 user_id          │ uuid FK → users
+         │    service_id       │  │    name            │  │ 🔗 area_id          │ uuid FK → areas
          │    access_token     │  │    description     │  │    area_name         │ varchar
          │    refresh_token    │  │    trigger_service │  │    action            │ text
          │    expires_at       │  │    trigger_event   │  │    success           │ bool
@@ -512,7 +512,7 @@ CREATE TABLE users (
   supabase_id uuid UNIQUE NOT NULL,  -- Lien avec Supabase Auth
   full_name varchar(255),
   avatar_url text,
-  provider varchar(50),               -- 'google', 'github', 'facebook'
+  provider varchar(50),               -- 'google', 'github', 'facebook' ou plus
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now()
 );
@@ -1012,39 +1012,39 @@ LIMIT 50;
 ## 🎯 Bonnes Pratiques Appliquées
 
 ### 1. **Normalisation**
-✅ Pas de duplication de données (sauf dénormalisation intentionnelle dans `activities`)  
-✅ Relations claires avec foreign keys  
-✅ Contraintes d'unicité appropriées  
+ Pas de duplication de données (sauf dénormalisation intentionnelle dans `activities`)  
+ Relations claires avec foreign keys  
+ Contraintes d'unicité appropriées  
 
 ### 2. **Performance**
-✅ Index sur toutes les colonnes de jointure  
-✅ Index composites pour requêtes fréquentes  
-✅ Partial indexes (WHERE is_active = true)  
+ Index sur toutes les colonnes de jointure  
+ Index composites pour requêtes fréquentes  
+ Partial indexes (WHERE is_active = true)  
 
 ### 3. **Sécurité**
-✅ Row Level Security (RLS) activée  
-✅ Tokens OAuth chiffrés  
-✅ CASCADE DELETE pour éviter orphelins  
-✅ Audit trail automatique  
+ Row Level Security (RLS) activée  
+ Tokens OAuth chiffrés  
+ CASCADE DELETE pour éviter orphelins  
+ Audit trail automatique  
 
 ### 4. **Scalabilité**
-✅ JSONB pour configs flexibles (évite migrations)  
-✅ UUID pour IDs (distribué, pas de collision)  
-✅ Timestamps pour partitioning futur  
+ JSONB pour configs flexibles (évite migrations)  
+ UUID pour IDs (distribué, pas de collision)  
+ Timestamps pour partitioning futur  
 
 ### 5. **Observabilité**
-✅ Table `activities` pour monitoring  
-✅ `last_executed_at` pour debugging  
-✅ `error_message` pour diagnostics  
+ Table `activities` pour monitoring  
+ `last_executed_at` pour debugging  
+ `error_message` pour diagnostics  
 
 ---
 
 ## 🚀 Évolutions Futures
 
 ### Phase 1 (Actuelle)
-- ✅ 4 tables essentielles
-- ✅ Relations de base
-- ✅ Index critiques
+-  4 tables essentielles
+-  Relations de base
+-  Index critiques
 
 ### Phase 2 (Court terme)
 - 🔄 Table `services` (catalogue de services disponibles)
@@ -1187,11 +1187,11 @@ Permet actions comme "new email" de tracker dernier email vu.
 
 | Membre | Rôle | Focus Actuel |
 |--------|------|--------------|
-| **Maurel** | Tech Lead/Backend | Architecture, GitHub service |
-| **Chrisnaud** | Frontend/Mobile | Flutter (Web + Mobile) |
+| **Maurel** | Backend/Services | Architecture, GitHub service |
+| **Chrisnaud** | Tech LeadFrontend/Mobile | Flutter (Web + Mobile) |
 | **James** | DevOps/Full Stack | CI/CD, Spotify service |
-| **Germain** | Backend/APIs | OAuth2, Gmail service |
-| **Isaac** | Backend/System | Hooks, Weather service |
+| **Germain** | Frontend/Mobile | OAuth2, Gmail service |
+| **Isaac** | Backend/Services | Hooks, Weather service |
 
 ## Méthodologie: Agile Scrum
 
@@ -1533,6 +1533,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
