@@ -412,37 +412,698 @@ User          Flutter         NestJS          ActionsServ    ReactionsServ    Ar
 
 # 4. Base de Données
 
-## Schéma Relationnel Simplifié
+# 📊 Architecture Base de Données - ACTION-REACTION
 
-```sql
-users (id, email, password_hash, created_at)
-  ↓ 1:N
-areas (id, user_id, action_id, reaction_id, 
-       action_config, reaction_config, is_enabled)
-  ↓ N:1        ↓ N:1
-actions       reactions
-  ↓ N:1         ↓ N:1
-services (id, name, requires_oauth)
-  ↓ N:M (via user_services)
-users (connexion services OAuth)
+> Modèle Logique Universel (MLU) et Description Complète
+
+---
+
+## 🗺️ Diagramme MLU (Modèle Logique Universel)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                            ARCHITECTURE BDD ACTION-REACTION                      │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌──────────────────┐
+                                    │     users        │
+                                    ├──────────────────┤
+                                    │ 🔑 id            │ uuid PK
+                                    │    email         │ varchar UNIQUE
+                                    │    supabase_id   │ uuid UNIQUE
+                                    │    full_name     │ varchar
+                                    │    avatar_url    │ text
+                                    │    provider      │ varchar (google, github, etc.)
+                                    │    created_at    │ timestamp
+                                    │    updated_at    │ timestamp
+                                    └────────┬─────────┘
+                                             │
+                      ┌──────────────────────┼──────────────────────┐
+                      │                      │                      │
+                      │                      │                      │
+         ┌────────────▼────────┐  ┌─────────▼──────────┐  ┌───────▼──────────────┐
+         │  service_connections│  │      areas         │  │    activities        │
+         ├─────────────────────┤  ├────────────────────┤  ├──────────────────────┤
+         │ 🔑 id               │  │ 🔑 id              │  │ 🔑 id                │ uuid PK
+         │ 🔗 user_id          │──│ 🔗 user_id         │──│ 🔗 user_id           │ uuid FK → users
+         │    service_id       │  │    name            │  │ 🔗 area_id           │ uuid FK → areas
+         │    access_token     │  │    description     │  │    area_name         │ varchar
+         │    refresh_token    │  │    trigger_service │  │    action            │ text
+         │    expires_at       │  │    trigger_event   │  │    success           │ bool
+         │    connected_at     │  │    trigger_config  │  │    error_message     │ text
+         └─────────────────────┘  │    action_service  │  │    timestamp         │ timestamp
+                                  │    action_name     │  └──────────────────────┘
+                                  │    action_config   │
+                                  │    is_active       │  Logs d'exécution
+                                  │    last_executed_at│  des AREAs
+                                  │    last_triggered_ │
+                                  │      _params       │
+                                  │    created_at      │
+                                  │    updated_at      │
+                                  └────────────────────┘
+                                  
+                                  Table centrale AREA
+                                  (Action + REaction)
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              RELATIONS & CARDINALITÉS                            │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+users (1) ──────< (N) service_connections
+    │
+    └──────< (N) areas
+               │
+               └──────< (N) activities
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          CONTRAINTES & INDEX                                     │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+CONTRAINTES:
+• users.email         → UNIQUE, NOT NULL
+• users.supabase_id   → UNIQUE, NOT NULL
+• areas.user_id       → FK CASCADE DELETE
+• activities.user_id  → FK CASCADE DELETE
+• activities.area_id  → FK CASCADE DELETE
+• service_connections → UNIQUE(user_id, service_id)
+
+INDEX CRITIQUES:
+ idx_areas_user_active     → (user_id, is_active)    [Hooks cron]
+ idx_areas_last_executed   → (last_executed_at)      [Scheduler]
+ idx_activities_user_time  → (user_id, timestamp)    [Dashboard]
+ idx_service_conn_user     → (user_id, service_id)   [OAuth lookup]
 ```
 
-## Index Critiques
+---
 
+##  Description Détaillée de l'Architecture
+
+### 1. **Table `users` - Utilisateurs**
+
+**Rôle:** Gestion des comptes utilisateurs avec authentification Supabase Auth
+
+**Structure:**
 ```sql
--- Hooks (requête chaque minute)
+CREATE TABLE users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email varchar(255) UNIQUE NOT NULL,
+  supabase_id uuid UNIQUE NOT NULL,  -- Lien avec Supabase Auth
+  full_name varchar(255),
+  avatar_url text,
+  provider varchar(50),               -- 'google', 'github', 'facebook'
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now()
+);
+```
+
+**Champs clés:**
+- `id`: Identifiant interne de l'application
+- `supabase_id`: Identifiant Supabase Auth (auth.users.id)
+- `email`: Email unique de l'utilisateur
+- `provider`: Fournisseur OAuth utilisé pour l'inscription
+
+**Relations:**
+- 1 user → N service_connections
+- 1 user → N areas
+- 1 user → N activities
+
+**Index:**
+```sql
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_supabase_id ON users(supabase_id);
+```
+
+---
+
+### 2. **Table `service_connections` - Connexions Services OAuth**
+
+**Rôle:** Stocker les tokens OAuth pour les services externes (Gmail, Spotify, GitHub, etc.)
+
+**Structure:**
+```sql
+CREATE TABLE service_connections (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  service_id varchar(50) NOT NULL,    -- 'gmail', 'spotify', 'github', etc.
+  access_token text NOT NULL,          -- Chiffré AES-256 en production
+  refresh_token text,                  -- Chiffré AES-256
+  expires_at timestamp,
+  connected_at timestamp DEFAULT now(),
+  UNIQUE(user_id, service_id)
+);
+```
+
+**Champs clés:**
+- `service_id`: Identifiant du service ('gmail', 'spotify', 'github', 'weather')
+- `access_token`: Token d'accès OAuth (chiffré)
+- `refresh_token`: Token de rafraîchissement (chiffré)
+- `expires_at`: Date d'expiration du token
+
+**Sécurité:**
+- Tokens chiffrés avec AES-256-GCM
+- Contrainte UNIQUE empêche doublons (user, service)
+- CASCADE DELETE si user supprimé
+
+**Index:**
+```sql
+CREATE INDEX idx_service_conn_user_service 
+  ON service_connections(user_id, service_id);
+```
+
+**Exemple de données:**
+```json
+{
+  "user_id": "550e8400-e29b-41d4-a716-446655440000",
+  "service_id": "gmail",
+  "access_token": "encrypted_token_xyz...",
+  "refresh_token": "encrypted_refresh_abc...",
+  "expires_at": "2025-11-24T14:30:00Z"
+}
+```
+
+---
+
+### 3. **Table `areas` - AREAs (Actions + REactions)**
+
+**Rôle:** Table centrale stockant les automatisations créées par les utilisateurs
+
+**Structure:**
+```sql
+CREATE TABLE areas (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  
+  -- Métadonnées AREA
+  name varchar(255) NOT NULL,
+  description text,
+  
+  -- Configuration TRIGGER (Action)
+  trigger_service varchar(50) NOT NULL,   -- 'timer', 'gmail', 'spotify', etc.
+  trigger_event varchar(100) NOT NULL,    -- 'time_match', 'new_email', etc.
+  trigger_config jsonb DEFAULT '{}',      -- Config spécifique trigger
+  
+  -- Configuration ACTION (REaction)
+  action_service varchar(50) NOT NULL,    -- 'discord', 'gmail', 'spotify', etc.
+  action_name varchar(100) NOT NULL,      -- 'send_message', 'send_email', etc.
+  action_config jsonb DEFAULT '{}',       -- Config spécifique action
+  
+  -- État & Exécution
+  is_active boolean DEFAULT true,
+  last_executed_at timestamp,
+  last_triggered_params jsonb,            -- Derniers params qui ont déclenché
+  
+  -- Audit
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now()
+);
+```
+
+**Champs clés:**
+
+**Trigger (Action qui déclenche):**
+- `trigger_service`: Service surveillé (ex: 'gmail', 'timer')
+- `trigger_event`: Événement surveillé (ex: 'new_email', 'time_match')
+- `trigger_config`: Configuration JSON du trigger
+  ```json
+  {
+    "time": "09:00",
+    "timezone": "Europe/Paris"
+  }
+  ```
+
+**Action (REaction exécutée):**
+- `action_service`: Service qui exécute (ex: 'discord', 'spotify')
+- `action_name`: Action à exécuter (ex: 'send_message', 'play_track')
+- `action_config`: Configuration JSON de l'action
+  ```json
+  {
+    "webhook_url": "https://discord.com/api/webhooks/...",
+    "message": "Nouvel email reçu de {{sender}}"
+  }
+  ```
+
+**État:**
+- `is_active`: AREA activée ou non (toggle on/off)
+- `last_executed_at`: Timestamp dernière exécution
+- `last_triggered_params`: Contexte du dernier trigger (pour debugging)
+
+**Index:**
+```sql
+-- Index critique pour le système de hooks
+CREATE INDEX idx_areas_active_last_executed 
+  ON areas(is_active, last_executed_at) 
+  WHERE is_active = true;
+
+-- Index pour requêtes utilisateur
+CREATE INDEX idx_areas_user_id ON areas(user_id);
+```
+
+**Exemple de données:**
+```json
+{
+  "id": "a1b2c3d4-...",
+  "user_id": "550e8400-...",
+  "name": "Email du matin → Discord",
+  "description": "Notifier Discord quand j'ai un email entre 9h-10h",
+  
+  "trigger_service": "gmail",
+  "trigger_event": "new_email",
+  "trigger_config": {
+    "from": "",
+    "subject_contains": "",
+    "time_window": "09:00-10:00"
+  },
+  
+  "action_service": "discord",
+  "action_name": "send_message",
+  "action_config": {
+    "webhook_url": "https://discord.com/api/webhooks/...",
+    "message": "📧 Nouvel email de {{sender}}: {{subject}}"
+  },
+  
+  "is_active": true,
+  "last_executed_at": "2025-11-24T09:15:23Z",
+  "last_triggered_params": {
+    "sender": "boss@company.com",
+    "subject": "Urgent: Meeting today"
+  }
+}
+```
+
+---
+
+### 4. **Table `activities` - Logs d'Activité**
+
+**Rôle:** Journal d'exécution de chaque AREA (succès, échecs, erreurs)
+
+**Structure:**
+```sql
+CREATE TABLE activities (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  area_id uuid REFERENCES areas(id) ON DELETE CASCADE,
+  
+  area_name varchar(255),              -- Dénormalisé pour historique
+  action text NOT NULL,                -- Description de l'action
+  success boolean DEFAULT false,       -- Succès ou échec
+  error_message text,                  -- Message d'erreur si échec
+  timestamp timestamp DEFAULT now()
+);
+```
+
+**Champs clés:**
+- `area_name`: Nom de l'AREA (dénormalisé car AREA peut être supprimée)
+- `action`: Description textuelle de ce qui s'est passé
+- `success`: true = succès, false = erreur
+- `error_message`: Détails de l'erreur si échec
+
+**Index:**
+```sql
+-- Dashboard utilisateur (activités récentes)
+CREATE INDEX idx_activities_user_time 
+  ON activities(user_id, timestamp DESC);
+
+-- Debugging d'une AREA spécifique
+CREATE INDEX idx_activities_area 
+  ON activities(area_id, timestamp DESC);
+```
+
+**Exemple de données:**
+```json
+[
+  {
+    "id": "log-001",
+    "user_id": "550e8400-...",
+    "area_id": "a1b2c3d4-...",
+    "area_name": "Email du matin → Discord",
+    "action": "Email trigger matched: 'boss@company.com' → Discord webhook sent",
+    "success": true,
+    "error_message": null,
+    "timestamp": "2025-11-24T09:15:23Z"
+  },
+  {
+    "id": "log-002",
+    "user_id": "550e8400-...",
+    "area_id": "a1b2c3d4-...",
+    "area_name": "Email du matin → Discord",
+    "action": "Failed to send Discord webhook",
+    "success": false,
+    "error_message": "Discord API returned 429 (Rate Limited)",
+    "timestamp": "2025-11-24T09:16:10Z"
+  }
+]
+```
+
+**Utilisation:**
+- **Dashboard utilisateur**: Afficher les 10 dernières activités
+- **Debugging**: Voir pourquoi une AREA a échoué
+- **Analytics**: Statistiques d'exécution (taux de succès, etc.)
+
+---
+
+## 🔗 Relations & Cardinalités
+
+### Hiérarchie des Relations
+
+```
+users (1)
+  ├─< service_connections (N)  [1 user peut connecter plusieurs services]
+  │    └─ Exemple: user_001 connecte Gmail, Spotify, GitHub
+  │
+  ├─< areas (N)                 [1 user peut créer plusieurs AREAs]
+  │    ├─ Exemple: user_001 crée 5 AREAs différentes
+  │    └─< activities (N)       [1 AREA génère plusieurs logs]
+  │         └─ Exemple: area_001 a 50 logs d'exécution
+  │
+  └─< activities (N)            [1 user peut avoir des logs orphelins]
+       └─ Cas: AREA supprimée mais logs conservés
+```
+
+### Contraintes d'Intégrité Référentielle
+
+**CASCADE DELETE:**
+```sql
+-- Si user supprimé → tout est supprimé
+service_connections → ON DELETE CASCADE
+areas               → ON DELETE CASCADE
+activities          → ON DELETE CASCADE
+
+-- Si area supprimée → logs conservés (area_id devient NULL)
+activities.area_id  → ON DELETE SET NULL (optionnel)
+```
+
+**UNIQUE Constraints:**
+```sql
+-- 1 user ne peut connecter un service qu'une fois
+UNIQUE(user_id, service_id) ON service_connections
+
+-- Email unique par utilisateur
+UNIQUE(email) ON users
+```
+
+---
+
+##  Index Optimisés pour Performance
+
+### Index Critiques
+
+**1. Système de Hooks (Requête chaque minute):**
+```sql
 CREATE INDEX idx_areas_hooks 
-  ON areas (is_enabled, last_triggered_at) 
-  WHERE is_enabled = true;
+  ON areas(is_active, last_executed_at) 
+  WHERE is_active = true;
 
--- Connexions services
-CREATE INDEX idx_userservices 
-  ON user_services (user_id, service_id);
-
--- État des AREAs
-CREATE INDEX idx_areastate 
-  ON area_state (area_id, state_key);
+-- Requête optimisée:
+SELECT * FROM areas 
+WHERE is_active = true 
+  AND (last_executed_at IS NULL 
+       OR last_executed_at < NOW() - INTERVAL '1 minute')
+ORDER BY last_executed_at ASC NULLS FIRST;
 ```
+
+**2. Lookup OAuth Tokens:**
+```sql
+CREATE INDEX idx_service_conn_lookup 
+  ON service_connections(user_id, service_id);
+
+-- Requête optimisée:
+SELECT access_token, refresh_token, expires_at 
+FROM service_connections 
+WHERE user_id = $1 AND service_id = 'gmail';
+```
+
+**3. Dashboard Utilisateur:**
+```sql
+CREATE INDEX idx_activities_user_dashboard 
+  ON activities(user_id, timestamp DESC);
+
+-- Requête optimisée:
+SELECT * FROM activities 
+WHERE user_id = $1 
+ORDER BY timestamp DESC 
+LIMIT 20;
+```
+
+**4. Recherche AREAs Utilisateur:**
+```sql
+CREATE INDEX idx_areas_user_search 
+  ON areas(user_id, name);
+
+-- Requête optimisée:
+SELECT * FROM areas 
+WHERE user_id = $1 
+  AND name ILIKE '%gmail%'
+ORDER BY created_at DESC;
+```
+
+### Performance Estimée
+
+| Requête | Sans Index | Avec Index | Gain |
+|---------|-----------|-----------|------|
+| Hooks (1000 AREAs) | ~50ms | ~2ms | **25x** |
+| OAuth Lookup | ~20ms | ~1ms | **20x** |
+| Dashboard (1000 logs) | ~100ms | ~5ms | **20x** |
+
+---
+
+## 🛡️ Sécurité & Chiffrement
+
+### Données Sensibles Chiffrées
+
+**1. Tokens OAuth (`service_connections`):**
+```typescript
+// Chiffrement AES-256-GCM avant stockage
+const encryptToken = (token: string): string => {
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  return cipher.update(token, 'utf8', 'hex') + cipher.final('hex');
+};
+
+// Déchiffrement à la lecture
+const decryptToken = (encrypted: string): string => {
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  return decipher.update(encrypted, 'hex', 'utf8') + decipher.final('utf8');
+};
+```
+
+**2. Row Level Security (RLS) Supabase:**
+```sql
+-- Users ne peuvent voir que leurs propres données
+ALTER TABLE areas ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own areas"
+  ON areas FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own areas"
+  ON areas FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own areas"
+  ON areas FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own areas"
+  ON areas FOR DELETE
+  USING (auth.uid() = user_id);
+```
+
+### Audit Trail
+
+**Triggers PostgreSQL pour audit:**
+```sql
+CREATE OR REPLACE FUNCTION audit_area_changes()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    INSERT INTO audit_logs(user_id, action, table_name, record_id, old_data, new_data)
+    VALUES (NEW.user_id, 'UPDATE', 'areas', NEW.id, row_to_json(OLD), row_to_json(NEW));
+  ELSIF TG_OP = 'DELETE' THEN
+    INSERT INTO audit_logs(user_id, action, table_name, record_id, old_data)
+    VALUES (OLD.user_id, 'DELETE', 'areas', OLD.id, row_to_json(OLD));
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER area_audit_trigger
+  AFTER UPDATE OR DELETE ON areas
+  FOR EACH ROW EXECUTE FUNCTION audit_area_changes();
+```
+
+---
+
+## 📊 Exemples de Requêtes Fréquentes
+
+### 1. **Récupérer toutes les AREAs actives d'un utilisateur**
+```sql
+SELECT 
+  a.id,
+  a.name,
+  a.description,
+  a.trigger_service,
+  a.trigger_event,
+  a.action_service,
+  a.action_name,
+  a.is_active,
+  a.last_executed_at,
+  COUNT(act.id) as execution_count
+FROM areas a
+LEFT JOIN activities act ON act.area_id = a.id
+WHERE a.user_id = $1
+  AND a.is_active = true
+GROUP BY a.id
+ORDER BY a.created_at DESC;
+```
+
+### 2. **Vérifier si un service est connecté**
+```sql
+SELECT 
+  EXISTS(
+    SELECT 1 FROM service_connections
+    WHERE user_id = $1 
+      AND service_id = $2
+      AND expires_at > NOW()
+  ) as is_connected;
+```
+
+### 3. **Récupérer les tokens OAuth d'un service**
+```sql
+SELECT 
+  access_token,
+  refresh_token,
+  expires_at
+FROM service_connections
+WHERE user_id = $1 
+  AND service_id = $2;
+```
+
+### 4. **Dashboard: Statistiques utilisateur**
+```sql
+SELECT 
+  (SELECT COUNT(*) FROM areas WHERE user_id = $1) as total_areas,
+  (SELECT COUNT(*) FROM areas WHERE user_id = $1 AND is_active = true) as active_areas,
+  (SELECT COUNT(*) FROM service_connections WHERE user_id = $1) as connected_services,
+  (SELECT COUNT(*) FROM activities WHERE user_id = $1 AND success = true) as successful_executions,
+  (SELECT COUNT(*) FROM activities WHERE user_id = $1 AND success = false) as failed_executions;
+```
+
+### 5. **Logs récents avec détails AREA**
+```sql
+SELECT 
+  act.id,
+  act.area_name,
+  act.action,
+  act.success,
+  act.error_message,
+  act.timestamp,
+  a.name as current_area_name,
+  a.is_active as area_is_active
+FROM activities act
+LEFT JOIN areas a ON act.area_id = a.id
+WHERE act.user_id = $1
+ORDER BY act.timestamp DESC
+LIMIT 50;
+```
+
+---
+
+## 🎯 Bonnes Pratiques Appliquées
+
+### 1. **Normalisation**
+✅ Pas de duplication de données (sauf dénormalisation intentionnelle dans `activities`)  
+✅ Relations claires avec foreign keys  
+✅ Contraintes d'unicité appropriées  
+
+### 2. **Performance**
+✅ Index sur toutes les colonnes de jointure  
+✅ Index composites pour requêtes fréquentes  
+✅ Partial indexes (WHERE is_active = true)  
+
+### 3. **Sécurité**
+✅ Row Level Security (RLS) activée  
+✅ Tokens OAuth chiffrés  
+✅ CASCADE DELETE pour éviter orphelins  
+✅ Audit trail automatique  
+
+### 4. **Scalabilité**
+✅ JSONB pour configs flexibles (évite migrations)  
+✅ UUID pour IDs (distribué, pas de collision)  
+✅ Timestamps pour partitioning futur  
+
+### 5. **Observabilité**
+✅ Table `activities` pour monitoring  
+✅ `last_executed_at` pour debugging  
+✅ `error_message` pour diagnostics  
+
+---
+
+## 🚀 Évolutions Futures
+
+### Phase 1 (Actuelle)
+- ✅ 4 tables essentielles
+- ✅ Relations de base
+- ✅ Index critiques
+
+### Phase 2 (Court terme)
+- 🔄 Table `services` (catalogue de services disponibles)
+- 🔄 Table `service_actions` (catalogue d'actions par service)
+- 🔄 Table `service_reactions` (catalogue de reactions par service)
+
+### Phase 3 (Moyen terme)
+- ⏳ Table `area_execution_history` (logs détaillés des exécutions)
+- ⏳ Table `user_preferences` (préférences utilisateur)
+- ⏳ Table `notifications` (notifications système)
+
+### Phase 4 (Long terme)
+- ⏳ Partitioning de `activities` par date (>1M rows)
+- ⏳ Read replicas pour analytics
+- ⏳ Cache Redis pour tokens OAuth
+
+---
+
+## 📏 Métriques & Monitoring
+
+### Tailles Estimées (10,000 utilisateurs)
+
+| Table | Rows | Size | Growth |
+|-------|------|------|--------|
+| users | 10,000 | ~2 MB | Lent |
+| service_connections | 30,000 | ~5 MB | Moyen |
+| areas | 50,000 | ~25 MB | Moyen |
+| activities | 500,000 | ~150 MB | **Rapide** |
+
+### Requêtes à Surveiller
+
+```sql
+-- Requêtes lentes (>100ms)
+SELECT query, calls, total_time, mean_time
+FROM pg_stat_statements
+WHERE mean_time > 100
+ORDER BY mean_time DESC
+LIMIT 10;
+
+-- Tables avec le plus de scans séquentiels (manque d'index)
+SELECT schemaname, tablename, seq_scan, seq_tup_read
+FROM pg_stat_user_tables
+WHERE seq_scan > 1000
+ORDER BY seq_scan DESC;
+
+-- Index jamais utilisés (à supprimer)
+SELECT schemaname, tablename, indexname, idx_scan
+FROM pg_stat_user_indexes
+WHERE idx_scan = 0 
+  AND indexrelname NOT LIKE 'pg_toast%';
+```
+
+---
+
+<div align="center">
+
+**📊 Diagramme:** MLU (Modèle Logique Universel)  
+
+</div>
 
 ## Migrations
 <div align="center">
@@ -872,6 +1533,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
