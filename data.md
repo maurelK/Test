@@ -305,7 +305,10 @@ CREATE INDEX idx_areastate
 
 ## Migrations
 <div align="center">
-         ![Prisma](https://img.shields.io/badge/Prisma-ORM-success?color=3ECF8E&logo=prisma&logoColor=white)
+         
+![Prisma](https://img.shields.io/badge/Prisma-ORM-success?color=3ECF8E&logo=prisma&logoColor=white)
+
+
 </div>
 
 **Outil:** Prisma Migrate  
@@ -728,5 +731,6 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
