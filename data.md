@@ -1,6 +1,12 @@
+<div align="center">
+
 #  A-REA - Planning Complet du Projet
 
+</div>
+<div align="center">
+
 > **Plateforme d'Automatisation de Services** | EPITECH G-DEV-500  
+</div>
 
 
 <div align="center">
@@ -823,7 +829,7 @@ docker-compose up
 
 ---
 
-## ✅ Checklist Défenses
+##  Défenses
 
 ### Défense 2 (Semaine 4 - MVP 70%)
 
@@ -866,6 +872,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
