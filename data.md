@@ -11,6 +11,13 @@
 ![Coverage](https://img.shields.io/badge/Coverage-82%25-brightgreen)
 
 **Stack Technique:** NestJS · Flutter (Web + Mobile) · PostgreSQL · Docker
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
+![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-5.0-blue?logo=prisma&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=black)
+
 
 </div>
 
@@ -731,6 +738,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
