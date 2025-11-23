@@ -1118,7 +1118,7 @@ LIMIT 50;
 
 ---
 
-## 🚀 Évolutions Futures
+##  Évolutions Futures
 
 ### Phase 1 (Actuelle)
 -  4 tables essentielles
@@ -1344,7 +1344,6 @@ Semaine 6 (Sprint 4): Tests + Documentation → Défense 3 (100%)
 | Flutter (Web+Mobile) | ██ | ░░ | ██ | ██ | ██ | ░░ |
 | Tests/Docs | ░░ | ░░ | ░░ | ░░ | ██ | ██ |
 
-**Jalons:** Auth (S1) → Timer (S2) → Défense 2 (S4) → Défense 3 (S6)
 
 ---
 
@@ -1355,7 +1354,7 @@ Semaine 6 (Sprint 4): Tests + Documentation → Défense 3 (100%)
 | Service | Type | OAuth | Status | Responsable |
 |---------|------|-------|--------|-------------|
 | **Timer** | Action only | ❌ | ✅ 100% | Isaac |
-| **Discord** | REaction only | ❌ | ✅ 100% | Maurel |
+| **Discord** | REaction only | ✅ | ✅ 100% | Maurel |
 | **Gmail** | Both | ✅ | 🔄 80% | Germain |
 | **Spotify** | Both | ✅ | 🔄 60% | James |
 | **GitHub** | Both | ✅ | ⏳ 0% | Maurel |
@@ -1573,29 +1572,29 @@ docker-compose up
 
 ### Défense 2 (Semaine 4 - MVP 70%)
 
-- [ ] Système auth (JWT + OAuth Google)
-- [ ] 3 services (Timer, Discord, Gmail)
-- [ ] 9 actions + 6 reactions
-- [ ] Système hooks opérationnel
-- [ ] Flutter Web: marketplace + création AREA
-- [ ] Flutter Mobile: auth + UI basique
-- [ ] Docker Compose fonctionnel
-- [ ] Endpoint about.json
-- [ ] Tests >80% coverage
-- [ ] Documentation basique
+-  Système auth (JWT + OAuth Google)
+-  3 services (Timer, Discord, Gmail)
+-  9 actions + 6 reactions
+-  Système hooks opérationnel
+-  Flutter Web: marketplace + création AREA
+-  Flutter Mobile: auth + UI basique
+-  Docker Compose fonctionnel
+-  Endpoint about.json
+-  Tests >80% coverage
+-  Documentation basique
 
 ### Défense 3 (Semaine 6 - Final 100%)
 
-- [ ] 5+ services opérationnels
-- [ ] 13+ actions, 9+ reactions
-- [ ] Toutes features polies
-- [ ] Flutter Mobile app complète
-- [ ] Tests E2E passing
-- [ ] Documentation complète
-- [ ] API Reference (Swagger)
-- [ ] User guide + screenshots
-- [ ] Video demo
-- [ ] Slides défense
+-  5+ services opérationnels
+-  13+ actions, 9+ reactions
+-  Toutes features polies
+-  Flutter Mobile app complète
+-  Tests E2E passing
+-  Documentation complète
+-  API Reference (Swagger)
+-  User guide + screenshots
+-  Video demo
+-  Slides défense
 
 ---
 
@@ -1612,6 +1611,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
