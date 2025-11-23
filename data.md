@@ -409,37 +409,6 @@ User          Flutter         NestJS          ActionsServ    ReactionsServ    Ar
 - Auto-refresh avant expiration
 
 ---
-Conversation ouverte. 2 messages. 1 message non lu.
-
-Aller au contenu
-Utiliser Gmail avec un lecteur d'écran
-1 sur 2 934
-kjhg
-Boîte de réception
-
-Maurel KOUASSI
-Pièces jointes
-21:48 (il y a 1 heure)
- 
-
-Maurel KOUASSI <maurelk65@gmail.com>
-Pièces jointes
-23:16 (il y a 1 minute)
-À moi
-
-
-
----------- Forwarded message ---------
-De : Maurel KOUASSI <maurelk65@gmail.com>
-Date: dim. 23 nov. 2025 à 21:48
-Subject: kjhg
-To: Maurel KOUASSI <maurelk65@gmail.com>
-
-
-
-
- 2 pièces jointes
-  •  Analysé par Gmail
 # Documentation des Routes de l'Application
 
 Ce document recense toutes les routes utilisées dans l'application, aussi bien côté Frontend (Web) que Backend (API).
@@ -463,7 +432,7 @@ Les routes frontend correspondent aux pages accessibles via le navigateur.
 
 ---
 
-####### ⚙️ Backend (API)
+## ⚙️ Backend (API)
 
 Les routes backend sont les points d'entrée de l'API REST, utilisées par le frontend pour interagir avec les données.
 
@@ -1643,6 +1612,7 @@ docker-compose up
 **EPITECH**
 
 </div>
+
 
 
 
