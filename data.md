@@ -1,7 +1,7 @@
-# 🚀 ACTION-REACTION - Planning Complet du Projet
+#  A-REA - Planning Complet du Projet
 
-> **Plateforme d'Automatisation de Services** | EPITECH T-WEB-600  
-> **Équipe:** [Maurel KOUASSI](maurel.kouassi@epitech.eu), [Chrisnaud AGOSSOU](chrisnaud.agossou@epitech.eu), [James GBETCHEDJI](james.gbetchedji), [Germain DANDJI](germain.dandji@epitech.eu), [Isaac TOFFA](isaac.tofa@epitech.eu)
+> **Plateforme d'Automatisation de Services** | EPITECH G-DEV-500  
+
 
 <div align="center">
 
@@ -737,10 +737,11 @@ docker-compose up
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/team/area)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?logo=supabase)](https://app.supabase.com)
 [![Docs](https://img.shields.io/badge/API-Documentation-blue?logo=swagger)](http://localhost:8080/api/docs)
-
+> **Équipe:** [Maurel KOUASSI](maurel.kouassi@epitech.eu), [Chrisnaud AGOSSOU](chrisnaud.agossou@epitech.eu), [James GBETCHEDJI](james.gbetchedji), [Germain DANDJI](germain.dandji@epitech.eu), [Isaac TOFFA](isaac.tofa@epitech.eu)
 **EPITECH**
 
 </div>
+
 
 
 
