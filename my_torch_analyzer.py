@@ -78,31 +78,63 @@ def main():
         lines = f.readlines()
 
     if args.train:
-        # Assume lines are "FEN expected_output"
+        # Assume lines are "FEN expected_output" where expected_output can be "Nothing" or "Check Color" or "Checkmate Color"
         X = []
         y = []
         for line in lines:
-            parts = line.strip().split()
-            if len(parts) >= 2:
-                fen = parts[0]
-                label = parts[1]
-                X.append(fen_to_vector(fen).flatten())
-                if label == 'Nothing':
-                    y.append([1, 0, 0])
-                elif label == 'Check':
-                    y.append([0, 1, 0])
-                elif label == 'Checkmate':
-                    y.append([0, 0, 1])
-        X = np.array(X).T
-        y = np.array(y).T
-        network.train(X, y, epochs=100)
-        savefile = args.save if args.save else args.loadfile
-        network.save(savefile)
-        print(f"Training completed. Network saved to {savefile}")
+            line = line.strip()
+            if not line:
+                continue
+                
+            parts = line.split()
+            if len(parts) < 7:  # Need at least FEN parts + label
+                continue
+            
+            # FEN is first 6 parts, label is last 2 parts (type + color) or 1 part (Nothing)
+            if parts[-1] == 'Nothing':
+                fen = ' '.join(parts[:-1])
+                label = 'Nothing'
+            else:
+                fen = ' '.join(parts[:-2])
+                label = ' '.join(parts[-2:])
+            
+            X.append(fen_to_vector(fen).flatten())
+            
+            # Parse label
+            if label == 'Nothing':
+                y.append([1, 0, 0])
+            elif label.startswith('Check'):
+                y.append([0, 1, 0])
+            elif label.startswith('Checkmate'):
+                y.append([0, 0, 1])
+        
+        if X and y:
+            X = np.array(X).T
+            y = np.array(y).T
+            network.train(X, y, epochs=100)
+            savefile = args.save if args.save else args.loadfile
+            network.save(savefile)
+            print(f"Training completed. Network saved to {savefile}")
+        else:
+            print("Error: No valid training data found", file=sys.stderr)
+            sys.exit(84)
 
     elif args.predict:
         for line in lines:
-            fen = line.strip().split()[0]
+            line = line.strip()
+            if not line:
+                continue
+            
+            parts = line.split()
+            # Reconstruct FEN: take all parts except if the last one is a known label
+            known_labels = ['Nothing', 'Check', 'Checkmate']
+            if len(parts) > 0 and parts[-1] in [label + color for label in known_labels for color in ['', ' White', ' Black']]:
+                # If there's an expected output, exclude it
+                fen_parts = parts[:-1]
+            else:
+                fen_parts = parts
+            
+            fen = ' '.join(fen_parts)
             X = fen_to_vector(fen)
             output = network.predict(X)
             label = vector_to_label(output, fen)

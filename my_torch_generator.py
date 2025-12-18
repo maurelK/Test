@@ -14,13 +14,11 @@ def load_config(config_file):
         with open(config_file, 'r') as f:
             config = json.load(f)
 
-        # Validate required fields
         required_fields = ['name', 'architecture', 'hyperparameters']
         for field in required_fields:
             if field not in config:
                 raise ValueError(f"Missing required field '{field}' in config file")
 
-        # Validate architecture
         if not isinstance(config['architecture'], list) or len(config['architecture']) == 0:
             raise ValueError("Architecture must be a non-empty list of layers")
 
@@ -30,7 +28,6 @@ def load_config(config_file):
                 if field not in layer:
                     raise ValueError(f"Layer {i}: missing required field '{field}'")
 
-        # Validate hyperparameters
         hyperparams = config['hyperparameters']
         if 'loss' not in hyperparams:
             raise ValueError("Missing 'loss' in hyperparameters")
@@ -58,7 +55,6 @@ def create_network_from_config(config):
         learning_rate=hyperparams['learning_rate']
     )
 
-    # Add layers
     for layer_config in config['architecture']:
         network.add_layer(
             input_size=layer_config['input_size'],
@@ -87,28 +83,9 @@ def main():
     parser = argparse.ArgumentParser(
         description='Generate MY_TORCH neural networks from configuration files',
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  %(prog)s basic_network.conf 3
-  %(prog)s deep_network.conf 2 basic_network.conf 1
-
-Configuration file format (JSON):
-{
-    "name": "network_name",
-    "description": "Optional description",
-    "architecture": [
-        {
-            "input_size": 64,
-            "output_size": 128,
-            "activation": "relu"
-        }
-    ],
-    "hyperparameters": {
-        "loss": "categorical_crossentropy",
-        "learning_rate": 0.01
-    }
-}
-        """
+        epilog='''Example usage:
+  python3 my_torch_generator.py config1.json 5 config2.json 3
+This generates 5 networks from config1.json and 3 from config2.json.'''
     )
 
     parser.add_argument(
@@ -121,7 +98,6 @@ Configuration file format (JSON):
         parser.print_help()
         sys.exit(0)
 
-    # Parse config file and count pairs
     if len(sys.argv) % 2 == 0:
         print("Error: Invalid number of arguments. Expected pairs of config_file and count.", file=sys.stderr)
         parser.print_help()
@@ -141,7 +117,6 @@ Configuration file format (JSON):
         parser.print_help()
         sys.exit(84)
 
-    # Generate networks
     for config_file, count in config_pairs:
         generate_networks_from_config(config_file, count)
 
