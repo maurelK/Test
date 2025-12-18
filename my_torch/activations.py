@@ -23,35 +23,34 @@ def apply_activation(z, activation):
         return tanh(z)
     elif activation == 'softmax':
         return softmax(z)
-    elif activation == 'linear':
+    elif activation == 'elem':
         return z
     else:
         raise ValueError(f"Unknown activation function: {activation}")
 
-def sigmoid_derivative(a):
-    return a * (1 - a)
+def sigmoid_derivative(z):
+    s = sigmoid(z)
+    return s * (1 - s)
 
-def tanh_derivative(a):
-    return 1 - a**2
+def tanh_derivative(z):
+    t = np.tanh(z)
+    return 1 - t**2
 
-def relu_derivative(a):
-    return (a > 0).astype(float)
+def relu_derivative(z):
+    return (z > 0).astype(float)
 
-def softmax_derivative(a):
-    # For softmax, derivative is complex, but for backprop, it's handled in the loss
-    # For now, return identity as it's usually combined with cross-entropy
-    return np.ones_like(a)
-
-def activation_derivative(a, activation):
+def activation_derivative(z, activation):
     if activation == 'sigmoid':
-        return sigmoid_derivative(a)
+        return sigmoid_derivative(z)
     elif activation == 'tanh':
-        return tanh_derivative(a)
+        return tanh_derivative(z)
     elif activation == 'relu':
-        return relu_derivative(a)
+        return relu_derivative(z)
     elif activation == 'softmax':
-        return softmax_derivative(a)
-    elif activation == 'linear':
-        return np.ones_like(a)
+        # For softmax, derivative is complex, but for backprop, it's handled in the loss
+        # For now, return identity as it's usually combined with cross-entropy
+        return np.ones_like(z)
+    elif activation == 'elem':
+        return np.ones_like(z)
     else:
         raise ValueError(f"Unknown activation function: {activation}")

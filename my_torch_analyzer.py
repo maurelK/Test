@@ -5,35 +5,32 @@ import argparse
 from my_torch.Neuron import Neuron
 import numpy as np
 
-# Simple FEN encoder
+# Enhanced FEN encoder with one-hot encoding (12 channels × 64 squares = 768 inputs)
 PIECE_MAP = {
-    'P': 1, 'N': 2, 'B': 3, 'R': 4, 'Q': 5, 'K': 6,
-    'p': -1, 'n': -2, 'b': -3, 'r': -4, 'q': -5, 'k': -6,
+    'P': 0, 'N': 1, 'B': 2, 'R': 3, 'Q': 4, 'K': 5,      # White pieces
+    'p': 6, 'n': 7, 'b': 8, 'r': 9, 'q': 10, 'k': 11     # Black pieces
 }
 
 def fen_to_vector(fen):
-    """Convert FEN string to 64-element vector"""
+    """Convert FEN string to 768-element one-hot vector (12 channels × 64 squares)"""
     board_part = fen.split()[0]  # Only take the board part
-    vector = []
-
+    vector = np.zeros(768)  # 12 channels × 64 squares
+    
+    square_idx = 0
     for char in board_part:
         if char.isdigit():
-            # Add zeros for empty squares
-            vector.extend([0] * int(char))
+            # Skip empty squares
+            square_idx += int(char)
         elif char == '/':
             # Skip row separators
             continue
         elif char in PIECE_MAP:
-            vector.append(PIECE_MAP[char])
-
-    # Ensure exactly 64 squares (pad with zeros if needed)
-    while len(vector) < 64:
-        vector.append(0)
-
-    # Truncate if too long (shouldn't happen with valid FEN)
-    vector = vector[:64]
-
-    return np.array(vector).reshape(-1, 1)
+            # Set the corresponding channel for this piece
+            channel = PIECE_MAP[char]
+            vector[channel * 64 + square_idx] = 1
+            square_idx += 1
+    
+    return vector.reshape(-1, 1)
 
 def vector_to_label(output, fen):
     """Convert network output to label with color information"""

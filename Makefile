@@ -56,21 +56,12 @@ run: analyzer
 	@echo "Running analyzer..."
 	@python my_torch_analyzer.py --help
 
-demo: networks
-	@echo "Running demo with test data..."
-	@python my_torch_analyzer.py --predict my_torch_network_basic.nn test_chessboards.txt
 
-help:
-	@echo "Available targets:"
-	@echo "  all       - Build binaries"
-	@echo "  binaries  - Create executable symlinks"
-	@echo "  generator - Prepare network generator"
-	@echo "  analyzer  - Prepare analyzer"
-	@echo "  networks  - Generate neural networks"
-	@echo "  test      - Run neural network test"
-	@echo "  clean     - Remove temp files and symlinks"
-	@echo "  fclean    - Remove all generated files"
-	@echo "  re        - Rebuild"
-	@echo "  run       - Show help"
-	@echo "  demo      - Run demo with test data"
-	@echo "  help      - Show this help"
+##
+## EPITECH PROJECT, 2025
+## Makefile
+## File description:
+## Makefile for MY_TORCH
+##
+
+#####################################################################

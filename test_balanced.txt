@@ -1,0 +1,30 @@
+==> dataset/check/10_pieces.txt <==
+8/8/R2k4/4r1p1/8/5K2/5P2/8 b - - 7 59 Check White
+8/8/K3Q2k/6p1/6Q1/4B3/7P/8 b - - 2 61 Check White
+3R4/2Pk4/KP6/8/8/8/8/5r2 b - - 4 79 Check White
+3R4/8/8/8/3k4/3p4/6r1/3K4 b - - 15 65 Check White
+8/3k3p/2R1Q3/8/8/7P/2P3P1/7K b - - 0 46 Check White
+8/8/6R1/pp2b3/P7/3bk3/2K5/8 w - - 3 59 Check Black
+4r3/8/3R4/6pk/4P1P1/5K2/8/8 b - - 0 70 Check White
+3Q1R2/4r1p1/5kP1/5P2/1K6/8/8/8 b - - 6 54 Check White
+8/8/1k6/2p1n1p1/5bK1/P7/5B2/8 w - - 2 45 Check Black
+8/8/5Qkr/4P3/8/5K2/8/8 b - - 3 96 Check White
+
+==> dataset/check/20_pieces.txt <==
+4rk2/1R3R1p/rp3b2/8/5P2/4P3/5PKP/8 b - - 0 36 Check White
+2rr4/pp4k1/4RR1p/3p1Np1/5n2/2P5/PP3PPP/6K1 b - - 6 26 Check White
+2Q5/p1q5/2p5/1pP2k2/1P3b2/6p1/P4PB1/3R1K2 b - - 0 43 Check White
+8/6p1/5pk1/3Qp3/P3P3/1PP3q1/4K2r/8 w - - 4 49 Check Black
+3Q4/5pk1/2p1p1p1/p3qnPp/P1B5/1P6/4K3/8 w - - 0 50 Check Black
+8/5bpk/1p3p1p/2b5/2P5/p1R2P2/1KN3PP/3rB3 w - - 0 45 Check Black
+2R5/1p3ppk/4pn1p/3p4/3P4/1P2P3/2r2qPP/1Q4K1 w - - 0 26 Check Black
+7k/7p/p2p4/1p6/5p1b/2P5/PP4RP/3q3K w - - 0 36 Check Black
+3k4/R6p/1BB1pq2/1p4p1/1b6/5PPK/7P/8 b - - 9 52 Check White
+4r3/1p2k2p/3pQ3/2pP1r2/8/7P/P7/7K b - - 6 42 Check White
+
+==> dataset/check/many_pieces.txt <==
+2r2b1k/5Pp1/4q2p/2pbP2P/3p2R1/5N1Q/3BnP2/1q3NK1 w - - 2 41 Check Black
+3r1r1k/p6p/1pq5/4ppn1/PPB3p1/4P1P1/1QN2PKP/3R4 w - - 4 29 Check Black
+2r2rk1/q3b1p1/pn3p2/N3p2p/3nN2P/3PP1P1/QP1B1PK1/R1R5 b - - 2 25 Check White
+6k1/4nppp/4p3/8/1pNnPP2/pP1B4/r1r3PP/K2R1R2 w - - 0 26 Check Black
+4r1k1/pp1b1pp1/7p/3p3P/4r2q/2PRnP2/1B1QN1P1/3K1B2 w - - 3 27 Check Black

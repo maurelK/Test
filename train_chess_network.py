@@ -48,7 +48,7 @@ def load_chess_dataset(filename):
             else:
                 label = 'Nothing'
 
-            # Convertir FEN en vecteur
+            # Convertir FEN en vecteur one-hot
             vector = fen_to_vector(fen)
             X.append(vector.flatten())
 
@@ -58,7 +58,7 @@ def load_chess_dataset(filename):
             one_hot[label_idx] = 1
             y.append(one_hot)
 
-    X = np.array(X).T  # Shape: (64, n_samples)
+    X = np.array(X).T  # Shape: (768, n_samples)
     y = np.array(y).T  # Shape: (3, n_samples)
 
     print(f"Dataset chargé: {X.shape[1]} échantillons")
@@ -70,53 +70,56 @@ def load_chess_dataset(filename):
     return X, y
 
 def fen_to_vector(fen):
-    """Convertit une chaîne FEN en vecteur 64 éléments"""
+    """Convertit une chaîne FEN en vecteur one-hot 768 éléments (12 canaux × 64 cases)"""
     board_part = fen.split()[0]  # Prendre seulement la partie plateau
-
-    vector = []
+    
+    # Mapping des pièces vers les canaux (0-5: blanc, 6-11: noir)
+    piece_map = {
+        'P': 0, 'N': 1, 'B': 2, 'R': 3, 'Q': 4, 'K': 5,      # Pièces blanches
+        'p': 6, 'n': 7, 'b': 8, 'r': 9, 'q': 10, 'k': 11     # Pièces noires
+    }
+    
+    vector = np.zeros(768)  # 12 canaux × 64 cases
+    square_idx = 0
+    
     for char in board_part:
         if char.isdigit():
-            # Ajouter des zéros pour les cases vides
-            vector.extend([0] * int(char))
+            # Sauter les cases vides
+            square_idx += int(char)
         elif char == '/':
-            # Ignorer les séparateurs de rangées
+            # Sauter les séparateurs de rangées
             continue
-        elif char in 'PNBRQKpnbrqk':
-            # Pièces : mapping simple
-            piece_map = {
-                'P': 1, 'N': 2, 'B': 3, 'R': 4, 'Q': 5, 'K': 6,
-                'p': -1, 'n': -2, 'b': -3, 'r': -4, 'q': -5, 'k': -6
-            }
-            vector.append(piece_map[char])
-
-    # S'assurer qu'on a exactement 64 éléments
-    while len(vector) < 64:
-        vector.append(0)
-    vector = vector[:64]
-
-    return np.array(vector).reshape(-1, 1)
+        elif char in piece_map:
+            # Activer le canal correspondant pour cette pièce
+            channel = piece_map[char]
+            vector[channel * 64 + square_idx] = 1
+            square_idx += 1
+    
+    return vector.reshape(-1, 1)
 
 def create_chess_network():
-    """Crée un réseau de neurones adapté à l'analyse d'échecs"""
-    print("Création du réseau d'analyse d'échecs...")
+    """Crée un réseau de neurones adapté à l'analyse d'échecs avec régularisation"""
+    print("Création du réseau d'analyse d'échecs avec régularisation...")
 
     network = Neuron(
         loss='categorical_crossentropy',
-        learning_rate=0.001  # Réduit pour une convergence plus stable
+        learning_rate=0.001,  # Réduit pour stabilité avec régularisation
+        l2_lambda=0.0001      # Régularisation L2
     )
 
-    # Architecture optimisée pour l'analyse d'échecs
-    network.add_layer(64, 128, 'relu')    # Entrée -> Couche cachée 1
-    network.add_layer(128, 64, 'relu')   # Couche cachée 1 -> Couche cachée 2
-    network.add_layer(64, 32, 'relu')    # Couche cachée 2 -> Couche cachée 3
-    network.add_layer(32, 3, 'softmax')  # Couche cachée 3 -> Sortie (3 classes)
+    # Architecture améliorée avec dropout pour éviter l'overfitting
+    network.add_layer(768, 256, 'relu', dropout_rate=0.2)    # Entrée one-hot -> Couche cachée 1
+    network.add_layer(256, 128, 'relu', dropout_rate=0.2)    # Couche cachée 1 -> Couche cachée 2
+    network.add_layer(128, 64, 'relu', dropout_rate=0.1)     # Couche cachée 2 -> Couche cachée 3
+    network.add_layer(64, 3, 'softmax', dropout_rate=0.0)    # Couche cachée 3 -> Sortie (pas de dropout sur sortie)
 
-    print("Architecture du réseau:")
-    print("  Entrée: 64 neurones (plateau d'échecs)")
-    print("  Couche cachée 1: 128 neurones (ReLU)")
-    print("  Couche cachée 2: 64 neurones (ReLU)")
-    print("  Couche cachée 3: 32 neurones (ReLU)")
+    print("Architecture du réseau avec régularisation:")
+    print("  Entrée: 768 neurones (encodage one-hot FEN)")
+    print("  Couche cachée 1: 256 neurones (ReLU + Dropout 20%)")
+    print("  Couche cachée 2: 128 neurones (ReLU + Dropout 20%)")
+    print("  Couche cachée 3: 64 neurones (ReLU + Dropout 10%)")
     print("  Sortie: 3 neurones (Softmax - Nothing/Check/Checkmate)")
+    print("  Régularisation: L2 λ=0.0001")
 
     return network
 
@@ -134,10 +137,9 @@ def evaluate_network(network, X, y):
     for true_idx in range(3):
         for pred_idx in range(3):
             count = np.sum((true_classes == true_idx) & (pred_classes == pred_idx))
-            if count > 0:
-                true_label = INDEX_TO_LABEL[true_idx]
-                pred_label = INDEX_TO_LABEL[pred_idx]
-                print(f"  {true_label} -> {pred_label}: {int(count)}")
+            true_label = INDEX_TO_LABEL[true_idx]
+            pred_label = INDEX_TO_LABEL[pred_idx]
+            print(f"  {true_label} -> {pred_label}: {int(count)}")
 
     return accuracy
 

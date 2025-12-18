@@ -52,14 +52,17 @@ def create_network_from_config(config):
 
     network = Neuron(
         loss=hyperparams['loss'],
-        learning_rate=hyperparams['learning_rate']
+        learning_rate=hyperparams['learning_rate'],
+        l2_lambda=hyperparams.get('l2_lambda', 0.0),
+        dropout_rates=[layer.get('dropout_rate', 0.0) for layer in config['architecture']]
     )
 
     for layer_config in config['architecture']:
         network.add_layer(
             input_size=layer_config['input_size'],
             output_size=layer_config['output_size'],
-            activation=layer_config['activation']
+            activation=layer_config['activation'],
+            dropout_rate=layer_config.get('dropout_rate', 0.0)
         )
 
     return network
