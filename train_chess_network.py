@@ -98,28 +98,30 @@ def fen_to_vector(fen):
     return vector.reshape(-1, 1)
 
 def create_chess_network():
-    """Crée un réseau de neurones adapté à l'analyse d'échecs avec régularisation"""
-    print("Création du réseau d'analyse d'échecs avec régularisation...")
+    """Crée un réseau de neurones optimisé pour l'analyse d'échecs"""
+    print("Création du réseau d'analyse d'échecs optimisé...")
 
     network = Neuron(
         loss='categorical_crossentropy',
-        learning_rate=0.001,  # Réduit pour stabilité avec régularisation
-        l2_lambda=0.0001      # Régularisation L2
+        learning_rate=0.001,  # Learning rate réduit pour stabilité
+        l2_lambda=0.0001      # Régularisation L2 légère
     )
 
-    # Architecture améliorée avec dropout pour éviter l'overfitting
-    network.add_layer(768, 256, 'relu', dropout_rate=0.2)    # Entrée one-hot -> Couche cachée 1
-    network.add_layer(256, 128, 'relu', dropout_rate=0.2)    # Couche cachée 1 -> Couche cachée 2
-    network.add_layer(128, 64, 'relu', dropout_rate=0.1)     # Couche cachée 2 -> Couche cachée 3
-    network.add_layer(64, 3, 'softmax', dropout_rate=0.0)    # Couche cachée 3 -> Sortie (pas de dropout sur sortie)
+    # Architecture optimisée avec plus de neurones et dropout progressif
+    network.add_layer(768, 512, 'relu', dropout_rate=0.3)    # Entrée one-hot -> Couche cachée 1
+    network.add_layer(512, 256, 'relu', dropout_rate=0.25)   # Couche cachée 1 -> Couche cachée 2
+    network.add_layer(256, 128, 'relu', dropout_rate=0.2)    # Couche cachée 2 -> Couche cachée 3
+    network.add_layer(128, 64, 'relu', dropout_rate=0.1)     # Couche cachée 3 -> Couche cachée 4
+    network.add_layer(64, 3, 'softmax', dropout_rate=0.0)    # Couche cachée 4 -> Sortie
 
-    print("Architecture du réseau avec régularisation:")
+    print("Architecture optimisée du réseau:")
     print("  Entrée: 768 neurones (encodage one-hot FEN)")
-    print("  Couche cachée 1: 256 neurones (ReLU + Dropout 20%)")
-    print("  Couche cachée 2: 128 neurones (ReLU + Dropout 20%)")
-    print("  Couche cachée 3: 64 neurones (ReLU + Dropout 10%)")
-    print("  Sortie: 3 neurones (Softmax - Nothing/Check/Checkmate)")
-    print("  Régularisation: L2 λ=0.0001")
+    print("  Couche cachée 1: 512 neurones (ReLU + Dropout 30%)")
+    print("  Couche cachée 2: 256 neurones (ReLU + Dropout 25%)")
+    print("  Couche cachée 3: 128 neurones (ReLU + Dropout 20%)")
+    print("  Couche cachée 4: 64 neurones (ReLU + Dropout 10%)")
+    print("  Sortie: 3 neurones (Softmax)")
+    print("  Régularisation: L2 λ=0.0001, Learning rate=0.001")
 
     return network
 
@@ -143,54 +145,109 @@ def evaluate_network(network, X, y):
 
     return accuracy
 
-def train_chess_network(dataset_file, epochs=1000, save_path='my_torch_network_trained.nn'):
-    """Entraîne le réseau sur le dataset d'échecs"""
-    print("=== Entraînement du réseau d'analyse d'échecs ===")
+def train_chess_network_enhanced(dataset_file, epochs=200, batch_size=64, patience=10, 
+                               save_path='my_torch_network_enhanced.nn'):
+    """Entraîne le réseau avec améliorations : early stopping, validation, learning rate decay"""
+    print("=== Entraînement amélioré du réseau d'analyse d'échecs ===")
 
     # Charger les données
     X, y = load_chess_dataset(dataset_file)
+    
+    # Split train/validation (80/20)
+    n_samples = X.shape[1]
+    n_train = int(0.8 * n_samples)
+    
+    indices = np.random.permutation(n_samples)
+    train_indices = indices[:n_train]
+    val_indices = indices[n_train:]
+    
+    X_train = X[:, train_indices]
+    y_train = y[:, train_indices]
+    X_val = X[:, val_indices]
+    y_val = y[:, val_indices]
+    
+    print(f"Split: {n_train} train, {n_samples - n_train} validation samples")
 
     # Créer le réseau
     network = create_chess_network()
 
-    print(f"\nDébut de l'entraînement sur {X.shape[1]} échantillons...")
-    print(f"Nombre d'époques: {epochs}")
+    print(f"\nDébut de l'entraînement sur {X_train.shape[1]} échantillons...")
+    print(f"Nombre d'époques max: {epochs}, Patience: {patience}, Batch size: {batch_size}")
 
-    # Entraînement
+    # Variables pour early stopping
+    best_val_accuracy = 0
+    patience_counter = 0
+    best_weights = None
+    
+    # Learning rate decay
+    initial_lr = network.learning_rate
+    decay_rate = 0.95
+    decay_steps = 20
+
     for epoch in range(epochs):
-        # Forward pass
-        y_pred = network.predict(X)
+        # Learning rate decay
+        if epoch > 0 and epoch % decay_steps == 0:
+            network.learning_rate *= decay_rate
+            print(".6f")
 
-        # Backward pass
-        network.backward(y, y_pred)
-
-        # Afficher la progression
-        if (epoch + 1) % 100 == 0:
-            loss = network.cost_function(y, y_pred)
-            print(".4f")
-
-    print("\nÉvaluation finale du modèle...")
-    accuracy = evaluate_network(network, X, y)
-
+        # Entraînement
+        history = network.train(X_train, y_train, X_val, y_val, epochs=1, batch_size=batch_size, verbose=False)
+        
+        train_loss = history['train_loss'][0]
+        train_acc = history['train_accuracy'][0]
+        val_loss = history['val_loss'][0] 
+        val_acc = history['val_accuracy'][0]
+        
+        print(f"Époque {epoch + 1:2d} - Train: Loss={train_loss:.4f}, Acc={train_acc:.1f}% | Val: Loss={val_loss:.4f}, Acc={val_acc:.1f}%")
+        # Early stopping
+        if val_acc > best_val_accuracy:
+            best_val_accuracy = val_acc
+            patience_counter = 0
+            best_weights = [layer.weight.copy() for layer in network.layers]
+            print(f"  → Nouveau meilleur modèle (validation: {best_val_accuracy:.1f}%)")
+        else:
+            patience_counter += 1
+            
+        if patience_counter >= patience:
+            print(f"\n🛑 Early stopping après {epoch + 1} époques (patience épuisée)")
+            break
+    
+    # Restaurer les meilleurs poids
+    if best_weights:
+        for i, layer in enumerate(network.layers):
+            layer.weight = best_weights[i]
+        print("✅ Meilleurs poids restaurés")
+    
+    print("\nÉvaluation finale sur validation...")
+    final_val_loss, final_val_accuracy = network.evaluate(X_val, y_val)
+    print(f"Précision finale sur validation: {final_val_accuracy:.2f}%")
     # Sauvegarder le modèle entraîné
     network.save(save_path)
-    print(f"\nModèle sauvegardé: {save_path}")
+    print(f"\n💾 Modèle sauvegardé: {save_path}")
 
-    return network, accuracy
+    return network, final_val_accuracy
 
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Entraîner un réseau MY_TORCH sur des données d\'échecs')
     parser.add_argument('dataset', help='Fichier contenant les données d\'entraînement (FEN + labels)')
-    parser.add_argument('--epochs', type=int, default=1000, help='Nombre d\'époques d\'entraînement')
-    parser.add_argument('--save', default='my_torch_network_trained.nn', help='Chemin de sauvegarde du modèle')
+    parser.add_argument('--epochs', type=int, default=200, help='Nombre d\'époques d\'entraînement maximum')
+    parser.add_argument('--batch-size', type=int, default=64, help='Taille des mini-batches')
+    parser.add_argument('--patience', type=int, default=10, help='Patience pour early stopping')
+    parser.add_argument('--save', default='my_torch_network_enhanced.nn', help='Chemin de sauvegarde du modèle')
 
     args = parser.parse_args()
 
     try:
-        network, accuracy = train_chess_network(args.dataset, args.epochs, args.save)
-        print(f"\nPrécision finale: {accuracy:.2f}")
+        network, accuracy = train_chess_network_enhanced(
+            args.dataset, 
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            patience=args.patience,
+            save_path=args.save
+        )
+        print(f"\n🎯 Précision finale sur validation: {accuracy:.2f}")
     except Exception as e:
         print(f"Erreur lors de l'entraînement: {e}", file=sys.stderr)
         sys.exit(84)
