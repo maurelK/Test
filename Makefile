@@ -1,4 +1,3 @@
-
 ##
 ## EPITECH PROJECT, 2025
 ## Makefile
@@ -57,12 +56,3 @@ run: analyzer
 	@echo "Running analyzer..."
 	@python my_torch_analyzer.py --help
 
-
-##
-## EPITECH PROJECT, 2025
-## Makefile
-## File description:
-## Makefile for MY_TORCH
-##
-
-#####################################################################

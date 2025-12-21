@@ -1,0 +1,14 @@
+site_name: MY_TORCH
+site_url: http://localhost:8000
+theme:
+  name: mkdocs
+  palette:
+    primary: 'indigo'
+    accent: 'indigo'
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Preliminaries: preliminaries.md
+    - Build Guide: build_guide.md
+    - Quick Start Menu: quickstart_menu.md
