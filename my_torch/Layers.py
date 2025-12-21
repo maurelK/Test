@@ -50,25 +50,34 @@ class Layer:
         return self.output_cache
         
 
+    
+
     def backward(self, output_gradient, learning_rate, l2_lambda=0.0):
         batch_size = self.input_cache.shape[1]
-        activation_gradient = activation_derivative(self.output_cache, self.activation)
-        z_gradient = output_gradient * activation_gradient
-
-        # Apply dropout mask during backpropagation
+        
+        # IMPORTANT: Handle softmax specially
+        if self.activation == 'softmax':
+            # For softmax + cross-entropy, gradient is already y_pred - y_true
+            z_gradient = output_gradient
+        else:
+            activation_gradient = activation_derivative(self.output_cache, self.activation)
+            z_gradient = output_gradient * activation_gradient
+    
+        # Apply dropout mask if exists
         if self.dropout_mask is not None:
             z_gradient = z_gradient * self.dropout_mask / (1 - self.dropout_rate)
-
+    
+        # Compute gradients (CORRECTED)
         input_gradient = np.dot(self.weight.T, z_gradient)
         weight_gradient = np.dot(z_gradient, self.input_cache.T) / batch_size
-        bias_gradient = np.mean(z_gradient, axis=1, keepdims=True)
-
-        # Add L2 regularization to weight gradient
+        bias_gradient = np.sum(z_gradient, axis=1, keepdims=True) / batch_size  # FIXED: sum, not mean
+    
+        # L2 regularization
         if l2_lambda > 0:
             weight_gradient += l2_lambda * self.weight
-
+    
+        # Update parameters
         self.weight -= learning_rate * weight_gradient
         self.bias -= learning_rate * bias_gradient
-
-        return input_gradient
     
+        return input_gradient

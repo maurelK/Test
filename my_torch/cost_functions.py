@@ -27,7 +27,7 @@ def bce_derivative(y_true, y_pred):
 
 
 def cce_derivative(y_true, y_pred):
-    return (y_pred - y_true) / y_true.shape[1]
+    return (y_pred - y_true)
 
 
 # Dictionnaire des loss functions

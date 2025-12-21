@@ -1,6 +1,0 @@
-8/8/R2k4/4r1p1/8/5K2/5P2/8 b - - 7 59 Check White
-8/8/K3Q2k/6p1/6Q1/4B3/7P/8 b - - 2 61 Check White
-3R4/2Pk4/KP6/8/8/8/8/5r2 b - - 4 79 Check White
-8/5p1p/5K1P/6P1/7k/8/8/6R1 b - - 14 80 Nothing
-8/8/8/8/5K2/8/6k1/8 w - - 0 68 Nothing
-8/8/6p1/4K2p/Pk5P/6P1/1N2P3/8 b - - 0 44 Nothing

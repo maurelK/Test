@@ -5,50 +5,62 @@ import argparse
 from my_torch.Neuron import Neuron
 import numpy as np
 
-# Enhanced FEN encoder with one-hot encoding (12 channels × 64 squares = 768 inputs)
-PIECE_MAP = {
-    'P': 0, 'N': 1, 'B': 2, 'R': 3, 'Q': 4, 'K': 5,      # White pieces
-    'p': 6, 'n': 7, 'b': 8, 'r': 9, 'q': 10, 'k': 11     # Black pieces
-}
+
 
 def fen_to_vector(fen):
-    """Convert FEN string to 768-element one-hot vector (12 channels × 64 squares)"""
-    board_part = fen.split()[0]  # Only take the board part
-    vector = np.zeros(768)  # 12 channels × 64 squares
+    """Correct FEN to one-hot encoding"""
+    board_part = fen.split()[0]
+    piece_map = {
+        'P': 0, 'N': 1, 'B': 2, 'R': 3, 'Q': 4, 'K': 5,
+        'p': 6, 'n': 7, 'b': 8, 'r': 9, 'q': 10, 'k': 11
+    }
     
-    square_idx = 0
+    vector = np.zeros(768)
+    
+    row = 0
+    col = 0
+    
     for char in board_part:
-        if char.isdigit():
-            # Skip empty squares
-            square_idx += int(char)
-        elif char == '/':
-            # Skip row separators
-            continue
-        elif char in PIECE_MAP:
-            # Set the corresponding channel for this piece
-            channel = PIECE_MAP[char]
+        if char == '/':
+            row += 1
+            col = 0
+        elif char.isdigit():
+            col += int(char)
+        elif char in piece_map:
+            square_idx = row * 8 + col
+            channel = piece_map[char]
             vector[channel * 64 + square_idx] = 1
-            square_idx += 1
+            col += 1
     
     return vector.reshape(-1, 1)
 
 def vector_to_label(output, fen):
     """Convert network output to label with color information"""
-    classes = ['Nothing', 'Check', 'Checkmate']
-    idx = np.argmax(output)
-    base_label = classes[idx]
+    # Get base class
+    output = output.flatten()
+    class_idx = np.argmax(output)
+    
+    # Map to class name
+    if len(output) == 3:  # 3-class: Nothing, Check, Checkmate
+        classes = ['Nothing', 'Check', 'Checkmate']
+        base_label = classes[class_idx]
+    elif len(output) == 2:  # 2-class: Nothing, Check (for phase 1)
+        classes = ['Nothing', 'Check']
+        base_label = classes[class_idx]
+    else:
+        base_label = 'Nothing'
     
     if base_label == 'Nothing':
         return 'Nothing'
     
-    # Determine whose turn it is from FEN
+    # Determine color from FEN
     fen_parts = fen.split()
     if len(fen_parts) >= 2:
         turn = fen_parts[1]  # 'w' or 'b'
+        # In check/checkmate, the player whose turn it is is in check
         color = 'White' if turn == 'w' else 'Black'
         return f"{base_label} {color}"
     
-    # Fallback if FEN parsing fails
     return base_label
 
 def main():
