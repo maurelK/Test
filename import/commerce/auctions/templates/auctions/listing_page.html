@@ -1,0 +1,59 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h1>{{ listing.title }}</h1>
+<p>{{ listing.description }}</p>
+{% if listing.image_url %}
+    <img src="{{ listing.image_url }}" alt="{{ listing.title }}">
+{% endif %}
+
+{% if user.is_authenticated %}
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="listing_id" value="{{ listing.id }}">
+        <button type="submit" name="action" value="add_to_watchlist">Add to Watchlist</button>
+        <button type="submit" name="actions" value="remove_from_watchlist">Remove from Watchlist</button>
+    </form>
+    {% if listing.active %}
+        <form method="post">
+            {% csrf_token %}
+            {% if highest_bid %}
+                <input type="number" name="bid_amount" step="0.10" min="{{ highest_bid.amount }}" placeholder="Your bid">
+            {% else %}
+                <input type="number" name="bid_amount" step="0.10" min="{{ listing.start_price }}" placeholder="Your bid">
+            {% endif %}
+            <button type="submit" name="place_bid">Place Bid</button>
+        </form>
+        {% endif %}
+
+        {% if is_creator and listing.active %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="close_auction">Close Auction</button>
+            </form>
+        {% endif %}
+
+        <!-- Winner Message -->
+        {% if not listing.active and is_winner %}
+            <p>Congratulations, you won this auction!</p>
+        {% endif %}
+
+        <!-- Comments -->
+        <form method="post">
+            {% csrf_token %}
+            <textarea name="comment" placeholder="Add a comment..."></textarea>
+            <button type="submit" name="add_comment">Post Comment</button>
+        </form>
+        <h3>Comments:</h3>
+        {% for com in comments %}
+            <div>
+                <strong>{{ com.user }}</strong>: {{ com.comment }}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p><a href="{% url 'login' %}">Log in</a> to interact with this listing.</p>
+    
+{% endif %}
+{% endblock %}
+
+
