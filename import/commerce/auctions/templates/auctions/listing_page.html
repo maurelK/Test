@@ -3,6 +3,14 @@
 {% block body %}
 <h1>{{ listing.title }}</h1>
 <p>{{ listing.description }}</p>
+<p>
+    Current price:
+    {% if highest_bid %}
+        {{ highest_bid.amount }}
+    {% else %}
+        {{ listing.start_price }}
+    {% endif %}
+</p>
 {% if listing.image_url %}
     <img src="{{ listing.image_url }}" alt="{{ listing.title }}">
 {% endif %}
@@ -12,7 +20,7 @@
         {% csrf_token %}
         <input type="hidden" name="listing_id" value="{{ listing.id }}">
         <button type="submit" name="action" value="add_to_watchlist">Add to Watchlist</button>
-        <button type="submit" name="actions" value="remove_from_watchlist">Remove from Watchlist</button>
+        <button type="submit" name="action" value="remove_from_watchlist">Remove from Watchlist</button>
     </form>
     {% if listing.active %}
         <form method="post">

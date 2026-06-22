@@ -11,7 +11,10 @@
             <img src="{{ listing.image_url }}" alt="{{ listing.title }}">
         {% endif %}        
             <p>Starting Price: {{ listing.start_price }}$</p>
-            <p>Current Price: {{ listing.highest_bid }}$</p>    
+            {% for bid in listing.bid.all %}
+                <p>Bid: {{ bid.amount }}$</p>
+            {% endfor %}
+            <p>Current Price: {{ current_price }}$</p>    
             <p>Category: {{ listing.category }}</p>
             <p>Post at : {{ listing.created_at }}</p>
         </div>

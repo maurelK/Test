@@ -9,8 +9,6 @@ class Listings(models.Model):
     title = models.CharField(max_length=64)
     description = models.TextField()
     start_price = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
-    highest_bid = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, default="0.00")
-
     image_url = models.URLField(blank=True, null=True)
     active = models.BooleanField(default=True)
     category = models.CharField(max_length=50, null=True, blank=True)

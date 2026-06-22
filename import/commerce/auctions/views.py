@@ -1,3 +1,5 @@
+import decimal
+
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -9,6 +11,7 @@ from django.contrib import messages
 from .forms import create_listingsForm
 from django.shortcuts import render
 from .models import Listings
+from decimal import Decimal, InvalidOperation
 
 
 from .models import User
@@ -74,7 +77,6 @@ def register(request):
 
 def index(request):
     listings = Listings.objects.all()
-    birds = Bids.objects.all()
     return render(request, "auctions/index.html", {"listings": listings})
 
 
@@ -114,9 +116,9 @@ def create_listing(request):
 @login_required
 def listing_page(request, listing_id):
     listing = get_object_or_404(Listings, id=listing_id)
+    
     user_watchlist = listing.watchlist_set.filter(user=request.user) if request.user.is_authenticated else None
-    highest_bid = listing.bids.order_by('-amount').first()
-
+    highest_bid = Bids.objects.filter(aution_listings=listing).order_by('-amount').first()
     if request.method == "POST":
         if "action" in request.POST:
             if user_watchlist.exists():
@@ -126,16 +128,18 @@ def listing_page(request, listing_id):
                 Watchlist.objects.create(user=request.user, listing=listing)
                 messages.success(request, "Added to watchlist.")
         elif "place_bid" in request.POST:
-            bid_amount = float(request.POST["bid_amount"])
+            print(request.POST.get("bid_amount"))
+
+            bid_amount = decimal.Decimal(request.POST["bid_amount"])
             if bid_amount < listing.start_price or (highest_bid and bid_amount <= highest_bid.amount):
                 messages.error(request, "Invalid bid amount.")
             else:
                 Bids.objects.create(user=request.user, aution_listings=listing, amount=bid_amount)
-                listing.highest_price = bid_amount
                 listing.save()
                 messages.success(request, "Bid placed successfully.")
         elif "close_auction" in request.POST and listing.created_by == request.user:
             listing.active = False
+
             listing.save()
             messages.success(request, "Auction closed.")
 

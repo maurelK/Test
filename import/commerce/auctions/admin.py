@@ -6,3 +6,4 @@ admin.site.register(Bids)
 admin.site.register(comments)
 admin.site.register(Watchlist)
 admin.site.register(User)
+
